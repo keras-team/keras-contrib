@@ -54,9 +54,9 @@ class PELU(Layer):
 
         # Initialised as ones to emulate the default ELU
         self.alphas = self.alphas_init(param_shape,
-                             name='{}_alphas'.format(self.name))
+                                       name='{}_alphas'.format(self.name))
         self.betas = self.betas_init(param_shape,
-                            name='{}_betas'.format(self.name))
+                                     name='{}_betas'.format(self.name))
 
         self.trainable_weights = [self.alphas, self.betas]
 
@@ -65,11 +65,13 @@ class PELU(Layer):
             del self.initial_weights
 
     def call(self, x, mask=None):
-        pos = K.relu(x) * (self.alphas / self.betas)
         if K.backend() == 'theano':
+            pos = K.relu(x) * (K.pattern_broadcast(self.alphas, self.param_broadcast) /
+                               K.pattern_broadcast(self.betas, self.param_broadcast))
             neg = (K.pattern_broadcast(self.alphas, self.param_broadcast) *
-                   (K.exp(x / self.betas) - 1))
+                   (K.exp(x / K.pattern_broadcast(self.betas, self.param_broadcast)) - 1))
         else:
+            pos = K.relu(x) * (self.alphas / self.betas)
             neg = self.alphas * (K.exp(x / self.betas) - 1)
         return pos + neg
 

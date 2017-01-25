@@ -2,6 +2,7 @@ import pytest
 from keras.utils.test_utils import layer_test, keras_test
 from keras_contrib import layers
 
+
 @keras_test
 def test_pelu():
     from keras_contrib.layers.advanced_activations import PELU
