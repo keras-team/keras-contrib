@@ -1,4 +1,4 @@
-# Contributor Guidlines
+# Maintainer Guidelines
 
 ## Maintainers:
 Following are the users with write-access to this repository (maintainers) :
@@ -13,6 +13,8 @@ Following are the users with write-access to this repository (maintainers) :
 
 ## Addition of new features
 * Addition of new features require submitting a pull request, even for those who have write access to this repository.
+* Maintainers should not merge their own pull requests.
+* Whenever possible, multiple Maintainers should review a pull requests before it is merged.
 * All incoming new features should be accompanied by documentation and unit tests.
 
 ## Becoming a maintainer

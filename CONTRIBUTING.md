@@ -1,0 +1,62 @@
+# On Github Issues and Pull Requests
+
+Found a bug? Want to contribute changes to the codebase? Make sure to read this first.
+
+## Update Your Environment
+
+To easily update Keras: `pip install git+https://www.github.com/fchollet/keras.git --upgrade`
+
+To easily update Keras-Contrib: `pip install git+https://www.github.com/farizrahman4u/keras-contrib.git --upgrade`
+
+To easily update Theano: `pip install git+git://github.com/Theano/Theano.git --upgrade`
+
+To update TensorFlow: See [TensorFlow Installation instructions](https://github.com/tensorflow/tensorflow#installation)
+
+## Bug reporting
+
+Your code doesn't work, **and you have determined that the issue lies with Keras-Contrib**? Follow these steps to report a bug.
+
+1. Your bug may already be fixed. Make sure to update to the current Keras master branch and Keras-Contrib master branch, as well as the latest Theano/TensorFlow master branch.
+
+2. [Search for similar issues](https://github.com/farizrahman4u/keras-contrib/issues?utf8=%E2%9C%93&q=is%3Aissue). Make sure to delete `is:open` on the issue search to find solved tickets as well. It's possible somebody has encountered this bug already. Still having a problem? Open an issue on Github to let us know.
+
+3. Make sure you provide us with useful information about your configuration: what OS are you using? What Keras backend are you using? Are you running on GPU? If so, what is your version of Cuda, of cuDNN? What is your GPU?
+
+4. Provide us with a script to reproduce the issue. This script should be runnable as-is and should not require external data download (use randomly generated data if you need to run a model on some test data). We recommend that you use Github Gists to post your code. Any issue that cannot be reproduced is likely to be closed.
+
+5. If possible, take a stab at fixing the bug yourself --if you can!
+
+The more information you provide, the easier it is for us to validate that there is a bug and the faster we'll be able to take action. If you want your issue to be resolved quickly, following the steps above is crucial.
+
+## Pull Requests
+
+We love pull requests. Here's a quick guide:
+
+1. If your PR introduces a change in functionality, make sure you start by opening an issue to discuss whether the change should be made, and how to handle it. This will save you from having your PR closed down the road! Of course, if your PR is a simple bug fix, you don't need to do that.
+
+2. Ensure that your environment (Keras, Keras-Contrib, and your backend) are up to date. See "Update Your Environment".
+
+3. Write the code. This is the hard part! If you are adding a layer, advanced activation, or any other feature which has configurable parameters, please ensure that the feature is searializeable (to allow for saving and loading). For detail on this aspect, please see the Keras ["Writing Your Own Layer"](https://keras.io/layers/writing-your-own-keras-layers/) guide and the source code for the relevant feature type from both Keras and Keras-Contrib.
+
+4. Make sure any new function or class you introduce has proper docstrings. Make sure any code you touch still has up-to-date docstrings and documentation.
+
+5. Write tests. Your code should have full unit test coverage. If you want to see your PR merged promptly, this is crucial. If your PR is a bug fix, it is advisable to add a new test, which, without your fix in this PR, would have failed.
+
+6. Run our test suite locally. It's easy: within the root Keras-Contrib folder, simply run: `py.test tests/`.
+  - You will need to install `pytest`, `coveralls`, `pytest-cov`, `pytest-xdist`: `pip install pytest pytest-cov python-coveralls pytest-xdist pep8 pytest-pep8`
+
+7. Make sure all tests are passing:
+  - with the Theano backend, on Python 2.7 and Python 3.5
+  - with the TensorFlow backend, on Python 2.7
+  - **Please Note:** all tests run on top of the very latest Keras master branch.
+
+8. We use PEP8 syntax conventions, but we aren't dogmatic when it comes to line length. Make sure your lines stay reasonably sized, though. To make your life easier, we recommend running a PEP8 linter:
+  - Install PEP8 packages: `pip install pep8 pytest-pep8 autopep8`
+  - Run a standalone PEP8 check: `py.test --pep8 -m pep8`
+  - You can automatically fix some PEP8 error by running: `autopep8 -i --select <errors> <FILENAME>` for example: `autopep8 -i --select E128 tests/keras/backend/test_backends.py`
+
+9. When committing, use appropriate, descriptive commit messages. Make sure that your branch history is not a string of "bug fix", "fix", "oops", etc. When submitting your PR, squash your commits into a single commit with an appropriate commit message, to make sure the project history stays clean and readable. See ['rebase and squash'](http://rebaseandsqua.sh/) for technical help on how to squash your commits.
+
+10. Update the documentation. If introducing new functionality, make sure you include code snippets demonstrating the usage of your new feature.
+
+11. Submit your PR. If your changes have been approved in a previous discussion, and if you have complete (and passing) unit tests, your PR is likely to be merged promptly. Otherwise, well...
