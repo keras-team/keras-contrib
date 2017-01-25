@@ -15,5 +15,5 @@ except ImportError:
 from keras import backend as K
 import inspect
 import numpy as np
-from keras.backend.common import _FLOATX, floatx, _EPSILON, image_dim_ordering
+from keras.backend import _FLOATX, floatx, _EPSILON, image_dim_ordering
 py_all = all
