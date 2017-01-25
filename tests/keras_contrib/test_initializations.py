@@ -1,9 +1,8 @@
-import pytest
-import numpy as np
-
 from keras import backend as K
 from keras_contrib import backend as KC
 from keras_contrib import initializations
+import pytest
+import numpy as np
 
 
 # 2D tensor test fixture

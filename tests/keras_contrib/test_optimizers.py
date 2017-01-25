@@ -1,13 +1,12 @@
 from __future__ import print_function
-import pytest
-import numpy as np
-np.random.seed(1337)
-
 from keras.utils.test_utils import get_test_data
 from keras.models import Sequential
 from keras.layers.core import Dense, Activation
 from keras.utils.np_utils import to_categorical
-from keras_contrib.optimizers import *
+from keras_contrib import optimizers
+import pytest
+import numpy as np
+np.random.seed(1337)
 
 
 (X_train, y_train), (X_test, y_test) = get_test_data(nb_train=1000,

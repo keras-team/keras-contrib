@@ -13,6 +13,5 @@ example_array = np.random.random((100, 100)) * 100. - 50.
 example_array[0, 0] = 0.  # 0 could possibly cause trouble
 
 
-
 if __name__ == '__main__':
     pytest.main([__file__])

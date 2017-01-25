@@ -10,6 +10,5 @@ from keras import backend as K
 from keras_contrib import backend as KC
 
 
-
 if __name__ == '__main__':
     pytest.main([__file__])

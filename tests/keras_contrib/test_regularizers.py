@@ -1,7 +1,3 @@
-import pytest
-import numpy as np
-np.random.seed(1337)
-
 from keras.models import Sequential
 from keras.layers import Merge
 from keras.layers import Dense
@@ -12,6 +8,10 @@ from keras.layers import Embedding
 from keras.datasets import mnist
 from keras.utils import np_utils
 from keras_contrib import regularizers
+import pytest
+import numpy as np
+np.random.seed(1337)
+
 
 nb_classes = 10
 batch_size = 128
