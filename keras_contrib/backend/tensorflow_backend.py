@@ -10,5 +10,5 @@ from keras import backend as K
 import numpy as np
 import os
 import warnings
-from keras.backend import floatx, _EPSILON, image_dim_ordering, reset_uids
+from keras.backend.common import floatx, _EPSILON, image_dim_ordering, reset_uids
 py_all = all
