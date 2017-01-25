@@ -20,3 +20,5 @@ Alternatively, using pip:
 ```shell
 sudo pip install git+https://www.github.com/farizrahman4u/keras-contrib.git
 ```
+
+For contributor guidelines see [GUIDELINES.md](GUIDELINES.md)
