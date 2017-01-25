@@ -1,5 +1,6 @@
 from .. import initializations
 from keras.engine import Layer
+from keras.utils.generic_utils import get_custom_objects
 from .. import backend as K
 import numpy as np
 
@@ -7,9 +8,9 @@ import numpy as np
 class PELU(Layer):
     """Parametric Exponential Linear Unit.
     It follows:
-    `f(x) = alphas * x for x < 0`,
-    `f(x) = x for x >= 0`,
-    where `alphas` is a learned array with the same shape as x.
+    `f(x) = alphas * (exp(x / betas) - 1) for x < 0`,
+    `f(x) = (alphas / betas) * x for x >= 0`,
+    where `alphas` & `betas` are learned arrays with the same shape as x.
     # Input shape
         Arbitrary. Use the keyword argument `input_shape`
         (tuple of integers, does not include the samples axis)
@@ -17,7 +18,8 @@ class PELU(Layer):
     # Output shape
         Same shape as the input.
     # Arguments
-        init: initialization function for the weights.
+        alphas_init: initialization function for the alpha variable weights.
+        betas_init: initialization function for the beta variable weights.
         weights: initial weights, as a list of a single Numpy array.
         shared_axes: the axes along which to share learnable
             parameters for the activation function.
@@ -31,9 +33,10 @@ class PELU(Layer):
         - [PARAMETRIC EXPONENTIAL LINEAR UNIT FOR DEEP CONVOLUTIONAL NEURAL NETWORKS](https://arxiv.org/abs/1605.09332v3)
     """
 
-    def __init__(self, init='zero', weights=None, shared_axes=None, **kwargs):
+    def __init__(self, alphas_init='one', betas_init='one', weights=None, shared_axes=None, **kwargs):
         self.supports_masking = True
-        self.init = initializations.get(init)
+        self.alphas_init = initializations.get(alphas_init)
+        self.betas_init = initializations.get(betas_init)
         self.initial_weights = weights
         if not isinstance(shared_axes, (list, tuple)):
             self.shared_axes = [shared_axes]
@@ -50,9 +53,9 @@ class PELU(Layer):
                 self.param_broadcast[i - 1] = True
 
         # Initialised as ones to emulate the default ELU
-        self.alphas = K.ones(param_shape, dtype=K.floatx(),
+        self.alphas = self.alphas_init(param_shape,
                              name='{}_alphas'.format(self.name))
-        self.betas = K.ones(param_shape, dtype=K.floatx(),
+        self.betas = self.betas_init(param_shape,
                             name='{}_betas'.format(self.name))
 
         self.trainable_weights = [self.alphas, self.betas]
@@ -71,6 +74,9 @@ class PELU(Layer):
         return pos + neg
 
     def get_config(self):
-        config = {'init': self.init.__name__}
+        config = {'alphas_init': self.alphas_init.__name__,
+                  'betas_init': self.betas_init.__name__}
         base_config = super(PELU, self).get_config()
         return dict(list(base_config.items()) + list(config.items()))
+
+get_custom_objects().update({"PELU": PELU})
