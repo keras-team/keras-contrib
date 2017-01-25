@@ -34,7 +34,7 @@ We love pull requests. Here's a quick guide:
 
 1. If your PR introduces a change in functionality, make sure you start by opening an issue to discuss whether the change should be made, and how to handle it. This will save you from having your PR closed down the road! Of course, if your PR is a simple bug fix, you don't need to do that.
 
-2. Ensure that your environment (Keras, Keras-Contrib, and your backend) are up to date. See "Update Your Environment".
+2. Ensure that your environment (Keras, Keras-Contrib, and your backend) are up to date. See "Update Your Environment". Create a new branch for your changes.
 
 3. Write the code. This is the hard part! If you are adding a layer, advanced activation, or any other feature which has configurable parameters, please ensure that the feature is searializeable (to allow for saving and loading). For detail on this aspect, please see the Keras ["Writing Your Own Layer"](https://keras.io/layers/writing-your-own-keras-layers/) guide and the source code for the relevant feature type from both Keras and Keras-Contrib.
 
@@ -60,3 +60,9 @@ We love pull requests. Here's a quick guide:
 10. Update the documentation. If introducing new functionality, make sure you include code snippets demonstrating the usage of your new feature.
 
 11. Submit your PR. If your changes have been approved in a previous discussion, and if you have complete (and passing) unit tests, your PR is likely to be merged promptly. Otherwise, well...
+
+## A Note for Contributors
+
+Both Keras-Contrib and Keras operate under the [MIT License](LICENSE). At the discretion of the maintainers of both repositories, code may be moved from Keras-Contrib to Keras and vice versa.
+
+The maintainers will ensure that the proper chain of commits will flow in both directions, with proper attribution of code. Maintainers will also do their best to notify contributors when their work is moved between repositories.
