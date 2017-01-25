@@ -1,5 +1,7 @@
 # keras-contrib : Keras community contributions
 
+[![Build Status](https://travis-ci.org/farizrahman4u/keras-contrib.svg?branch=master)](https://travis-ci.org/farizrahman4u/keras-contrib)
+
 This library is an extension of the python deep learning library [Keras](www.keras.io). It contains layers, activations, loss functions, optimizers etc which can be used in addition to those provided by core Keras.
 
 ---
