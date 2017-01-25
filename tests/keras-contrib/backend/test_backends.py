@@ -3,7 +3,7 @@ from numpy.testing import assert_allclose
 import numpy as np
 import scipy.sparse as sparse
 
-from kers import backend as K
+from keras import backend as K
 from keras.backend import theano_backend as KTH, floatx, set_floatx, variable
 from keras.backend import tensorflow_backend as KTF
 from keras_contrib import backend as KC
