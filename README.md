@@ -9,7 +9,7 @@ As the community contributions in Keras-Contrib are tested, used, validated, and
 ---
 ## Installation
 
-For instructions on how to install keras, see https://keras.io/#installation
+For instructions on how to install Keras, see https://keras.io/#installation
 
 ```shell
 git clone https://www.github.com/farizrahman4u/keras-contrib.git
@@ -61,7 +61,7 @@ model = load_model('example.h5')
 
 ### A Common "Gotcha"
 
-A Keras-Contrib is external to the Keras core, loading a model requires a bit more work. While a pure Keras model is loadable with nothing more than an import of `keras.models.load_model`, a model which contains a contributed module requires an additional import of `keras_contrib`:
+As Keras-Contrib is external to the Keras core, loading a model requires a bit more work. While a pure Keras model is loadable with nothing more than an import of `keras.models.load_model`, a model which contains a contributed module requires an additional import of `keras_contrib`:
 
 ```python
 # Required, as usual
