@@ -36,7 +36,7 @@ We love pull requests. Here's a quick guide:
 
 2. Ensure that your environment (Keras, Keras-Contrib, and your backend) are up to date. See "Update Your Environment". Create a new branch for your changes.
 
-3. Write the code. This is the hard part! If you are adding a layer, advanced activation, or any other feature which has configurable parameters, please ensure that the feature is searializeable (to allow for saving and loading). For detail on this aspect, please see the Keras ["Writing Your Own Layer"](https://keras.io/layers/writing-your-own-keras-layers/) guide and the source code for the relevant feature type from both Keras and Keras-Contrib.
+3. Write the code. This is the hard part! If you are adding a layer, advanced activation, or any other feature which has configurable parameters, please ensure that the feature is searializeable (to allow for saving and loading). For details on this aspect, please see the Keras ["Writing Your Own Layer"](https://keras.io/layers/writing-your-own-keras-layers/) guide and the source code for the relevant feature type from both Keras and Keras-Contrib.
 
 4. Make sure any new function or class you introduce has proper docstrings. Make sure any code you touch still has up-to-date docstrings and documentation.
 
