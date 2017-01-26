@@ -73,7 +73,8 @@ class PELU(Layer):
         else:
             pos = K.relu(x) * (self.alphas / self.betas)
             neg = self.alphas * (K.exp(x / self.betas) - 1)
-        return K.switch(x < 0., neg, pos)
+        is_neg = K.cast(x < 0., K.floatx())
+        return is_neg * neg + (1. - is_neg) * pos
 
     def get_config(self):
         config = {'alphas_init': self.alphas_init.__name__,
