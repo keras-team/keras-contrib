@@ -71,7 +71,7 @@ class PELU(Layer):
             neg = (K.pattern_broadcast(self.alphas, self.param_broadcast) *
                    (K.exp(x / K.pattern_broadcast(self.betas, self.param_broadcast)) - 1))
         else:
-            pos = K.relu(x) * (self.alphas / self.betas)
+            pos = self.alphas / self.betas
             neg = self.alphas * (K.exp(x / self.betas) - 1)
         is_neg = K.cast(x < 0., K.floatx())
         return is_neg * neg + (1. - is_neg) * pos
