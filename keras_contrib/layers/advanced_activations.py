@@ -67,7 +67,7 @@ class PELU(Layer):
     def call(self, x, mask=None):
         if K.backend() == 'theano':
             pos = x * (K.pattern_broadcast(self.alphas, self.param_broadcast) /
-                               K.pattern_broadcast(self.betas, self.param_broadcast))
+                       K.pattern_broadcast(self.betas, self.param_broadcast))
             neg = (K.pattern_broadcast(self.alphas, self.param_broadcast) *
                    (K.exp(x / K.pattern_broadcast(self.betas, self.param_broadcast)) - 1))
         else:
