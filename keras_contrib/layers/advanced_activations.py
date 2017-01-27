@@ -69,10 +69,10 @@ class PELU(Layer):
             pos = K.relu(x) * (K.pattern_broadcast(self.alphas, self.param_broadcast) /
                                K.pattern_broadcast(self.betas, self.param_broadcast))
             neg = (K.pattern_broadcast(self.alphas, self.param_broadcast) *
-                   (K.exp(K.relu(-x) / K.pattern_broadcast(self.betas, self.param_broadcast)) - 1))
+                   (K.exp(-K.relu(-x) / K.pattern_broadcast(self.betas, self.param_broadcast)) - 1))
         else:
             pos = K.relu(x) * self.alphas / self.betas
-            neg = self.alphas * (K.exp(K.relu(-x) / self.betas) - 1)
+            neg = self.alphas * (K.exp(-K.relu(-x) / self.betas) - 1)
         return neg + pos
 
     def get_config(self):
