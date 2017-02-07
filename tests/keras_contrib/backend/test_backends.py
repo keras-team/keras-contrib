@@ -72,5 +72,21 @@ def check_composed_tensor_operations(first_function_name, first_function_args,
     assert_allclose(zth, ztf, atol=1e-05)
 
 
+class TestBackend(object):
+    def test_extract(self):
+        for input_shape in [(1, 3, 40, 40), (1, 3, 10, 10)]:
+            for kernel_shape in [2, 5]:
+                xval = np.random.random(input_shape)
+
+                kernel = [kernel_shape, kernel_shape]
+                strides = [kernel_shape, kernel_shape]
+                xth = KTH.variable(xval)
+                xtf = KTF.variable(xval)
+                ztf = KTF.eval(KTF.extract_image_patches(xtf, kernel, strides, dim_ordering='th', border_mode="valid"))
+                zth = KTH.eval(KTH.extract_image_patches(xth, kernel, strides, dim_ordering='th', border_mode="valid"))
+                assert zth.shape == ztf.shape
+                assert_allclose(zth, ztf, atol=1e-02)
+
+
 if __name__ == '__main__':
     pytest.main([__file__])
