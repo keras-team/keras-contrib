@@ -57,7 +57,7 @@ np.random.seed(1331)
 K.set_image_dim_ordering('th')
 
 
-def modified_binary_crossentropy(target, output):
+def wasserstein_loss(target, output):
     return K.mean(target * output)
 
 
@@ -157,7 +157,7 @@ if __name__ == '__main__':
     discriminator = build_discriminator()
     discriminator.compile(
         optimizer=SGD(clipvalue=0.01),
-        loss=[modified_binary_crossentropy, 'sparse_categorical_crossentropy']
+        loss=[wasserstein_loss, 'sparse_categorical_crossentropy']
     )
 
     # build the generator
@@ -178,7 +178,7 @@ if __name__ == '__main__':
 
     combined.compile(
         optimizer='RMSprop',
-        loss=[modified_binary_crossentropy, 'sparse_categorical_crossentropy']
+        loss=[wasserstein_loss, 'sparse_categorical_crossentropy']
     )
 
     # get our mnist data, and force it to be of shape (..., 1, 28, 28) with
