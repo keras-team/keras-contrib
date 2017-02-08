@@ -149,10 +149,6 @@ if __name__ == '__main__':
     batch_size = 100
     latent_size = 100
 
-    # Adam parameters suggested in https://arxiv.org/abs/1511.06434
-    adam_lr = 0.0002
-    adam_beta_1 = 0.5
-
     # build the discriminator
     discriminator = build_discriminator()
     discriminator.compile(
@@ -162,7 +158,7 @@ if __name__ == '__main__':
 
     # build the generator
     generator = build_generator(latent_size)
-    generator.compile(optimizer=Adam(lr=adam_lr, beta_1=adam_beta_1),
+    generator.compile(optimizer='RMSprop',
                       loss='binary_crossentropy')
 
     latent = Input(shape=(latent_size, ))
