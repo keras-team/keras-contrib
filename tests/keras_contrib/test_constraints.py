@@ -13,5 +13,13 @@ example_array = np.random.random((100, 100)) * 100. - 50.
 example_array[0, 0] = 0.  # 0 could possibly cause trouble
 
 
+def test_clip():
+    clip_instance = constraints.clip()
+    clipped = clip_instance(K.variable(example_array))
+    assert(np.max(np.abs(K.eval(clipped))) <= K.cast_to_floatx(0.01))
+    clip_instance = constraints.clip(0.1)
+    clipped = clip_instance(K.variable(example_array))
+    assert(np.max(np.abs(K.eval(clipped))) <= K.cast_to_floatx(0.1))
+
 if __name__ == '__main__':
     pytest.main([__file__])
