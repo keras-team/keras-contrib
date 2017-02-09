@@ -75,7 +75,6 @@ def deconv3d(x, kernel, output_shape, strides=(1, 1, 1),
                                           kernel_shape, strides, dim_ordering)
     return conv_out
 
-
 def extract_image_patches(X, ksizes, strides, border_mode="valid", dim_ordering="th"):
     '''
     Extract the patches from an image
@@ -113,3 +112,4 @@ def extract_image_patches(X, ksizes, strides, border_mode="valid", dim_ordering=
     if dim_ordering == "tf":
         patches = K.permute_dimensions(patches, [0, 1, 2, 4, 5, 3])
     return patches
+
