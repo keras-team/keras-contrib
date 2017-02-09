@@ -77,13 +77,25 @@ class TestBackend(object):
         for input_shape in [(1, 3, 40, 40), (1, 3, 10, 10)]:
             for kernel_shape in [2, 5]:
                 xval = np.random.random(input_shape)
+                kernel = [kernel_shape, kernel_shape]
+                strides = [kernel_shape, kernel_shape]
+                xth = KTH.variable(xval)
+                xtf = KTF.variable(xval)
+                ztf = KTF.eval(KCTF.extract_image_patches(xtf, kernel, strides, dim_ordering='th', border_mode="valid"))
+                zth = KTH.eval(KCTF.extract_image_patches(xth, kernel, strides, dim_ordering='th', border_mode="valid"))
+                assert zth.shape == ztf.shape
+                assert_allclose(zth, ztf, atol=1e-02)
+
+        for input_shape in [(1, 40, 40,3), (1, 10, 10, 3)]:
+            for kernel_shape in [2, 5]:
+                xval = np.random.random(input_shape)
 
                 kernel = [kernel_shape, kernel_shape]
                 strides = [kernel_shape, kernel_shape]
                 xth = KTH.variable(xval)
                 xtf = KTF.variable(xval)
-                ztf = KTF.eval(KTF.extract_image_patches(xtf, kernel, strides, dim_ordering='th', border_mode="valid"))
-                zth = KTH.eval(KTH.extract_image_patches(xth, kernel, strides, dim_ordering='th', border_mode="valid"))
+                ztf = KTF.eval(KCTF.extract_image_patches(xtf, kernel, strides, dim_ordering='tf', border_mode="same"))
+                zth = KTH.eval(KCTH.extract_image_patches(xth, kernel, strides, dim_ordering='tf', border_mode="same"))
                 assert zth.shape == ztf.shape
                 assert_allclose(zth, ztf, atol=1e-02)
 

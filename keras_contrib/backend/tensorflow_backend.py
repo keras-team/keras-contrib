@@ -13,6 +13,15 @@ import warnings
 from keras.backend.common import floatx, _EPSILON, image_dim_ordering, reset_uids
 py_all = all
 
+def _preprocess_border_mode(border_mode):
+    if border_mode == 'same':
+        padding = 'SAME'
+    elif border_mode == 'valid':
+        padding = 'VALID'
+    else:
+        raise ValueError('Invalid border mode:', border_mode)
+    return padding
+
 
 def extract_image_patches(X, ksizes, ssizes, border_mode="same", dim_ordering="tf"):
     '''
@@ -32,9 +41,9 @@ def extract_image_patches(X, ksizes, ssizes, border_mode="same", dim_ordering="t
     '''
     kernel = [1, ksizes[0], ksizes[1], 1]
     strides = [1, ssizes[0], ssizes[1], 1]
-    padding = K._preprocess_border_mode(border_mode)
+    padding = _preprocess_border_mode(border_mode)
     if dim_ordering == "th":
-        X = K.permute_dimensions(X, [0, 2, 3, 1])
+        X = K.permute_dimensions(X, (0, 2, 3, 1))
     bs_i, w_i, h_i, ch_i = K.int_shape(X)
     patches = tf.extract_image_patches(X, kernel, strides, [1, 1, 1, 1], padding)
     # Reshaping to fit Theano

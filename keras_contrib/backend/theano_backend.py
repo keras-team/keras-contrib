@@ -38,9 +38,9 @@ def extract_image_patches(X, ksizes, strides, border_mode="valid", dim_ordering=
     '''
     patch_size = ksizes[1]
     if border_mode == "same":
-        border_mode = "ignore_border"
+        border_mode = "ignore_borders"
     if dim_ordering == "tf":
-        X = K.permute_dimensions(X, [0, 2, 3, 1])
+        X = K.permute_dimensions(X, [0, 3, 2, 1])
     # Thanks to https://github.com/awentzonline for the help!
     batch, c, w, h = K.shape(X)
     xs = K.shape(X)
