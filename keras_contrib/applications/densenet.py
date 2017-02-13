@@ -33,7 +33,7 @@ TF_WEIGHTS_PATH_NO_TOP = 'https://github.com/titu1994/DenseNet/releases/download
 
 
 def DenseNet(depth=40, nb_dense_block=3, growth_rate=12, nb_filter=16,
-             bottleneck=False, reduction=0.0, dropout_rate=None, weight_decay=1E-4,
+             bottleneck=False, reduction=0.0, dropout_rate=0.0, weight_decay=1E-4,
              include_top=True, weights='cifar10',
              input_tensor=None, input_shape=None,
              classes=10):
