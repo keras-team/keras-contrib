@@ -40,7 +40,7 @@ def DenseNet(depth=40, nb_dense_block=3, growth_rate=12, nb_filter=16,
              classes=10):
     """Instantiate the DenseNet architecture,
         optionally loading weights pre-trained
-        on CIFAR-100. Note that when using TensorFlow,
+        on CIFAR-10. Note that when using TensorFlow,
         for best performance you should set
         `image_dim_ordering="tf"` in your Keras config
         at ~/.keras/keras.json.
@@ -269,6 +269,7 @@ def __create_dense_net(nb_classes, img_input, include_top, depth=40, nb_dense_bl
     Args:
         nb_classes: number of classes
         img_input: tuple of shape (channels, rows, columns) or (rows, columns, channels)
+        include_top: flag to include the final Dense layer
         depth: number or layers
         nb_dense_block: number of dense blocks to add to end (generally = 3)
         growth_rate: number of filters to add per dense block
