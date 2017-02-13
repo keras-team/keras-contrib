@@ -26,7 +26,6 @@ from keras.engine.topology import get_source_inputs
 from keras.applications.imagenet_utils import _obtain_input_shape
 import keras.backend as K
 
-
 TH_WEIGHTS_PATH = 'https://github.com/titu1994/DenseNet/releases/download/v2.0/DenseNet-40-12-Theano-Backend-TH-dim-ordering.h5'
 TF_WEIGHTS_PATH = 'https://github.com/titu1994/DenseNet/releases/download/v2.0/DenseNet-40-12-Tensorflow-Backend-TF-dim-ordering.h5'
 TH_WEIGHTS_PATH_NO_TOP = 'https://github.com/titu1994/DenseNet/releases/download/v2.0/DenseNet-40-12-Theano-Backend-TH-dim-ordering-no-top.h5.h5'
@@ -107,8 +106,8 @@ def DenseNet(depth=40, nb_dense_block=3, growth_rate=12, nb_filter=16,
             img_input = input_tensor
 
     x = __create_dense_net(classes, img_input, include_top, depth, nb_dense_block,
-                             growth_rate, nb_filter, bottleneck, reduction,
-                             dropout_rate, weight_decay)
+                           growth_rate, nb_filter, bottleneck, reduction,
+                           dropout_rate, weight_decay)
 
     # Ensure that the model takes into account
     # any potential predecessors of `input_tensor`.
@@ -122,7 +121,7 @@ def DenseNet(depth=40, nb_dense_block=3, growth_rate=12, nb_filter=16,
     # load weights
     if weights == 'cifar10':
         if (depth == 40) and (nb_dense_block == 3) and (growth_rate == 12) and (nb_filter == 16) and \
-                (bottleneck == False) and (reduction == 0.0) and (dropout_rate == 0.0) and (weight_decay == 1E-4):
+                (bottleneck is False) and (reduction == 0.0) and (dropout_rate == 0.0) and (weight_decay == 1E-4):
             # Default parameters match. Weights for this model exist:
 
             if K.image_dim_ordering() == 'th':
@@ -186,7 +185,7 @@ def __conv_block(ip, nb_filter, bottleneck=False, dropout_rate=None, weight_deca
     x = Activation('relu')(x)
 
     if bottleneck:
-        inter_channel = nb_filter * 4 # Obtained from https://github.com/liuzhuang13/DenseNet/blob/master/densenet.lua
+        inter_channel = nb_filter * 4  # Obtained from https://github.com/liuzhuang13/DenseNet/blob/master/densenet.lua
 
         x = Convolution2D(inter_channel, 1, 1, init='he_uniform', border_mode='same', bias=False,
                           W_regularizer=l2(weight_decay))(x)
@@ -195,7 +194,7 @@ def __conv_block(ip, nb_filter, bottleneck=False, dropout_rate=None, weight_deca
             x = Dropout(dropout_rate)(x)
 
         x = BatchNormalization(mode=0, axis=concat_axis, gamma_regularizer=l2(weight_decay),
-                           beta_regularizer=l2(weight_decay))(x)
+                               beta_regularizer=l2(weight_decay))(x)
         x = Activation('relu')(x)
 
     x = Convolution2D(nb_filter, 3, 3, init="he_uniform", border_mode="same", bias=False,
@@ -278,7 +277,6 @@ def __create_dense_net(nb_classes, img_input, include_top, depth=40, nb_dense_bl
         reduction: reduction factor of transition blocks. Note : reduction value is inverted to compute compression
         dropout_rate: dropout rate
         weight_decay: weight decay
-        verbose: print the model type
 
     Returns: keras tensor with nb_layers of __conv_block appended
 
