@@ -99,14 +99,14 @@ def extract_image_patches(X, ksizes, strides, border_mode="valid", dim_ordering=
     if dim_ordering == "tf":
         X = KTH.permute_dimensions(X, [0, 3, 2, 1])
     # Thanks to https://github.com/awentzonline for the help!
-    batch, c, w, h = KTH.int_shape(X)
-    xs = KTH.int_shape(X)
+    batch, c, w, h = KTH.shape(X)
+    xs = KTH.shape(X)
     num_rows = 1 + (xs[-2] - patch_size) // strides[1]
     num_cols = 1 + (xs[-1] - patch_size) // strides[1]
     num_channels = xs[-3]
     patches = images2neibs(X, ksizes, strides, border_mode)
     # Theano is sorting by channel
-    patches = KTH.reshape(patches, (batch, num_channels, KTH.int_shape(patches)[0] // num_channels, patch_size, patch_size))
+    patches = KTH.reshape(patches, (batch, num_channels, KTH.shape(patches)[0] // num_channels, patch_size, patch_size))
     patches = KTH.permute_dimensions(patches, (0, 2, 1, 3, 4))
     # arrange in a 2d-grid (rows, cols, channels, px, py)
     patches = KTH.reshape(patches, (batch, num_rows, num_cols, num_channels, patch_size, patch_size))
