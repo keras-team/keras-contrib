@@ -109,7 +109,7 @@ def WideResidualNetwork(depth=28, width=8, dropout_rate=0.0,
     else:
         inputs = img_input
     # Create model.
-    model = Model(inputs, x, name='densenet')
+    model = Model(inputs, x, name='wide-resnet')
 
     # load weights
     if weights == 'cifar10':
