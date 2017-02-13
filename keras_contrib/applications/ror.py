@@ -3,7 +3,7 @@
 
 # Reference
 
-- [Densely Connected Convolutional Networks](https://arxiv.org/pdf/1608.06993.pdf)
+- [Residual Networks of Residual Networks: Multilevel Residual Networks](https://arxiv.org/abs/1608.02908)
 
 """
 from __future__ import print_function
