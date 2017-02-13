@@ -7,6 +7,7 @@ try:
 except ImportError:
     import tensorflow.contrib.ctc as ctc
 from keras import backend as K
+from keras.backend import tensorflow_backend as KTF
 import numpy as np
 import os
 import warnings
@@ -88,13 +89,13 @@ def extract_image_patches(X, ksizes, ssizes, border_mode="same", dim_ordering="t
     strides = [1, ssizes[0], ssizes[1], 1]
     padding = _preprocess_border_mode(border_mode)
     if dim_ordering == "th":
-        X = K.permute_dimensions(X, (0, 2, 3, 1))
-    bs_i, w_i, h_i, ch_i = K.int_shape(X)
+        X = KTF.permute_dimensions(X, (0, 2, 3, 1))
+    bs_i, w_i, h_i, ch_i = KTF.int_shape(X)
     patches = tf.extract_image_patches(X, kernel, strides, [1, 1, 1, 1], padding)
     # Reshaping to fit Theano
-    bs, w, h, ch = K.int_shape(patches)
+    bs, w, h, ch = KTF.int_shape(patches)
     patches = tf.reshape(tf.transpose(tf.reshape(patches, [bs, w, h, -1, ch_i]), [0, 1, 2, 4, 3]),
                          [bs, w, h, ch_i, ksizes[0], ksizes[1]])
     if dim_ordering == "tf":
-        patches = K.permute_dimensions(patches, [0, 1, 2, 4, 5, 3])
+        patches = KTF.permute_dimensions(patches, [0, 1, 2, 4, 5, 3])
     return patches

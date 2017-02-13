@@ -14,6 +14,7 @@ try:
 except ImportError:
     from theano.sandbox.softsign import softsign as T_softsign
 from keras import backend as K
+from keras.backend import theano_backend as KTH
 import inspect
 import numpy as np
 from keras.backend.common import _FLOATX, floatx, _EPSILON, image_dim_ordering
@@ -96,21 +97,21 @@ def extract_image_patches(X, ksizes, strides, border_mode="valid", dim_ordering=
     if border_mode == "same":
         border_mode = "ignore_borders"
     if dim_ordering == "tf":
-        X = K.permute_dimensions(X, [0, 3, 2, 1])
+        X = KTH.permute_dimensions(X, [0, 3, 2, 1])
     # Thanks to https://github.com/awentzonline for the help!
-    batch, c, w, h = K.shape(X)
-    xs = K.shape(X)
+    batch, c, w, h = KTH.int_shape(X)
+    xs = KTH.int_shape(X)
     num_rows = 1 + (xs[-2] - patch_size) // strides[1]
     num_cols = 1 + (xs[-1] - patch_size) // strides[1]
     num_channels = xs[-3]
     patches = images2neibs(X, ksizes, strides, border_mode)
     # Theano is sorting by channel
-    patches = K.reshape(patches, (batch, num_channels, K.shape(patches)[0] // num_channels, patch_size, patch_size))
-    patches = K.permute_dimensions(patches, (0, 2, 1, 3, 4))
+    patches = KTH.reshape(patches, (batch, num_channels, KTH.int_shape(patches)[0] // num_channels, patch_size, patch_size))
+    patches = KTH.permute_dimensions(patches, (0, 2, 1, 3, 4))
     # arrange in a 2d-grid (rows, cols, channels, px, py)
-    patches = K.reshape(patches, (batch, num_rows, num_cols, num_channels, patch_size, patch_size))
+    patches = KTH.reshape(patches, (batch, num_rows, num_cols, num_channels, patch_size, patch_size))
 
     if dim_ordering == "tf":
-        patches = K.permute_dimensions(patches, [0, 1, 2, 4, 5, 3])
+        patches = KTH.permute_dimensions(patches, [0, 1, 2, 4, 5, 3])
     return patches
 
