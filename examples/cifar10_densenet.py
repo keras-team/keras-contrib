@@ -1,3 +1,8 @@
+'''
+Trains a DenseNet-40-12 model on the CIFAR-10 Dataset.
+
+Gets a 99.84% accuracy score after 300 epochs.
+'''
 from __future__ import absolute_import
 from __future__ import print_function
 from __future__ import division
@@ -12,12 +17,6 @@ from keras.optimizers import Adam
 from keras.preprocessing.image import ImageDataGenerator
 from keras.utils import np_utils
 from keras_contrib.applications.densenet import DenseNet
-
-'''
-Trains a DenseNet-40-12 model on the CIFAR-10 Dataset.
-
-Gets a 99.84% accuracy score after 300 epochs.
-'''
 
 batch_size = 64
 nb_classes = 10
