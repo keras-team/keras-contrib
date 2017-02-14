@@ -165,7 +165,7 @@ def DenseNet(depth=40, nb_dense_block=3, growth_rate=12, nb_filter=16,
 
 
 def __conv_block(ip, nb_filter, bottleneck=False, dropout_rate=None, weight_decay=1E-4):
-    ''' Apply BatchNorm, Relu 3x3, Conv2D, optional bottleneck block and dropout
+    ''' Apply BatchNorm, Relu, 3x3 Conv2D, optional bottleneck block and dropout
 
     Args:
         ip: Input keras tensor
@@ -175,7 +175,6 @@ def __conv_block(ip, nb_filter, bottleneck=False, dropout_rate=None, weight_deca
         weight_decay: weight decay factor
 
     Returns: keras tensor with batch_norm, relu and convolution2d added (optional bottleneck)
-
     '''
 
     concat_axis = 1 if K.image_dim_ordering() == "th" else -1
@@ -215,7 +214,6 @@ def __transition_block(ip, nb_filter, compression=1.0, dropout_rate=None, weight
         weight_decay: weight decay factor
 
     Returns: keras tensor, after applying batch_norm, relu-conv, dropout, maxpool
-
     '''
 
     concat_axis = 1 if K.image_dim_ordering() == "th" else -1
@@ -233,7 +231,7 @@ def __transition_block(ip, nb_filter, compression=1.0, dropout_rate=None, weight
 
 
 def __dense_block(x, nb_layers, nb_filter, growth_rate, bottleneck=False, dropout_rate=None, weight_decay=1E-4):
-    ''' Build a __dense_block where the output of each __conv_block is fed to subsequent ones
+    ''' Build a dense_block where the output of each conv_block is fed to subsequent ones
 
     Args:
         x: keras tensor
@@ -245,17 +243,16 @@ def __dense_block(x, nb_layers, nb_filter, growth_rate, bottleneck=False, dropou
         weight_decay: weight decay factor
 
     Returns: keras tensor with nb_layers of __conv_block appended
-
     '''
 
     concat_axis = 1 if K.image_dim_ordering() == "th" else -1
 
-    feature_list = [x]
+    x_list = [x]
 
     for i in range(nb_layers):
         x = __conv_block(x, growth_rate, bottleneck, dropout_rate, weight_decay)
-        feature_list.append(x)
-        x = merge(feature_list, mode='concat', concat_axis=concat_axis)
+        x_list.append(x)
+        x = merge(x_list, mode='concat', concat_axis=concat_axis)
         nb_filter += growth_rate
 
     return x, nb_filter
@@ -263,7 +260,7 @@ def __dense_block(x, nb_layers, nb_filter, growth_rate, bottleneck=False, dropou
 
 def __create_dense_net(nb_classes, img_input, include_top, depth=40, nb_dense_block=3, growth_rate=12, nb_filter=-1,
                        bottleneck=False, reduction=0.0, dropout_rate=None, weight_decay=1E-4):
-    ''' Build the __create_dense_net model
+    ''' Build the DenseNet model
 
     Args:
         nb_classes: number of classes
@@ -279,7 +276,6 @@ def __create_dense_net(nb_classes, img_input, include_top, depth=40, nb_dense_bl
         weight_decay: weight decay
 
     Returns: keras tensor with nb_layers of __conv_block appended
-
     '''
 
     concat_axis = 1 if K.image_dim_ordering() == "th" else -1
