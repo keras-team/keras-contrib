@@ -97,7 +97,7 @@ def extract_image_patches(X, ksizes, strides, border_mode="valid", dim_ordering=
     if border_mode == "same":
         border_mode = "ignore_borders"
     if dim_ordering == "tf":
-        X = KTH.permute_dimensions(X, [0, 3, 2, 1])
+        X = KTH.permute_dimensions(X, [0, 3, 1, 2])
     # Thanks to https://github.com/awentzonline for the help!
     batch, c, w, h = KTH.shape(X)
     xs = KTH.shape(X)
@@ -110,7 +110,6 @@ def extract_image_patches(X, ksizes, strides, border_mode="valid", dim_ordering=
     patches = KTH.permute_dimensions(patches, (0, 2, 1, 3, 4))
     # arrange in a 2d-grid (rows, cols, channels, px, py)
     patches = KTH.reshape(patches, (batch, num_rows, num_cols, num_channels, patch_size, patch_size))
-
     if dim_ordering == "tf":
         patches = KTH.permute_dimensions(patches, [0, 1, 2, 4, 5, 3])
     return patches

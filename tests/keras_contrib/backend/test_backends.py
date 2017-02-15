@@ -7,8 +7,8 @@ from keras import backend as K
 from keras.backend import theano_backend as KTH, floatx, set_floatx, variable
 from keras.backend import tensorflow_backend as KTF
 from keras_contrib import backend as KC
-from keras_contrib.backend import theano_backend as KCTH
-from keras_contrib.backend import tensorflow_backend as KCTF
+import keras_contrib.backend.theano_backend as KCTH
+import keras_contrib.backend.tensorflow_backend as KCTF
 from keras.utils.np_utils import convert_kernel
 
 
