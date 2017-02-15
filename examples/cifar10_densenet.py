@@ -1,7 +1,7 @@
 '''
 Trains a DenseNet-40-12 model on the CIFAR-10 Dataset.
 
-Gets a 99.84% accuracy score after 300 epochs.
+Gets a 94.84% accuracy score after 300 epochs.
 '''
 from __future__ import absolute_import
 from __future__ import print_function
