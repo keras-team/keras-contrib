@@ -50,11 +50,6 @@ model.fit_generator(generator.flow(trainX, trainY, batch_size=batch_size), sampl
                     validation_data=(testX, testY),
                     nb_val_samples=testX.shape[0], verbose=2)
 
-yPreds = model.predict(testX)
-yPred = np.argmax(yPreds, axis=1)
-yTrue = tempY
-
-accuracy = metrics.accuracy_score(yTrue, yPred) * 100
-error = 100 - accuracy
-print("Accuracy : ", accuracy)
-print("Error : ", error)
+scores = model.evaluate(testX, testY, batch_size)
+print("Test loss : ", scores[0])
+print("Test accuracy : ", scores[1])
