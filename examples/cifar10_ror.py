@@ -12,7 +12,7 @@ from keras.datasets import cifar10
 from keras.preprocessing.image import ImageDataGenerator
 from keras.optimizers import Adam
 
-from keras_contrib.applications.ror import ResidualOfResidual
+from keras_contrib.applications import ResidualOfResidual
 
 batch_size = 64
 nb_epoch = 150
