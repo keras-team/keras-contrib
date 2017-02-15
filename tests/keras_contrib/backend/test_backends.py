@@ -7,8 +7,8 @@ from keras import backend as K
 from keras.backend import theano_backend as KTH, floatx, set_floatx, variable
 from keras.backend import tensorflow_backend as KTF
 from keras_contrib import backend as KC
-from keras_contrib.backend import theano_backend as KCTH
-from keras_contrib.backend import tensorflow_backend as KCTF
+import keras_contrib.backend.theano_backend as KCTH
+import keras_contrib.backend.tensorflow_backend as KCTF
 from keras.utils.np_utils import convert_kernel
 
 
@@ -70,6 +70,34 @@ def check_composed_tensor_operations(first_function_name, first_function_args,
 
     assert zth.shape == ztf.shape
     assert_allclose(zth, ztf, atol=1e-05)
+
+
+class TestBackend(object):
+    def test_extract(self):
+        for input_shape in [(1, 3, 40, 40), (1, 3, 10, 10)]:
+            for kernel_shape in [2, 5]:
+                xval = np.random.random(input_shape)
+                kernel = [kernel_shape, kernel_shape]
+                strides = [kernel_shape, kernel_shape]
+                xth = KTH.variable(xval)
+                xtf = KTF.variable(xval)
+                ztf = KTF.eval(KCTF.extract_image_patches(xtf, kernel, strides, dim_ordering='th', border_mode="valid"))
+                zth = KTH.eval(KCTH.extract_image_patches(xth, kernel, strides, dim_ordering='th', border_mode="valid"))
+                assert zth.shape == ztf.shape
+                assert_allclose(zth, ztf, atol=1e-02)
+
+        for input_shape in [(1, 40, 40, 3), (1, 10, 10, 3)]:
+            for kernel_shape in [2, 5]:
+                xval = np.random.random(input_shape)
+
+                kernel = [kernel_shape, kernel_shape]
+                strides = [kernel_shape, kernel_shape]
+                xth = KTH.variable(xval)
+                xtf = KTF.variable(xval)
+                ztf = KTF.eval(KCTF.extract_image_patches(xtf, kernel, strides, dim_ordering='tf', border_mode="same"))
+                zth = KTH.eval(KCTH.extract_image_patches(xth, kernel, strides, dim_ordering='tf', border_mode="same"))
+                assert zth.shape == ztf.shape
+                assert_allclose(zth, ztf, atol=1e-02)
 
 
 if __name__ == '__main__':
