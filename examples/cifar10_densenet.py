@@ -16,7 +16,7 @@ from keras.datasets import cifar10
 from keras.optimizers import Adam
 from keras.preprocessing.image import ImageDataGenerator
 from keras.utils import np_utils
-from keras_contrib.applications.densenet import DenseNet
+from keras_contrib.applications import DenseNet
 
 batch_size = 64
 nb_classes = 10
