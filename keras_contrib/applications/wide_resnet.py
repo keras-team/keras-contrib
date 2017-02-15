@@ -156,7 +156,7 @@ def WideResidualNetwork(depth=28, width=8, dropout_rate=0.0,
     return model
 
 
-def __initial_conv(input):
+def __conv1_block(input):
     x = Convolution2D(16, 3, 3, border_mode='same')(input)
 
     channel_axis = 1 if K.image_dim_ordering() == "th" else -1
@@ -166,7 +166,7 @@ def __initial_conv(input):
     return x
 
 
-def __conv1_block(input, k=1, dropout=0.0):
+def __conv2_block(input, k=1, dropout=0.0):
     init = input
 
     channel_axis = 1 if K.image_dim_ordering() == "th" else -1
@@ -194,7 +194,7 @@ def __conv1_block(input, k=1, dropout=0.0):
     return m
 
 
-def __conv2_block(input, k=1, dropout=0.0):
+def __conv3_block(input, k=1, dropout=0.0):
     init = input
 
     channel_axis = 1 if K.image_dim_ordering() == "th" else -1
@@ -222,7 +222,7 @@ def __conv2_block(input, k=1, dropout=0.0):
     return m
 
 
-def __conv3_block(input, k=1, dropout=0.0):
+def ___conv4_block(input, k=1, dropout=0.0):
     init = input
 
     channel_axis = 1 if K.image_dim_ordering() == "th" else -1
@@ -265,19 +265,12 @@ def __create_wide_residual_network(nb_classes, img_input, include_top, depth=28,
         dropout: Adds dropout if value is greater than 0.0
 
     Returns:a Keras Model
-
     '''
 
     N = (depth - 4) // 6
 
-    x = __initial_conv(img_input)
+    x = __conv1_block(img_input)
     nb_conv = 4
-
-    for i in range(N):
-        x = __conv1_block(x, width, dropout)
-        nb_conv += 2
-
-    x = MaxPooling2D((2, 2))(x)
 
     for i in range(N):
         x = __conv2_block(x, width, dropout)
@@ -289,12 +282,16 @@ def __create_wide_residual_network(nb_classes, img_input, include_top, depth=28,
         x = __conv3_block(x, width, dropout)
         nb_conv += 2
 
+    x = MaxPooling2D((2, 2))(x)
+
+    for i in range(N):
+        x = ___conv4_block(x, width, dropout)
+        nb_conv += 2
+
     x = AveragePooling2D((8, 8))(x)
 
     if include_top:
         x = Flatten()(x)
         x = Dense(nb_classes, activation='softmax')(x)
 
-    model = Model(img_input, x)
-
-    return model
+    return x
