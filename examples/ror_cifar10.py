@@ -1,3 +1,8 @@
+'''
+Trains a Residual-of-Residual Network (WRN-40-2) model on the CIFAR-10 Dataset.
+
+Gets a 94.53% accuracy score after 150 epochs.
+'''
 import numpy as np
 import sklearn.metrics as metrics
 
@@ -10,7 +15,7 @@ from keras.optimizers import Adam
 from keras_contrib.applications.ror import ResidualOfResidual
 
 batch_size = 64
-nb_epoch = 300
+nb_epoch = 150
 img_rows, img_cols = 32, 32
 
 (trainX, trainY), (testX, testY) = cifar10.load_data()
@@ -31,7 +36,7 @@ generator = ImageDataGenerator(rotation_range=15,
 
 generator.fit(trainX, seed=0)
 
-model = ResidualOfResidual(depth=40, width=2, dropout_rate=0.0)
+model = ResidualOfResidual(depth=40, width=2, dropout_rate=0.0, weights='None')
 
 optimizer = Adam(lr=1e-3)
 
