@@ -5,6 +5,7 @@ from theano.sandbox.neighbours import images2neibs
 from theano.tensor.signal import pool
 from theano.tensor.nnet import conv3d2d
 from theano.printing import Print
+
 try:
     import theano.sparse as th_sparse_module
 except ImportError:
@@ -23,6 +24,7 @@ from keras.backend.theano_backend import _preprocess_conv3d_kernel
 from keras.backend.theano_backend import _preprocess_conv3d_filter_shape
 from keras.backend.theano_backend import _preprocess_border_mode
 from keras.backend.theano_backend import _postprocess_conv3d_output
+
 py_all = all
 
 
@@ -113,4 +115,3 @@ def extract_image_patches(X, ksizes, strides, border_mode="valid", dim_ordering=
     if dim_ordering == "tf":
         patches = KTH.permute_dimensions(patches, [0, 1, 2, 4, 5, 3])
     return patches
-

@@ -86,7 +86,7 @@ class TestBackend(object):
                 assert zth.shape == ztf.shape
                 assert_allclose(zth, ztf, atol=1e-02)
 
-        for input_shape in [(1, 40, 40,3), (1, 10, 10, 3)]:
+        for input_shape in [(1, 40, 40, 3), (1, 10, 10, 3)]:
             for kernel_shape in [2, 5]:
                 xval = np.random.random(input_shape)
 
