@@ -88,7 +88,7 @@ class TestBackend(object):
     def test_logsumexp(self, x_np, axis, Ks):
         _K, _KC = Ks
         x = _K.variable(x_np)
-        assert_allclose(_K.eval(KC.logsumexp(x, axis=axis)),
+        assert_allclose(_K.eval(_KC.logsumexp(x, axis=axis)),
                         np.log(np.sum(np.exp(x_np), axis=axis)),
                         rtol=1e-5)
 
