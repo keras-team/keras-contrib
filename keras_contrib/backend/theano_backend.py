@@ -79,6 +79,33 @@ def deconv3d(x, kernel, output_shape, strides=(1, 1, 1),
     return conv_out
 
 
+def logsumexp(x, axis=None):
+    '''Returns `log(sum(exp(x), axis=axis))` with improved numerical stability.
+    '''
+    xmax = KTH.max(x, axis=axis, keepdims=True)
+    xmax_ = KTH.max(x, axis=axis)
+    return xmax_ + KTH.log(KTH.sum(KTH.exp(x - xmax), axis=axis))
+
+
+def batch_gather(reference, indices):
+    '''Batchwise gathering of row indices.
+
+    The numpy equivalent is reference[np.arange(batch_size), indices],
+
+    # Arguments
+        reference: tensor with ndim >= 2 of shape
+          (batch_size, dim1, dim2, ..., dimN)
+        indices: 1d integer tensor of shape (batch_size) satisfiying
+          0 <= i < dim2 for each element i.
+
+    # Returns
+        A tensor with shape (batch_size, dim2, ..., dimN)
+        equal to reference[1:batch_size, indices]
+    '''
+    batch_size = reference.shape[0]
+    return reference[T.arange(batch_size), indices]
+
+
 def extract_image_patches(X, ksizes, strides, border_mode="valid", dim_ordering="th"):
     '''
     Extract the patches from an image
