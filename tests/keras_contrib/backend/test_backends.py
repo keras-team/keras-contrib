@@ -73,6 +73,43 @@ def check_composed_tensor_operations(first_function_name, first_function_args,
 
 
 class TestBackend(object):
+    @pytest.mark.parametrize('x_np,axis', [
+        (np.array([0.1, 0.2, 0.3]), 0),
+        (np.array([[0.1, 0.2, 0.3], [1, 2, 3]]), 0),
+        (np.array([[0.1, 0.2, 0.3], [1, 2, 3]]), 1),
+        (np.array([[0.1, 0.2, 0.3], [1, 2, 3]]), -1),
+        (np.array([[0.1, 0.2, 0.3]]), 0),
+        (np.array([[0.1, 0.2, 0.3]]), 1),
+        (np.array([[0.1], [0.2]]), 0),
+        (np.array([[0.1], [0.2]]), 1),
+        (np.array([[0.1], [0.2]]), -1),
+    ])
+    @pytest.mark.parametrize('Ks', [(KTH, KCTH), (KTF, KCTF)], ids=["TH", "TF"])
+    def test_logsumexp(self, x_np, axis, Ks):
+        _K, _KC = Ks
+        x = _K.variable(x_np)
+        assert_allclose(_K.eval(_KC.logsumexp(x, axis=axis)),
+                        np.log(np.sum(np.exp(x_np), axis=axis)),
+                        rtol=1e-5)
+
+    @pytest.mark.parametrize('x_np, indices_np', [
+        (np.array([[3, 5, 7], [11, 13, 17]]), np.array([2, 1])),
+        (np.array([[[2, 3], [4, 5], [6, 7]],
+                   [[10, 11], [12, 13], [16, 17]]]), np.array([2, 1])),
+    ])
+    @pytest.mark.parametrize('Ks', [(KTH, KCTH), (KTF, KCTF)], ids=["TH", "TF"])
+    def test_batch_gather(self, x_np, indices_np, Ks):
+        _K, _KC = Ks
+        x = _K.variable(x_np)
+        indices = _K.variable(indices_np, dtype='int32')
+        batch_size = x_np.shape[0]
+        actual = _K.eval(_KC.batch_gather(x, indices))
+        expected = x_np[np.arange(batch_size), indices_np]
+        print(x_np.shape, expected.shape)
+        assert_allclose(actual,
+                        expected,
+                        rtol=1e-5)
+
     def test_extract(self):
         for input_shape in [(1, 3, 40, 40), (1, 3, 10, 10)]:
             for kernel_shape in [2, 5]:

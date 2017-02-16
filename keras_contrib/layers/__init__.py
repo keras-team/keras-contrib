@@ -1,6 +1,7 @@
 from __future__ import absolute_import
 from .core import *
 from .convolutional import *
+from .crf import *
 from .pooling import *
 from .local import *
 from .recurrent import *
