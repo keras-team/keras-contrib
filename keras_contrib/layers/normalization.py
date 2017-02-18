@@ -125,8 +125,6 @@ class BatchRenormalization(Layer):
                 mean = K.mean(x, axis=reduction_axes)
                 std = K.sqrt(K.var(x, axis=reduction_axes) + self.epsilon)
 
-            x_normed = (x - mean) / std
-
             r = std / self.running_std
             r = K.stop_gradient(K.clip(r, 1 / self.r_max, self.r_max))
 
@@ -135,16 +133,22 @@ class BatchRenormalization(Layer):
 
             if sorted(reduction_axes) == range(K.ndim(x))[:-1]:
                 # now compute the re-normalized batch norm
-                x_normed = x_normed * r + (self.gamma * d) - (self.beta * (r - 1))
+                x_normed = (x - mean) / std
+                x_normed = (x_normed * r + d) * self.gamma + self.beta
             else:
                 # need broadcasting
+                broadcast_mean = K.reshape(mean, broadcast_shape)
+                broadcast_std = K.reshape(std, broadcast_shape)
                 broadcast_r = K.reshape(r, broadcast_shape)
                 broadcast_d = K.reshape(d, broadcast_shape)
                 broadcast_beta = K.reshape(self.beta, broadcast_shape)
                 broadcast_gamma = K.reshape(self.gamma, broadcast_shape)
 
+                # compute the batch norm first
+                x_normed = (x - broadcast_mean) / broadcast_std
+
                 # now compute the re-normalized batch norm
-                x_normed = x_normed * broadcast_r + (broadcast_gamma * broadcast_d) - (broadcast_beta * (broadcast_r - 1))
+                x_normed = (x_normed * broadcast_r + broadcast_d) * broadcast_gamma + broadcast_beta
 
             if self.mode == 0:
                 self.add_update([K.moving_average_update(self.running_mean, mean, self.momentum),
@@ -167,21 +171,23 @@ class BatchRenormalization(Layer):
                         epsilon=self.epsilon)
 
                 # pick the normalized form of x corresponding to the training phase
+                # for batch renormalization, inference time remains same as batchnorm
                 x_normed = K.in_train_phase(x_normed, x_normed_running)
 
         elif self.mode == 1:
             # sample-wise normalization
-            m = K.mean(x, axis=-1, keepdims=True)
-            std = K.sqrt(K.var(x, axis=-1, keepdims=True) + self.epsilon)
-            x_normed = (x - m) / (std + self.epsilon)
-
-            r = std / self.running_std
-            r = K.stop_gradient(K.clip(r, 1 / self.r_max, self.r_max))
-
-            d = (m - self.running_mean) / std
-            d = K.stop_gradient(K.clip(d, -self.d_max, self.d_max))
-
-            x_normed = ((x_normed * r) + d) * self.gamma + self.beta
+            # m = K.mean(x, axis=-1, keepdims=True)
+            # std = K.sqrt(K.var(x, axis=-1, keepdims=True) + self.epsilon)
+            # x_normed = (x - m) / (std + self.epsilon)
+            #
+            # r = std / self.running_std
+            # r = K.stop_gradient(K.clip(r, 1 / self.r_max, self.r_max))
+            #
+            # d = (m - self.running_mean) / std
+            # d = K.stop_gradient(K.clip(d, -self.d_max, self.d_max))
+            #
+            # x_normed = ((x_normed * r) + d) * self.gamma + self.beta
+            raise ValueError('Batch Renormalization does not support mode=1')
         return x_normed
 
     def get_config(self):
