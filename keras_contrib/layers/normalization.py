@@ -119,26 +119,26 @@ class BatchRenormalization(Layer):
             broadcast_shape[self.axis] = input_shape[self.axis]
 
             if K.backend() == 'tf':
-                mean, var = K.KTF.nn.moments(x, reduction_axes, shift=None, name=None, keep_dims=False)
-                std = (K.sqrt(var + self.epsilon))
+                mean_batch, var = K.KTF.nn.moments(x, reduction_axes, shift=None, name=None, keep_dims=False)
+                std_batch = (K.sqrt(var + self.epsilon))
             else:
-                mean = K.mean(x, axis=reduction_axes)
-                std = K.sqrt(K.var(x, axis=reduction_axes) + self.epsilon)
+                mean_batch = K.mean(x, axis=reduction_axes)
+                std_batch = K.sqrt(K.var(x, axis=reduction_axes) + self.epsilon)
 
-            r = std / self.running_std
+            r = std_batch / self.running_std
             r = K.stop_gradient(K.clip(r, 1 / self.r_max, self.r_max))
 
-            d = (mean - self.running_mean) / std
+            d = (mean_batch - self.running_mean) / self.running_mean
             d = K.stop_gradient(K.clip(d, -self.d_max, self.d_max))
 
             if sorted(reduction_axes) == range(K.ndim(x))[:-1]:
                 # now compute the re-normalized batch norm
-                x_normed = (x - mean) / std
+                x_normed = (x - mean_batch) / std_batch
                 x_normed = (x_normed * r + d) * self.gamma + self.beta
             else:
                 # need broadcasting
-                broadcast_mean = K.reshape(mean, broadcast_shape)
-                broadcast_std = K.reshape(std, broadcast_shape)
+                broadcast_mean = K.reshape(mean_batch, broadcast_shape)
+                broadcast_std = K.reshape(std_batch, broadcast_shape)
                 broadcast_r = K.reshape(r, broadcast_shape)
                 broadcast_d = K.reshape(d, broadcast_shape)
                 broadcast_beta = K.reshape(self.beta, broadcast_shape)
@@ -151,8 +151,8 @@ class BatchRenormalization(Layer):
                 x_normed = (x_normed * broadcast_r + broadcast_d) * broadcast_gamma + broadcast_beta
 
             if self.mode == 0:
-                self.add_update([K.moving_average_update(self.running_mean, mean, self.momentum),
-                                 K.moving_average_update(self.running_std, std, self.momentum)], x)
+                self.add_update([K.moving_average_update(self.running_mean, mean_batch, self.momentum),
+                                 K.moving_average_update(self.running_std, std_batch, self.momentum)], x)
 
                 if sorted(reduction_axes) == range(K.ndim(x))[:-1]:
                     x_normed_running = K.batch_normalization(
