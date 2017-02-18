@@ -150,10 +150,11 @@ class BatchRenormalization(Layer):
                 # now compute the re-normalized batch norm
                 x_normed = (x_normed * broadcast_r + broadcast_d) * broadcast_gamma + broadcast_beta
 
-            if self.mode == 0:
-                self.add_update([K.moving_average_update(self.running_mean, mean_batch, self.momentum),
-                                 K.moving_average_update(self.running_std, std_batch, self.momentum)], x)
+            # explicit update to moving mean and standard deviation
+            self.add_update([K.moving_average_update(self.running_mean, mean_batch, self.momentum),
+                             K.moving_average_update(self.running_std, std_batch, self.momentum)], x)
 
+            if self.mode == 0:
                 if sorted(reduction_axes) == range(K.ndim(x))[:-1]:
                     x_normed_running = K.batch_normalization(
                         x, self.running_mean, self.running_std,
@@ -188,6 +189,8 @@ class BatchRenormalization(Layer):
             #
             # x_normed = ((x_normed * r) + d) * self.gamma + self.beta
             raise ValueError('Batch Renormalization does not support mode=1')
+
+
         return x_normed
 
     def get_config(self):
