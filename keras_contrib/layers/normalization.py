@@ -1,6 +1,7 @@
 from keras.engine import Layer, InputSpec
 from .. import initializations, regularizers
 from .. import backend as K
+from keras.layers import BatchNormalization
 
 
 class BatchRenormalization(Layer):
@@ -132,8 +133,18 @@ class BatchRenormalization(Layer):
             d = (mean - self.running_mean) / std
             d = K.stop_gradient(K.clip(d, -self.d_max, self.d_max))
 
-            # now compute the re-normalized batch norm
-            x_normed = ((x_normed * r) + d) * self.gamma + self.beta
+            if sorted(reduction_axes) == range(K.ndim(x))[:-1]:
+                # now compute the re-normalized batch norm
+                x_normed = x_normed * r + (self.gamma * d) - (self.beta * (r - 1))
+            else:
+                # need broadcasting
+                broadcast_r = K.reshape(r, broadcast_shape)
+                broadcast_d = K.reshape(d, broadcast_shape)
+                broadcast_beta = K.reshape(self.beta, broadcast_shape)
+                broadcast_gamma = K.reshape(self.gamma, broadcast_shape)
+
+                # now compute the re-normalized batch norm
+                x_normed = x_normed * broadcast_r + (broadcast_gamma * broadcast_d) - (broadcast_beta * (broadcast_r - 1))
 
             if self.mode == 0:
                 self.add_update([K.moving_average_update(self.running_mean, mean, self.momentum),
