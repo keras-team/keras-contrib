@@ -5,7 +5,6 @@ from keras import backend as K
 from keras_contrib import backend as KC
 from keras_contrib import objectives
 
-
 allobj = []
 
 
@@ -24,30 +23,32 @@ def test_objective_shapes_2d():
         objective_output = obj(y_a, y_b)
         assert K.eval(objective_output).shape == (6,)
 
+
 def test_dssim_same():
     x = np.random.random_sample(30 * 30 * 3).reshape([1, 30, 30, 3])
     x1 = KC.variable(x)
     loss = objectives.DSSIMObjective(1)
-    np.allclose([0.0],KC.eval(loss(x1, x1)))
+    np.allclose([0.0], KC.eval(loss(x1, x1)))
+
 
 def test_dssim_opposite():
-    x = np.zeros([1,30,30,3])
+    x = np.zeros([1, 30, 30, 3])
     x1 = KC.variable(x)
     y = np.ones([1, 30, 30, 3])
     y1 = KC.variable(y)
     loss = objectives.DSSIMObjective(1)
-    np.allclose([0.5],KC.eval(loss(x1, y1)))
+    np.allclose([0.5], KC.eval(loss(x1, y1)))
+
 
 def test_dssim_compile():
     from keras.models import Sequential
     from keras.layers import Convolution2D
-    x = np.zeros([1,30,30,3])
+    x = np.zeros([1, 30, 30, 3])
     loss = objectives.DSSIMObjective(1)
     model = Sequential()
-    model.add(Convolution2D(3,3,3,border_mode="same",input_shape=(30,30,3)))
-    model.compile("rmsprop",loss)
-    model.fit([x],[x],1,1)
-
+    model.add(Convolution2D(3, 3, 3, border_mode="same", input_shape=(30, 30, 3)))
+    model.compile("rmsprop", loss)
+    model.fit([x], [x], 1, 1)
 
 
 if __name__ == "__main__":
