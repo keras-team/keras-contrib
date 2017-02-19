@@ -105,14 +105,7 @@ class BatchRenormalization(Layer):
                                            name='{}_running_std'.format(self.name),
                                            trainable=False)
 
-        # self.r_max = self.add_weight((1,), initializer='one',
-        #                              name='{}_r_max'.format(self.name),
-        #                              trainable=False)
         self.r_max = K.variable(np.ones((1,)), name='{}_r_max'.format(self.name))
-
-        # self.d_max = self.add_weight((1,), initializer='zero',
-        #                              name='{}_d_max'.format(self.name),
-        #                              trainable=False)
 
         self.d_max = K.variable(np.zeros((1,)), name='{}_d_max'.format(self.name))
 
