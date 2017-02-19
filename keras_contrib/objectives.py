@@ -31,7 +31,7 @@ class DSSIMObjective():
         self.backend = KC.backend()
 
     def __int_shape(self, x):
-        return KC.int_shape(x) if self.backend() == "tensorflow" else KC.shape(x)
+        return KC.int_shape(x) if self.backend == "tensorflow" else KC.shape(x)
 
     def __call__(self, y_true, y_pred):
         # There are additional parameters for this function
