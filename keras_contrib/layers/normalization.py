@@ -37,6 +37,8 @@ class BatchRenormalization(Layer):
         momentum: momentum in the computation of the
             exponential average of the mean and standard deviation
             of the data, for feature-wise normalization.
+        r_max_value: Upper limit of the value of r_max.
+        d_max_value: Upper limit of the value of d_max.
         weights: Initialization weights.
             List of 2 Numpy arrays, with shapes:
             `[(input_shape,), (input_shape,)]`
@@ -135,16 +137,15 @@ class BatchRenormalization(Layer):
 
             r_max_val = K.get_value(self.r_max)
             r = std_batch / self.running_std
-            r = K.stop_gradient(K.clip(r, 1 / r_max_val, r_max_val))  # clip from [1 / r_max, 1] to avoid gradient explosion
+            r = K.stop_gradient(K.clip(r, 1 / r_max_val, r_max_val))
 
             d_max_val = K.get_value(self.d_max)
             d = (mean_batch - self.running_mean) / self.running_mean
             d = K.stop_gradient(K.clip(d, -d_max_val, d_max_val))
 
             if sorted(reduction_axes) == range(K.ndim(x))[:-1]:
-                # now compute the re-normalized batch norm
-                x_normed = (x - mean_batch) / std_batch
-                x_normed = (x_normed * r + d) * self.gamma + self.beta
+                x_normed_batch = (x - mean_batch) / std_batch
+                x_normed = (x_normed_batch * r + d) * self.gamma + self.beta
             else:
                 # need broadcasting
                 broadcast_mean = K.reshape(mean_batch, broadcast_shape)
@@ -154,17 +155,14 @@ class BatchRenormalization(Layer):
                 broadcast_beta = K.reshape(self.beta, broadcast_shape)
                 broadcast_gamma = K.reshape(self.gamma, broadcast_shape)
 
-                # compute the batch norm first
-                x_normed = (x - broadcast_mean) / broadcast_std
-
-                # now compute the re-normalized batch norm
-                x_normed = (x_normed * broadcast_r + broadcast_d) * broadcast_gamma + broadcast_beta
+                x_normed_batch = (x - broadcast_mean) / broadcast_std
+                x_normed = (x_normed_batch * broadcast_r + broadcast_d) * broadcast_gamma + broadcast_beta
 
             # explicit update to moving mean and standard deviation
             self.add_update([K.moving_average_update(self.running_mean, mean_batch, self.momentum),
-                             K.moving_average_update(self.running_std, std_batch, self.momentum)], x)
+                             K.moving_average_update(self.running_std, std_batch ** 2, self.momentum)], x)
 
-            # # update r_max and d_max
+            # update r_max and d_max
             t_val = K.get_value(self.t)
             r_val = self.r_max_value / (1 + (self.r_max_value - 1) * np.exp(-t_val))
             d_val = self.d_max_value / (1 + ((self.d_max_value / 1e-3) - 1) * np.exp(-(2 * t_val)))
@@ -197,18 +195,29 @@ class BatchRenormalization(Layer):
 
         elif self.mode == 1:
             # sample-wise normalization
-            # m = K.mean(x, axis=-1, keepdims=True)
-            # std = K.sqrt(K.var(x, axis=-1, keepdims=True) + self.epsilon)
-            # x_normed = (x - m) / (std + self.epsilon)
-            #
-            # r = std / self.running_std
-            # r = K.stop_gradient(K.clip(r, 1 / self.r_max, self.r_max))
-            #
-            # d = (m - self.running_mean) / std
-            # d = K.stop_gradient(K.clip(d, -self.d_max, self.d_max))
-            #
-            # x_normed = ((x_normed * r) + d) * self.gamma + self.beta
-            raise ValueError('Batch Renormalization does not support mode=1')
+            m = K.mean(x, axis=self.axis, keepdims=True)
+            std = K.sqrt(K.var(x, axis=self.axis, keepdims=True) + self.epsilon)
+            x_normed_batch = (x - m) / (std + self.epsilon)
+
+            r_max_val = K.get_value(self.r_max)
+            r = std / self.running_std
+            r = K.stop_gradient(K.clip(r, 1 / r_max_val, r_max_val))
+
+            d_max_val = K.get_value(self.d_max)
+            d = (m - self.running_mean) / self.running_mean
+            d = K.stop_gradient(K.clip(d, -d_max_val, d_max_val))
+
+            x_normed = ((x_normed_batch * r) + d) * self.gamma + self.beta
+
+            # update r_max and d_max
+            t_val = K.get_value(self.t)
+            r_val = self.r_max_value / (1 + (self.r_max_value - 1) * np.exp(-t_val))
+            d_val = self.d_max_value / (1 + ((self.d_max_value / 1e-3) - 1) * np.exp(-(2 * t_val)))
+            t_val += 1.
+
+            self.add_update([K.update(self.r_max, r_val),
+                             K.update(self.d_max, d_val),
+                             K.update(self.t, t_val)], x)
 
         return x_normed
 
