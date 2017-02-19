@@ -1,7 +1,8 @@
 from keras.engine import Layer, InputSpec
 from .. import initializations, regularizers
 from .. import backend as K
-from keras.layers import BatchNormalization
+
+import numpy as np
 
 
 class BatchRenormalization(Layer):
@@ -66,8 +67,9 @@ class BatchRenormalization(Layer):
     """
 
     def __init__(self, epsilon=1e-3, mode=0, axis=-1, momentum=0.99,
-                 weights=None, beta_init='zero', gamma_init='one',
-                 gamma_regularizer=None, beta_regularizer=None, **kwargs):
+                 r_max_val=3., d_max_val=5., weights=None, beta_init='zero',
+                 gamma_init='one', gamma_regularizer=None, beta_regularizer=None,
+                 **kwargs):
         self.supports_masking = True
         self.beta_init = initializations.get(beta_init)
         self.gamma_init = initializations.get(gamma_init)
@@ -78,8 +80,8 @@ class BatchRenormalization(Layer):
         self.gamma_regularizer = regularizers.get(gamma_regularizer)
         self.beta_regularizer = regularizers.get(beta_regularizer)
         self.initial_weights = weights
-        self.r_max = 3.
-        self.d_max = 5.
+        self.r_max_value = r_max_val
+        self.d_max_value = d_max_val
         if self.mode == 0:
             self.uses_learning_phase = True
         super(BatchRenormalization, self).__init__(**kwargs)
@@ -103,6 +105,19 @@ class BatchRenormalization(Layer):
                                            name='{}_running_std'.format(self.name),
                                            trainable=False)
 
+        # self.r_max = self.add_weight((1,), initializer='one',
+        #                              name='{}_r_max'.format(self.name),
+        #                              trainable=False)
+        self.r_max = K.variable(np.ones((1,)), name='{}_r_max'.format(self.name))
+
+        # self.d_max = self.add_weight((1,), initializer='zero',
+        #                              name='{}_d_max'.format(self.name),
+        #                              trainable=False)
+
+        self.d_max = K.variable(np.zeros((1,)), name='{}_d_max'.format(self.name))
+
+        self.t = K.variable(np.zeros((1,)), name='{}_t'.format(self.name))
+
         if self.initial_weights is not None:
             self.set_weights(self.initial_weights)
             del self.initial_weights
@@ -125,11 +140,13 @@ class BatchRenormalization(Layer):
                 mean_batch = K.mean(x, axis=reduction_axes)
                 std_batch = K.sqrt(K.var(x, axis=reduction_axes) + self.epsilon)
 
+            r_max_val = K.get_value(self.r_max)
             r = std_batch / self.running_std
-            r = K.stop_gradient(K.clip(r, 1 / self.r_max, self.r_max))
+            r = K.stop_gradient(K.clip(r, 1 / r_max_val, r_max_val))  # clip from [1 / r_max, 1] to avoid gradient explosion
 
+            d_max_val = K.get_value(self.d_max)
             d = (mean_batch - self.running_mean) / self.running_mean
-            d = K.stop_gradient(K.clip(d, -self.d_max, self.d_max))
+            d = K.stop_gradient(K.clip(d, -d_max_val, d_max_val))
 
             if sorted(reduction_axes) == range(K.ndim(x))[:-1]:
                 # now compute the re-normalized batch norm
@@ -153,6 +170,16 @@ class BatchRenormalization(Layer):
             # explicit update to moving mean and standard deviation
             self.add_update([K.moving_average_update(self.running_mean, mean_batch, self.momentum),
                              K.moving_average_update(self.running_std, std_batch, self.momentum)], x)
+
+            # # update r_max and d_max
+            t_val = K.get_value(self.t)
+            r_val = self.r_max_value / (1 + (self.r_max_value - 1) * np.exp(-t_val))
+            d_val = self.d_max_value / (1 + ((self.d_max_value / 1e-3) - 1) * np.exp(-(2 * t_val)))
+            t_val += 1.
+
+            self.add_update([K.update(self.r_max, r_val),
+                             K.update(self.d_max, d_val),
+                             K.update(self.t, t_val)], x)
 
             if self.mode == 0:
                 if sorted(reduction_axes) == range(K.ndim(x))[:-1]:
@@ -190,7 +217,6 @@ class BatchRenormalization(Layer):
             # x_normed = ((x_normed * r) + d) * self.gamma + self.beta
             raise ValueError('Batch Renormalization does not support mode=1')
 
-
         return x_normed
 
     def get_config(self):
@@ -201,6 +227,7 @@ class BatchRenormalization(Layer):
                   'beta_regularizer': self.beta_regularizer.get_config() if self.beta_regularizer else None,
                   'momentum': self.momentum,
                   'r_max': self.r_max,
-                  'd_max': self.d_max}
+                  'd_max': self.d_max,
+                  't': self.t}
         base_config = super(BatchRenormalization, self).get_config()
         return dict(list(base_config.items()) + list(config.items()))
