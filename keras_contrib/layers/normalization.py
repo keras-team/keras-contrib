@@ -24,13 +24,12 @@ class BatchRenormalization(Layer):
                 using Theano conventions (samples, channels, rows, cols)
                 then you should set `axis` to `1` to normalize along
                 the channels axis.
-                During training we use per-batch statistics to normalize
-                the data, and during testing we use running averages
-                computed during the training phase.
+                During training and testing we use running averages
+                computed during the training phase to normalize the data
             - 1: sample-wise normalization. This mode assumes a 2D input.
-            - 2: feature-wise normalization, like mode 0, but
-                using per-batch statistics to normalize the data during both
-                testing and training.
+            - 2: feature-wise normalization - no difference to mode 0.
+                Parameter kept for easy of switching out BatchNormalization
+                with BatchRenormalization.
         axis: integer, axis along which to normalize in mode 0. For instance,
             if your input tensor has shape (samples, channels, rows, cols),
             set axis to 1 to normalize per feature map (channels axis).
@@ -105,6 +104,7 @@ class BatchRenormalization(Layer):
         self.running_mean = self.add_weight(shape, initializer='zero',
                                             name='{}_running_mean'.format(self.name),
                                             trainable=False)
+        # Note: running_std actually holds the running variance, not the running std.
         self.running_std = self.add_weight(shape, initializer='one',
                                            name='{}_running_std'.format(self.name),
                                            trainable=False)
@@ -138,11 +138,11 @@ class BatchRenormalization(Layer):
                 std_batch = K.sqrt(K.var(x, axis=reduction_axes) + self.epsilon)
 
             r_max_val = K.get_value(self.r_max)
-            r = std_batch / (self.running_std + self.epsilon)
+            r = std_batch / (K.sqrt(self.running_std + self.epsilon))
             r = K.stop_gradient(K.clip(r, 1 / r_max_val, r_max_val))
 
             d_max_val = K.get_value(self.d_max)
-            d = (mean_batch - self.running_mean) / (self.running_mean + self.epsilon)
+            d = (mean_batch - self.running_mean) / K.sqrt(self.running_std + self.epsilon)
             d = K.stop_gradient(K.clip(d, -d_max_val, d_max_val))
 
             if sorted(reduction_axes) == range(K.ndim(x))[:-1]:
@@ -174,27 +174,6 @@ class BatchRenormalization(Layer):
                              K.update(self.d_max, d_val),
                              K.update(self.t, t_val)], x)
 
-            if self.mode == 0:
-                if sorted(reduction_axes) == range(K.ndim(x))[:-1]:
-                    x_normed_running = K.batch_normalization(
-                        x, self.running_mean, self.running_std,
-                        self.beta, self.gamma,
-                        epsilon=self.epsilon)
-                else:
-                    # need broadcasting
-                    broadcast_running_mean = K.reshape(self.running_mean, broadcast_shape)
-                    broadcast_running_std = K.reshape(self.running_std, broadcast_shape)
-                    broadcast_beta = K.reshape(self.beta, broadcast_shape)
-                    broadcast_gamma = K.reshape(self.gamma, broadcast_shape)
-                    x_normed_running = K.batch_normalization(
-                        x, broadcast_running_mean, broadcast_running_std,
-                        broadcast_beta, broadcast_gamma,
-                        epsilon=self.epsilon)
-
-                # pick the normalized form of x corresponding to the training phase
-                # for batch renormalization, inference time remains same as batchnorm
-                x_normed = K.in_train_phase(x_normed, x_normed_running)
-
         elif self.mode == 1:
             # sample-wise normalization
             m = K.mean(x, axis=self.axis, keepdims=True)
@@ -206,7 +185,7 @@ class BatchRenormalization(Layer):
             r = K.stop_gradient(K.clip(r, 1 / r_max_val, r_max_val))
 
             d_max_val = K.get_value(self.d_max)
-            d = (m - self.running_mean) / (self.running_mean + self.epsilon)
+            d = (m - self.running_mean) / (self.running_std + self.epsilon)
             d = K.stop_gradient(K.clip(d, -d_max_val, d_max_val))
 
             x_normed = ((x_normed_batch * r) + d) * self.gamma + self.beta
