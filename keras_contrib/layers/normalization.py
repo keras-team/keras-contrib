@@ -70,7 +70,7 @@ class BatchRenormalization(Layer):
     """
 
     def __init__(self, epsilon=1e-3, mode=0, axis=-1, momentum=0.99,
-                 r_max_val=3., d_max_val=5., t_delta=0.1, weights=None, beta_init='zero',
+                 r_max_val=3., d_max_val=5., t_delta=1., weights=None, beta_init='zero',
                  gamma_init='one', gamma_regularizer=None, beta_regularizer=None,
                  **kwargs):
         self.supports_masking = True
