@@ -39,6 +39,7 @@ class BatchRenormalization(Layer):
             of the data, for feature-wise normalization.
         r_max_value: Upper limit of the value of r_max.
         d_max_value: Upper limit of the value of d_max.
+        t_scale: Parameter to scale time steps.
         weights: Initialization weights.
             List of 2 Numpy arrays, with shapes:
             `[(input_shape,), (input_shape,)]`
@@ -69,7 +70,7 @@ class BatchRenormalization(Layer):
     """
 
     def __init__(self, epsilon=1e-3, mode=0, axis=-1, momentum=0.99,
-                 r_max_val=3., d_max_val=5., weights=None, beta_init='zero',
+                 r_max_val=3., d_max_val=5., t_scale=0.1, weights=None, beta_init='zero',
                  gamma_init='one', gamma_regularizer=None, beta_regularizer=None,
                  **kwargs):
         self.supports_masking = True
@@ -84,6 +85,7 @@ class BatchRenormalization(Layer):
         self.initial_weights = weights
         self.r_max_value = r_max_val
         self.d_max_value = d_max_val
+        self.t_delta = t_scale
         if self.mode == 0:
             self.uses_learning_phase = True
         super(BatchRenormalization, self).__init__(**kwargs)
@@ -166,7 +168,7 @@ class BatchRenormalization(Layer):
             t_val = K.get_value(self.t)
             r_val = self.r_max_value / (1 + (self.r_max_value - 1) * np.exp(-t_val))
             d_val = self.d_max_value / (1 + ((self.d_max_value / 1e-3) - 1) * np.exp(-(2 * t_val)))
-            t_val += 1.
+            t_val += float(self.t_delta)
 
             self.add_update([K.update(self.r_max, r_val),
                              K.update(self.d_max, d_val),
