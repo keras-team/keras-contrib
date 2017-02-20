@@ -1,9 +1,9 @@
 import os
 import copy
-from keras import backend as K
-from keras.backend import tf
-from keras import callbacks as cbks
 import numpy as np
+import tensorflow as tf
+from keras import backend as K
+from keras import callbacks as cbks
 from keras import optimizers, objectives
 from keras.engine.training import collect_metrics, weighted_objective
 from keras import metrics as metrics_module
