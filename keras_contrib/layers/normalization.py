@@ -138,11 +138,11 @@ class BatchRenormalization(Layer):
                 std_batch = K.sqrt(K.var(x, axis=reduction_axes) + self.epsilon)
 
             r_max_val = K.get_value(self.r_max)
-            r = std_batch / self.running_std
+            r = std_batch / (self.running_std + self.epsilon)
             r = K.stop_gradient(K.clip(r, 1 / r_max_val, r_max_val))
 
             d_max_val = K.get_value(self.d_max)
-            d = (mean_batch - self.running_mean) / self.running_mean
+            d = (mean_batch - self.running_mean) / (self.running_mean + self.epsilon)
             d = K.stop_gradient(K.clip(d, -d_max_val, d_max_val))
 
             if sorted(reduction_axes) == range(K.ndim(x))[:-1]:
