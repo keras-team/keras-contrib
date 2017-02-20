@@ -39,7 +39,7 @@ class BatchRenormalization(Layer):
             of the data, for feature-wise normalization.
         r_max_value: Upper limit of the value of r_max.
         d_max_value: Upper limit of the value of d_max.
-        t_scale: Parameter to scale time steps.
+        t_delta: At each iteration, increment the value of t by t_delta.
         weights: Initialization weights.
             List of 2 Numpy arrays, with shapes:
             `[(input_shape,), (input_shape,)]`
@@ -70,7 +70,7 @@ class BatchRenormalization(Layer):
     """
 
     def __init__(self, epsilon=1e-3, mode=0, axis=-1, momentum=0.99,
-                 r_max_val=3., d_max_val=5., t_scale=0.1, weights=None, beta_init='zero',
+                 r_max_val=3., d_max_val=5., t_delta=0.1, weights=None, beta_init='zero',
                  gamma_init='one', gamma_regularizer=None, beta_regularizer=None,
                  **kwargs):
         self.supports_masking = True
@@ -85,7 +85,7 @@ class BatchRenormalization(Layer):
         self.initial_weights = weights
         self.r_max_value = r_max_val
         self.d_max_value = d_max_val
-        self.t_delta = t_scale
+        self.t_delta = t_delta
         if self.mode == 0:
             self.uses_learning_phase = True
         super(BatchRenormalization, self).__init__(**kwargs)
@@ -202,11 +202,11 @@ class BatchRenormalization(Layer):
             x_normed_batch = (x - m) / (std + self.epsilon)
 
             r_max_val = K.get_value(self.r_max)
-            r = std / self.running_std
+            r = std / (self.running_std + self.epsilon)
             r = K.stop_gradient(K.clip(r, 1 / r_max_val, r_max_val))
 
             d_max_val = K.get_value(self.d_max)
-            d = (m - self.running_mean) / self.running_mean
+            d = (m - self.running_mean) / (self.running_mean + self.epsilon)
             d = K.stop_gradient(K.clip(d, -d_max_val, d_max_val))
 
             x_normed = ((x_normed_batch * r) + d) * self.gamma + self.beta
