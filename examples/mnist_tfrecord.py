@@ -1,14 +1,13 @@
 import tensorflow as tf
 
 from keras.datasets import mnist
-from keras import backend as K
-
 from keras.models import Model
 from keras.layers import Dense, Flatten, Input, Convolution2D
 from keras.objectives import categorical_crossentropy
 from keras.utils import np_utils
 
-import keras_contrib.datasets.tfrecord as ktfr
+from keras import backend as K
+from keras_contrib import backend as KC
 
 import time
 import numpy as np
@@ -35,14 +34,14 @@ def arch(inp):
     return out
 
 
-ktfr.data_to_tfrecord(images=X_train, labels=y_train,
-                      filename='train.mnist.tfrecord')
-# ktfr.data_to_tfrecord(images=X_test, labels=y_test, filename='test.mnist.tfrecord')
+KC.data_to_tfrecord(images=X_train, labels=y_train,
+                    filename='train.mnist.tfrecord')
+# KC.data_to_tfrecord(images=X_test, labels=y_test, filename='test.mnist.tfrecord')
 
 batch_size = 32
 nb_classes = 10
 
-x_train_, y_train_ = ktfr.read_and_decode(
+x_train_, y_train_ = KC.read_and_decode(
     'train.mnist.tfrecord', one_hot=True, n_class=nb_classes, is_train=True)
 
 x_train_batch, y_train_batch = K.tf.train.shuffle_batch([x_train_, y_train_],
@@ -54,12 +53,12 @@ x_train_batch, y_train_batch = K.tf.train.shuffle_batch([x_train_, y_train_],
 x_train_inp = Input(tensor=x_train_batch)
 train_out = arch(x_train_inp)
 train_model = Model(input=x_train_inp, output=train_out)
-ktfr.compile_tfrecord(train_model, optimizer='rmsprop', loss='categorical_crossentropy',
-                      out_tensor_lst=[y_train_batch], metrics=['accuracy'])
+KC.compile_tfrecord(train_model, optimizer='rmsprop', loss='categorical_crossentropy',
+                    out_tensor_lst=[y_train_batch], metrics=['accuracy'])
 
 train_model.summary()
 
-ktfr.fit_tfrecord(train_model, X_train.shape[0], batch_size, nb_epoch=3)
+KC.fit_tfrecord(train_model, X_train.shape[0], batch_size, nb_epoch=3)
 train_model.save_weights('saved_wt.h5')
 
 
