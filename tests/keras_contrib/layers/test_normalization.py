@@ -62,7 +62,7 @@ def test_batchrenorm_mode_0_or_2_twice():
 
 
 @keras_test
-def test_batchnorm_mode_0_convnet():
+def test_batchrenorm_mode_0_convnet():
     model = Sequential()
     norm_m0 = normalization.BatchRenormalization(mode=0, axis=1, input_shape=(3, 4, 4), momentum=0.8)
     model.add(norm_m0)
@@ -80,7 +80,7 @@ def test_batchnorm_mode_0_convnet():
 
 
 @keras_test
-def test_batchnorm_mode_1():
+def test_batchrenorm_mode_1():
     norm_m1 = normalization.BatchRenormalization(input_shape=(10,), mode=1)
     norm_m1.build(input_shape=(None, 10))
 
@@ -94,7 +94,7 @@ def test_batchnorm_mode_1():
 
 
 @keras_test
-def test_shared_batchnorm():
+def test_shared_batchrenorm():
     '''Test that a BN layer can be shared
     across different data streams.
     '''
