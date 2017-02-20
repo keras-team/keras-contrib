@@ -57,7 +57,7 @@ def DenseNet(depth=40, nb_dense_block=3, growth_rate=12, nb_dense_block_layers=-
             growth_rate: number of filters to add per dense block
             nb_filter: initial number of filters. -1 indicates initial
                 number of filters is 2 * growth_rate
-            nb_dense_block_layers: number of layers in each dense block. 
+            nb_dense_block_layers: number of layers in each dense block.
                    Can be an -1, a positive integer or a list
                    If -1, it computes the nb_layer from depth.
                    If positive integer, a set number of layers per dense block.
@@ -84,8 +84,8 @@ def DenseNet(depth=40, nb_dense_block=3, growth_rate=12, nb_dense_block_layers=-
             classes: optional number of classes to classify images
                 into, only to be specified if `include_top` is True, and
                 if no `weights` argument is specified.
-            segmentation: False default produces single label per image with 
-                DenseNet structure, True produces segmentation with single 
+            segmentation: False default produces single label per image with
+                DenseNet structure, True produces segmentation with single
                 label per pixel with FCN Densenet structure.
 
         # Returns
@@ -116,12 +116,12 @@ def DenseNet(depth=40, nb_dense_block=3, growth_rate=12, nb_dense_block_layers=-
         else:
             img_input = input_tensor
 
-    x = __create_dense_net(classes, img_input, include_top=include_top, depth=depth, 
-                           nb_dense_block=nb_dense_block, growth_rate=growth_rate, 
-                        nb_filter=nb_filter, nb_dense_block_layers=nb_dense_block_layers,
-                        bottleneck=bottleneck, reduction=reduction, 
-                        dropout_rate=dropout_rate, weight_decay=weight_decay, 
-                        segmentation=segmentation, input_shape=input_shape)
+    x = __create_dense_net(classes, img_input, include_top=include_top, depth=depth,
+                           nb_dense_block=nb_dense_block, growth_rate=growth_rate,
+                           nb_filter=nb_filter, nb_dense_block_layers=nb_dense_block_layers,
+                           bottleneck=bottleneck, reduction=reduction,
+                           dropout_rate=dropout_rate, weight_decay=weight_decay,
+                           segmentation=segmentation, input_shape=input_shape)
 
     # Ensure that the model takes into account
     # any potential predecessors of `input_tensor`.
@@ -198,7 +198,9 @@ def __conv_block(ip, nb_filter, bottleneck=False, dropout_rate=None, weight_deca
     x = Activation('relu')(x)
 
     if bottleneck:
-        inter_channel = nb_filter * 4  # Obtained from https://github.com/liuzhuang13/DenseNet/blob/master/densenet.lua
+        # Obtained from
+        # https://github.com/liuzhuang13/DenseNet/blob/master/densenet.lua
+        inter_channel = nb_filter * 4
 
         x = Convolution2D(inter_channel, 1, 1, init='he_uniform', border_mode='same', bias=False,
                           W_regularizer=l2(weight_decay))(x)
@@ -282,7 +284,8 @@ def __dense_block(x, nb_dense_block_layers, nb_filter, growth_rate, bottleneck=F
     x_list = [x]
 
     for i in range(nb_dense_block_layers):
-        x = __conv_block(x, growth_rate, bottleneck, dropout_rate, weight_decay)
+        x = __conv_block(x, growth_rate, bottleneck,
+                         dropout_rate, weight_decay)
         x_list.append(x)
         x = merge(x_list, mode='concat', concat_axis=concat_axis)
         nb_filter += growth_rate
@@ -290,16 +293,16 @@ def __dense_block(x, nb_dense_block_layers, nb_filter, growth_rate, bottleneck=F
     return x, nb_filter
 
 
-def __create_dense_net(nb_classes, img_input, include_top=True, depth=40, nb_dense_block=5, growth_rate=12, 
-                        nb_filter=16, nb_dense_block_layers=4, bottleneck=False, reduction=0.0, 
-                        dropout_rate=None, weight_decay=1E-4, segmentation=False, input_shape=None):
+def __create_dense_net(nb_classes, img_input, include_top=True, depth=40, nb_dense_block=5, growth_rate=12,
+                       nb_filter=16, nb_dense_block_layers=4, bottleneck=False, reduction=0.0,
+                       dropout_rate=None, weight_decay=1E-4, segmentation=False, input_shape=None):
     ''' Build the DenseNet model
 
     Args:
         nb_classes: number of classes
         img_input: tensor of images with shape (channels, rows, columns) or (rows, columns, channels)
         include_top: flag to include the final Dense layer
-        depth: number or layers for image labeling 
+        depth: number or layers for image labeling
         nb_dense_block: number of dense blocks to add to end (generally = 3)
         growth_rate: number of filters to add per dense block
         nb_filter: initial number of filters. Default -1 indicates initial number of filters is 2 * growth_rate
@@ -322,10 +325,10 @@ def __create_dense_net(nb_classes, img_input, include_top=True, depth=40, nb_den
     '''
 
     concat_axis = 1 if K.image_dim_ordering() == "th" else -1
-    if segmentation == False:
+    if not segmentation:
         assert (depth - 4) % 3 == 0, "Depth must be 3 N + 4"
     else:
-        if concat_axis == 1: # th dim ordering
+        if concat_axis == 1:  # th dim ordering
             _, rows, cols = input_shape
         else:
             rows, cols, _ = input_shape
@@ -335,17 +338,18 @@ def __create_dense_net(nb_classes, img_input, include_top=True, depth=40, nb_den
 
     # layers in each dense block
     if type(nb_dense_block_layers) is int and nb_dense_block_layers == -1:
-        if segmentation == False:
+        if not segmentation:
             nb_dense_block_layers = int((depth - 4) / 3)
         else:
             nb_dense_block_layers = 4
 
     # layers in each dense block
     if type(nb_dense_block_layers) is list or type(nb_dense_block_layers) is tuple:
-        nb_dense_block_layers = list(nb_dense_block_layers) # Convert tuple to list
+        nb_dense_block_layers = list(
+            nb_dense_block_layers)  # Convert tuple to list
 
         assert len(nb_dense_block_layers) == (nb_dense_block + 1), "If list, nb_layer is used as provided. " \
-                                                        "Note that list size must be (nb_dense_block + 1)"
+            "Note that list size must be (nb_dense_block + 1)"
 
         final_nb_layer = nb_dense_block_layers[-1]
         nb_dense_block_layers = nb_dense_block_layers[:-1]
@@ -355,7 +359,8 @@ def __create_dense_net(nb_classes, img_input, include_top=True, depth=40, nb_den
         nb_dense_block_layers = [nb_dense_block_layers] * nb_dense_block
 
     if bottleneck:
-        nb_dense_block_layers = [int(layer // 2) for layer in nb_dense_block_layers]
+        nb_dense_block_layers = [int(layer // 2)
+                                 for layer in nb_dense_block_layers]
 
     # compute initial nb_filter if -1, else accept users initial nb_filter
     if nb_filter <= 0:
@@ -368,27 +373,28 @@ def __create_dense_net(nb_classes, img_input, include_top=True, depth=40, nb_den
     x = Convolution2D(nb_filter, 3, 3, init="he_uniform", border_mode="same", name="initial_conv2D", bias=False,
                       W_regularizer=l2(weight_decay))(img_input)
 
-    if segmentation == False:
-         # Add dense blocks for image labeling
+    if not segmentation:
+        # Add dense blocks for image labeling
         for block_idx in range(nb_dense_block - 1):
             x, nb_filter = __dense_block(x, nb_dense_block_layers[block_idx], nb_filter, growth_rate, bottleneck=bottleneck,
-                                        dropout_rate=dropout_rate, weight_decay=weight_decay)
+                                         dropout_rate=dropout_rate, weight_decay=weight_decay)
             # add __transition_block
             x = __transition_down_block(x, nb_filter, compression=compression, dropout_rate=dropout_rate,
-                                weight_decay=weight_decay)
+                                        weight_decay=weight_decay)
             nb_filter = int(nb_filter * compression)
 
         # The last __dense_block does not have a __transition_block
         x, nb_filter = __dense_block(x, final_nb_layer, nb_filter, growth_rate, bottleneck=bottleneck,
-                                    dropout_rate=dropout_rate, weight_decay=weight_decay)
+                                     dropout_rate=dropout_rate, weight_decay=weight_decay)
 
         x = BatchNormalization(mode=0, axis=concat_axis, gamma_regularizer=l2(weight_decay),
-                            beta_regularizer=l2(weight_decay))(x)
+                               beta_regularizer=l2(weight_decay))(x)
         x = Activation('relu')(x)
         x = GlobalAveragePooling2D()(x)
         # image labeling version of final activation layer
         if include_top:
-            x = Dense(nb_classes, activation='softmax', W_regularizer=l2(weight_decay), b_regularizer=l2(weight_decay))(x)
+            x = Dense(nb_classes, activation='softmax', W_regularizer=l2(
+                weight_decay), b_regularizer=l2(weight_decay))(x)
         return x
 
     else:
@@ -398,22 +404,24 @@ def __create_dense_net(nb_classes, img_input, include_top=True, depth=40, nb_den
         # Add dense blocks and transition down block for image segmentation
         for block_idx in range(nb_dense_block):
             x, nb_filter = __dense_block(x, nb_dense_block_layers[block_idx], nb_filter, growth_rate, bottleneck=bottleneck,
-                                        dropout_rate=dropout_rate, weight_decay=weight_decay)
+                                         dropout_rate=dropout_rate, weight_decay=weight_decay)
             # Skip connection
-            x = merge([x, skip_connection], mode='concat', concat_axis=concat_axis)
+            x = merge([x, skip_connection], mode='concat',
+                      concat_axis=concat_axis)
             skip_list.append(x)
 
             # add transition_block
             x = transition_down_block(x, nb_filter, compression=compression, dropout_rate=dropout_rate,
-                                weight_decay=weight_decay)
-            nb_filter = int(nb_filter * compression) # this is calculated inside transition_down_block
+                                      weight_decay=weight_decay)
+            # this is calculated inside transition_down_block
+            nb_filter = int(nb_filter * compression)
 
             # Preserve transition for next skip connection after dense
             skip_connection = x
 
         # The last dense_block does not have a transition_down_block
         x, nb_filter = dense_block(x, final_nb_layer, nb_filter, growth_rate, bottleneck=bottleneck,
-                                dropout_rate=dropout_rate, weight_decay=weight_decay)
+                                   dropout_rate=dropout_rate, weight_decay=weight_decay)
 
         if K.image_dim_ordering() == 'th':
             out_shape = [batch_size, nb_filter, rows // 16, cols // 16]
@@ -425,7 +433,8 @@ def __create_dense_net(nb_classes, img_input, include_top=True, depth=40, nb_den
             if K.image_dim_ordering() != 'th':
                 out_shape[3] = nb_filter
 
-            x = __transition_up_block(x, nb_filters=nb_filter, type=upscaling_type, output_shape=out_shape)
+            x = __transition_up_block(
+                x, nb_filters=nb_filter, type=upscaling_type, output_shape=out_shape)
 
             if K.image_dim_ordering() == 'th':
                 out_shape[2] *= 2
@@ -434,13 +443,14 @@ def __create_dense_net(nb_classes, img_input, include_top=True, depth=40, nb_den
                 out_shape[1] *= 2
                 out_shape[2] *= 2
 
-            x = merge([x, skip_list.pop()], mode='concat', concat_axis=concat_axis)
+            x = merge([x, skip_list.pop()], mode='concat',
+                      concat_axis=concat_axis)
 
             x, nb_filter = dense_block(x, nb_dense_block_layers[-block_idx], nb_filter, growth_rate, bottleneck=bottleneck,
-                                    dropout_rate=dropout_rate, weight_decay=weight_decay)
+                                       dropout_rate=dropout_rate, weight_decay=weight_decay)
 
         x = Convolution2D(nb_classes, 1, 1, activation='linear', border_mode='same', W_regularizer=l2(weight_decay),
-                        bias=False)(x)
+                          bias=False)(x)
         # Image Segmentation version of final Activation layer
         if include_top:
             if K.image_dim_ordering() == 'th':
@@ -450,6 +460,6 @@ def __create_dense_net(nb_classes, img_input, include_top=True, depth=40, nb_den
 
             x = Reshape((row * col, nb_classes))(x)
             x = Activation('softmax')(x)
-            x = Reshape((row,col,nb_classes))(x)
+            x = Reshape((row, col, nb_classes))(x)
 
     return x
