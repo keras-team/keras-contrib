@@ -85,7 +85,7 @@ class BatchRenormalization(Layer):
         self.r_max_value = r_max_val
         self.d_max_value = d_max_val
         self.t_delta = t_delta
-        if self.mode == 0:
+        if self.mode == 0 or self.mode == 2:
             self.uses_learning_phase = True
         super(BatchRenormalization, self).__init__(**kwargs)
 
