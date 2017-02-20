@@ -12,6 +12,7 @@ from keras import metrics as metrics_module
 def data_to_tfrecord(images, labels, filename):
     def _int64_feature(value):
         return tf.train.Feature(int64_list=tf.train.Int64List(value=[value]))
+
     def _bytes_feature(value):
         return tf.train.Feature(bytes_list=tf.train.BytesList(value=[value]))
 
@@ -36,9 +37,9 @@ def data_to_tfrecord(images, labels, filename):
             writer.write(example.SerializeToString())
         writer.close()
     else:
-        print 'tfrecord already exist'
-    
-    
+        print('tfrecord already exists:' + filename)
+
+
 def read_and_decode(filename, one_hot=True, n_class=None, is_train=None):
     """ Return tensor to read from TFRecord """
     filename_queue = tf.train.string_input_producer([filename])
@@ -47,20 +48,19 @@ def read_and_decode(filename, one_hot=True, n_class=None, is_train=None):
     features = tf.parse_single_example(serialized_example,
                                        features={
                                            'label': tf.FixedLenFeature([], tf.int64),
-                                           'image_raw' : tf.FixedLenFeature([], tf.string),
+                                           'image_raw': tf.FixedLenFeature([], tf.string),
                                        })
     # You can do more image distortion here for training data
     img = tf.decode_raw(features['image_raw'], tf.uint8)
-    img.set_shape([28*28])
+    img.set_shape([28 * 28])
     img = tf.reshape(img, [28, 28, 1])
 
     img = tf.cast(img, tf.float32) * (1. / 255) - 0.5
     # img = tf.cast(img, tf.float32) * (1. / 255)
 
-
     label = tf.cast(features['label'], tf.int32)
     if one_hot and n_class:
-        label = tf.one_hot(label,n_class)
+        label = tf.one_hot(label, n_class)
 
     return img, label
 
@@ -123,11 +123,11 @@ def compile_tfrecord(train_model, optimizer, loss, out_tensor_lst, metrics=[], l
         loss_functions = [objectives.get(l) for l in loss]
     else:
         loss_function = objectives.get(loss)
-        loss_functions = [loss_function for _ in range(len(train_model.outputs))]
+        loss_functions = [loss_function for _ in range(
+            len(train_model.outputs))]
     train_model.loss_functions = loss_functions
     weighted_losses = [weighted_objective(fn) for fn in loss_functions]
 
-    
     # prepare metrics
     train_model.metrics = metrics
     train_model.metrics_names = ['loss']
@@ -145,7 +145,8 @@ def compile_tfrecord(train_model, optimizer, loss, out_tensor_lst, metrics=[], l
         output_loss = K.mean(_loss(y_true, y_pred))
         if len(train_model.outputs) > 1:
             train_model.metrics_tensors.append(output_loss)
-            train_model.metrics_names.append(train_model.output_names[i] + '_loss')
+            train_model.metrics_names.append(
+                train_model.output_names[i] + '_loss')
         if total_loss is None:
             total_loss = loss_weight * output_loss
         else:
@@ -163,7 +164,8 @@ def compile_tfrecord(train_model, optimizer, loss, out_tensor_lst, metrics=[], l
     def append_metric(layer_num, metric_name, metric_tensor):
         """Helper function, used in loop below"""
         if len(train_model.output_names) > 1:
-            metric_name = train_model.output_layers[layer_num].name + '_' + metric_name
+            metric_name = train_model.output_layers[
+                layer_num].name + '_' + metric_name
 
         train_model.metrics_names.append(metric_name)
         train_model.metrics_tensors.append(metric_tensor)
@@ -216,7 +218,6 @@ def compile_tfrecord(train_model, optimizer, loss, out_tensor_lst, metrics=[], l
     train_model._collected_trainable_weights = trainable_weights
 
 
-
 def fit_tfrecord(train_model, nb_train_sample, batch_size, nb_epoch=10, verbose=1, callbacks=[],
                  initial_epoch=0):
 
@@ -227,16 +228,17 @@ def fit_tfrecord(train_model, nb_train_sample, batch_size, nb_epoch=10, verbose=
             inputs = [K.learning_phase()]
 
             training_updates = model.optimizer.get_updates(model._collected_trainable_weights,
-                                                          model.constraints,
-                                                          model.total_loss)
+                                                           model.constraints,
+                                                           model.total_loss)
             updates = model.updates + training_updates
 
             # returns loss and metrics. Updates weights at each call.
             model.train_function = K.function(inputs,
-                                             [model.total_loss] + model.metrics_tensors,
-                                             updates=updates)
+                                              [model.total_loss] +
+                                              model.metrics_tensors,
+                                              updates=updates)
 
-    ins =  [1.]
+    ins = [1.]
 
     _make_train_function(train_model)
     f = train_model.train_function
@@ -286,7 +288,7 @@ def fit_tfrecord(train_model, nb_train_sample, batch_size, nb_epoch=10, verbose=
         callbacks.on_epoch_begin(epoch)
 
         epoch_logs = {}
-        for batch_index in range(0, nb_train_sample/batch_size):
+        for batch_index in range(0, nb_train_sample / batch_size):
             batch_logs = {}
             batch_logs['batch'] = batch_index
             batch_logs['size'] = batch_size
