@@ -210,6 +210,7 @@ class BatchRenormalization(Layer):
                   'beta_regularizer': self.beta_regularizer.get_config() if self.beta_regularizer else None,
                   'momentum': self.momentum,
                   'r_max_value': self.r_max_value,
-                  'd_max_value': self.d_max_value}
+                  'd_max_value': self.d_max_value,
+                  't_delta': self.t_delta}
         base_config = super(BatchRenormalization, self).get_config()
         return dict(list(base_config.items()) + list(config.items()))
