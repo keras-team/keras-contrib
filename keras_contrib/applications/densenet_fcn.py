@@ -11,10 +11,9 @@ from __future__ import absolute_import
 from __future__ import division
 
 from keras.models import Model
-from keras.layers.core import Dense, Dropout, Activation, Reshape
+from keras.layers.core import Dropout, Activation, Reshape
 from keras.layers.convolutional import Convolution2D, Deconvolution2D, AtrousConvolution2D, UpSampling2D
 from keras.layers.pooling import AveragePooling2D
-from keras.layers.pooling import GlobalAveragePooling2D
 from keras.layers import Input, merge
 from keras.layers.normalization import BatchNormalization
 from keras.regularizers import l2
