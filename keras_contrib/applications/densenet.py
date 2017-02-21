@@ -419,7 +419,7 @@ def __create_dense_net(nb_classes, img_input, include_top, depth=40, nb_dense_bl
         dropout_rate: dropout rate
         weight_decay: weight decay
 
-    Returns: keras tensor with nb_layers of __conv_block appended
+    Returns: keras tensor with nb_layers of conv_block appended
     '''
 
     concat_axis = 1 if K.image_dim_ordering() == "th" else -1
@@ -500,7 +500,7 @@ def __create_fcn_dense_net(nb_classes, img_input, include_top, nb_dense_block=5,
             output shape of deconvolution layers automatically.
         input_shape: Only used for shape inference in fully convolutional networks.
 
-    Returns: keras tensor with nb_layers of __conv_block appended
+    Returns: keras tensor with nb_layers of conv_block appended
     '''
 
     concat_axis = 1 if K.image_dim_ordering() == "th" else -1
@@ -516,8 +516,8 @@ def __create_fcn_dense_net(nb_classes, img_input, include_top, nb_dense_block=5,
     # check if upsampling_conv has minimum number of filters
     # minimum is set to 12, as at least 3 color channels are needed for correct upsampling
     assert nb_upsampling_conv > 12 and nb_upsampling_conv % 4 == 0, "Parameter `upsampling_conv` number of channels must " \
-                                                              "be a positive number divisible by 4 and greater " \
-                                                              "than 12"
+                                                                    "be a positive number divisible by 4 and greater " \
+                                                                    "than 12"
 
     # layers in each dense block
     if type(nb_layers_per_block) is list or type(nb_layers_per_block) is tuple:
