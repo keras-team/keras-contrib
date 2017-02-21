@@ -25,6 +25,8 @@ from keras.backend.theano_backend import _preprocess_conv3d_filter_shape
 from keras.backend.theano_backend import _preprocess_border_mode
 from keras.backend.theano_backend import _postprocess_conv3d_output
 
+import itertools
+
 py_all = all
 
 
@@ -115,3 +117,18 @@ def extract_image_patches(X, ksizes, strides, border_mode="valid", dim_ordering=
     if dim_ordering == "tf":
         patches = KTH.permute_dimensions(patches, [0, 1, 2, 4, 5, 3])
     return patches
+
+
+def depth_to_space(input, scale):
+    ''' Uses phase shift algorithm to convert channels/depth for spacial resolution '''
+
+    b, k, row, col = input.shape
+    output_shape = (b, input._keras_shape[1] // (scale ** 2), row * scale, col * scale)
+
+    out = T.zeros(output_shape)
+    r = scale
+
+    for y, x in itertools.product(range(scale), repeat=2):
+        out = T.inc_subtensor(out[:, :, y::r, x::r], input[:, r * y + x:: r * r, :, :])
+
+    return out

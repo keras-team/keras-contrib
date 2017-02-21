@@ -99,3 +99,9 @@ def extract_image_patches(X, ksizes, ssizes, border_mode="same", dim_ordering="t
     if dim_ordering == "tf":
         patches = KTF.permute_dimensions(patches, [0, 1, 2, 4, 5, 3])
     return patches
+
+
+def depth_to_space(input, scale, **kwargs):
+    ''' Uses phase shift algorithm to convert channels/depth for spacial resolution '''
+
+    return tf.depth_to_space(input, scale)
