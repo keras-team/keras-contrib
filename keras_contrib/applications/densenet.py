@@ -248,6 +248,11 @@ def DenseNetFCN(nb_dense_block=5, growth_rate=12, nb_filter=16, nb_layers_per_bl
         raise ValueError('Number of dense layers per block must be greater than 1. Argument '
                          'value was %d.' % (nb_layers_per_block))
 
+    if upsampling_type == 'atrous':
+        warnings.warn('Atrous Convolution upsampling does not correctly work (see https://github.com/fchollet/keras/issues/4018).\n'
+                      'Switching to `upsampling` type upscaling.')
+        upsampling_type = 'upsampling'
+
     # Determine proper input shape
     input_shape = _obtain_input_shape(input_shape,
                                       default_size=32,
