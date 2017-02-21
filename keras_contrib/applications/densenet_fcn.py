@@ -29,17 +29,11 @@ def DenseNetFCN(nb_dense_block=5, growth_rate=12, nb_filter=16, nb_layers_per_bl
                 include_top=True, weights=None,
                 input_tensor=None, input_shape=None, classes=10,
                 upsampling_conv=128, upsampling_type='upscaling', batchsize=None):
-    """Instantiate the DenseNet FCN architecture,
-        optionally loading weights pre-trained
-        on CIFAR-10. Note that when using TensorFlow,
+    """Instantiate the DenseNet FCN architecture.
+        Note that when using TensorFlow,
         for best performance you should set
         `image_dim_ordering="tf"` in your Keras config
         at ~/.keras/keras.json.
-
-        The model and the weights are compatible with both
-        TensorFlow and Theano. The dimension ordering
-        convention used by the model is the one
-        specified in your Keras config file.
 
         # Arguments
             nb_dense_block: number of dense blocks to add to end (generally = 3)
@@ -82,7 +76,7 @@ def DenseNetFCN(nb_dense_block=5, growth_rate=12, nb_filter=16, nb_layers_per_bl
 
         # Returns
             A Keras model instance.
-        """
+    """
 
     if weights not in {None}:
         raise ValueError('The `weights` argument should be '
