@@ -320,6 +320,8 @@ def __transition_block(ip, nb_filter, compression=1.0, dropout_rate=None, weight
     Args:
         ip: keras tensor
         nb_filter: number of filters
+        compression: calculated as 1 - reduction. Reduces the number of feature maps
+                    in the transition block.
         dropout_rate: dropout rate
         weight_decay: weight decay factor
 
@@ -345,14 +347,14 @@ def __dense_block(x, nb_layers, nb_filter, growth_rate, bottleneck=False, dropou
 
     Args:
         x: keras tensor
-        nb_layers: the number of layers of __conv_block to append to the model.
+        nb_layers: the number of layers of conv_block to append to the model.
         nb_filter: number of filters
         growth_rate: growth rate
         bottleneck: bottleneck block
         dropout_rate: dropout rate
         weight_decay: weight decay factor
 
-    Returns: keras tensor with nb_layers of __conv_block appended
+    Returns: keras tensor with nb_layers of conv_block appended
     '''
 
     concat_axis = 1 if K.image_dim_ordering() == "th" else -1
@@ -378,7 +380,7 @@ def __transition_up_block(ip, nb_filters, type='upsampling', output_shape=None, 
         output_shape: required if type = 'deconv'. Output shape of tensor
         weight_decay: weight decay factor
 
-    Returns: keras tensor, after applying batch_norm, relu-conv, dropout, maxpool
+    Returns: keras tensor, after applying upsampling operation.
     '''
 
     if type == 'upsampling':
@@ -469,8 +471,8 @@ def __create_dense_net(nb_classes, img_input, include_top, depth=40, nb_dense_bl
 
 def __create_fcn_dense_net(nb_classes, img_input, include_top, nb_dense_block=5, growth_rate=12,
                            nb_filter=-1, bottleneck=False, reduction=0.0, dropout_rate=None, weight_decay=1E-4,
-                           nb_layers_per_block=4, upsampling_conv=128, upsampling_type='upsampling', batchsize=None,
-                           input_shape=None):
+                           nb_layers_per_block=4, nb_upsampling_conv=128, upsampling_type='upsampling',
+                           batchsize=None, input_shape=None):
     ''' Build the DenseNet model
 
     Args:
@@ -489,7 +491,7 @@ def __create_fcn_dense_net(nb_classes, img_input, include_top, nb_dense_block=5,
             If positive integer, a set number of layers per dense block.
             If list, nb_layer is used as provided. Note that list size must
             be (nb_dense_block + 1)
-        upsampling_conv: number of convolutional layers in upsampling via subpixel convolution
+        nb_upsampling_conv: number of convolutional layers in upsampling via subpixel convolution
         upsampling_type: Can be one of 'upsampling', 'deconv', 'atrous' and
             'subpixel'. Defines type of upsampling algorithm used.
         batchsize: Fixed batch size. This is a temporary requirement for
@@ -513,7 +515,7 @@ def __create_fcn_dense_net(nb_classes, img_input, include_top, nb_dense_block=5,
 
     # check if upsampling_conv has minimum number of filters
     # minimum is set to 12, as at least 3 color channels are needed for correct upsampling
-    assert upsampling_conv > 12 and upsampling_conv % 4 == 0, "Parameter `upsampling_conv` number of channels must " \
+    assert nb_upsampling_conv > 12 and nb_upsampling_conv % 4 == 0, "Parameter `upsampling_conv` number of channels must " \
                                                               "be a positive number divisible by 4 and greater " \
                                                               "than 12"
 
