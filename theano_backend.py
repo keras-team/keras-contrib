@@ -115,3 +115,28 @@ def extract_image_patches(X, ksizes, strides, border_mode="valid", dim_ordering=
     if dim_ordering == "tf":
         patches = KTH.permute_dimensions(patches, [0, 1, 2, 4, 5, 3])
     return patches
+
+def int_shape(x):
+    """Returns the shape of a Keras tensor or a Keras variable as a tuple of
+    integers or None entries.
+
+    # Arguments
+        x: Tensor or variable.
+
+    # Returns
+        A tuple of integers (or None entries).
+
+    # Examples
+    ```python
+        >>> from keras import backend as K
+        >>> input = K.placeholder(shape=(2, 4, 5))
+        >>> K.int_shape(input)
+        (2, 4, 5)
+        >>> val = np.array([[1, 2], [3, 4]])
+        >>> kvar = K.variable(value=val)
+        >>> K.int_shape(kvar)
+        (2, 2)
+    ```
+    """
+    integer_shape = T.shape(x)
+    return tuple(integer_shape)
