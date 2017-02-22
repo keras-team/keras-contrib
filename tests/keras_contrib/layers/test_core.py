@@ -48,7 +48,7 @@ def test_cosinedense():
     W[1] = np.asarray([1.])
     model.set_weights(W)
     out = model.predict(X)
-    assert_allclose(out, np.ones((1, 1), dtype=K.floatx()))
+    assert_allclose(out, np.ones((1, 1), dtype=K.floatx()), atol=1e-5)
 
     X = np.random.randn(1, 20)
     model = Sequential()
@@ -58,7 +58,7 @@ def test_cosinedense():
     W[0] = -X.T
     model.set_weights(W)
     out = model.predict(X)
-    assert_allclose(out, -np.ones((1, 1), dtype=K.floatx()))
+    assert_allclose(out, -np.ones((1, 1), dtype=K.floatx()), atol=1e-5)
 
 
 if __name__ == '__main__':
