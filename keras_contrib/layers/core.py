@@ -21,6 +21,7 @@ from keras.engine import Merge
 from keras.utils.generic_utils import func_dump
 from keras.utils.generic_utils import func_load
 from keras.utils.generic_utils import get_from_module
+from keras.utils.generic_utils import get_custom_objects
 
 
 class CosineDense(Layer):
@@ -176,3 +177,6 @@ class CosineDense(Layer):
                   'input_dim': self.input_dim}
         base_config = super(CosineDense, self).get_config()
         return dict(list(base_config.items()) + list(config.items()))
+
+
+get_custom_objects().update({"CosineDense": CosineDense})
