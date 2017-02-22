@@ -130,12 +130,8 @@ class BatchRenormalization(Layer):
             broadcast_shape = [1] * len(input_shape)
             broadcast_shape[self.axis] = input_shape[self.axis]
 
-            if K.backend() == 'tf':
-                mean_batch, var = K.KTF.nn.moments(x, reduction_axes, shift=None, name=None, keep_dims=False)
-                std_batch = (K.sqrt(var + self.epsilon))
-            else:
-                mean_batch = K.mean(x, axis=reduction_axes)
-                std_batch = K.sqrt(K.var(x, axis=reduction_axes) + self.epsilon)
+            mean_batch, var_batch = K.moments(x, reduction_axes, shift=None, keep_dims=False)
+            std_batch = (K.sqrt(var_batch + self.epsilon))
 
             r_max_val = K.get_value(self.r_max)
             r = std_batch / (K.sqrt(self.running_std + self.epsilon))
@@ -214,7 +210,7 @@ class BatchRenormalization(Layer):
             t_val = K.get_value(self.t)
             r_val = self.r_max_value / (1 + (self.r_max_value - 1) * np.exp(-t_val))
             d_val = self.d_max_value / (1 + ((self.d_max_value / 1e-3) - 1) * np.exp(-(2 * t_val)))
-            t_val += 1.
+            t_val += float(self.t_delta)
 
             self.add_update([K.update(self.r_max, r_val),
                              K.update(self.d_max, d_val),
