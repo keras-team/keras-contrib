@@ -99,3 +99,9 @@ def extract_image_patches(X, ksizes, ssizes, border_mode="same", dim_ordering="t
     if dim_ordering == "tf":
         patches = KTF.permute_dimensions(patches, [0, 1, 2, 4, 5, 3])
     return patches
+
+
+def moments(x, axes, shift=None, keep_dims=False):
+    ''' Wrapper over tensorflow backend call '''
+
+    return tf.nn.moments(x, axes, shift=shift, keep_dims=keep_dims)
