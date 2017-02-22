@@ -105,3 +105,9 @@ def depth_to_space(input, scale, **kwargs):
     ''' Uses phase shift algorithm to convert channels/depth for spatial resolution '''
 
     return tf.depth_to_space(input, scale)
+
+
+def moments(x, axes, shift=None, keep_dims=False):
+    ''' Wrapper over tensorflow backend call '''
+
+    return tf.nn.moments(x, axes, shift=shift, keep_dims=keep_dims)
