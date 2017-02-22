@@ -144,11 +144,11 @@ class CosineDense(Layer):
 
     def call(self, x, mask=None):
         if self.bias:
-            xnorm = K.sqrt(K.sum(K.square(x), axis=1, keepdims=True) + 1 + K.epsilon())
+            xnorm = K.sqrt(K.sum(K.square(x), axis=-1, keepdims=True) + 1 + K.epsilon())
             x /= xnorm
             Wnorm = K.sqrt(K.sum(K.square(self.W), axis=0) + K.square(self.b) + K.epsilon())
         else:
-            x /= K.sqrt(K.sum(K.square(x), axis=1, keepdims=True) + K.epsilon())
+            x /= K.sqrt(K.sum(K.square(x), axis=-1, keepdims=True) + K.epsilon())
             Wnorm = K.sqrt(K.sum(K.square(self.W), axis=0) + K.epsilon())
 
         W = self.W / Wnorm
