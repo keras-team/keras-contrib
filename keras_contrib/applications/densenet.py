@@ -36,8 +36,7 @@ TF_WEIGHTS_PATH_NO_TOP = 'https://github.com/titu1994/DenseNet/releases/download
 
 def DenseNet(depth=40, nb_dense_block=3, growth_rate=12, nb_filter=16, nb_layers_per_block=-1,
              bottleneck=False, reduction=0.0, dropout_rate=0.0, weight_decay=1E-4,
-             include_top=True, weights='cifar10',
-             input_tensor=None, input_shape=None,
+             include_top=True, weights='cifar10', input_tensor=None, input_shape=None,
              classes=10):
     """Instantiate the DenseNet architecture,
         optionally loading weights pre-trained
@@ -173,9 +172,8 @@ def DenseNet(depth=40, nb_dense_block=3, growth_rate=12, nb_filter=16, nb_layers
 
 
 def DenseNetFCN(nb_dense_block=5, growth_rate=12, nb_filter=16, nb_layers_per_block=4,
-                bottleneck=False, reduction=0.0, dropout_rate=0.0, weight_decay=1E-4,
-                include_top=True, weights=None,
-                input_tensor=None, input_shape=None, classes=10,
+                bottleneck=False, reduction=0.0, dropout_rate=0.0, weight_decay=1E-4, init_conv_filters=48,
+                include_top=True, weights=None, input_tensor=None, input_shape=None, classes=10,
                 upsampling_conv=128, upsampling_type='upscaling', batchsize=None):
     """Instantiate the DenseNet FCN architecture.
         Note that when using TensorFlow,
@@ -198,6 +196,7 @@ def DenseNetFCN(nb_dense_block=5, growth_rate=12, nb_filter=16, nb_layers_per_bl
                 Note : reduction value is inverted to compute compression.
             dropout_rate: dropout rate
             weight_decay: weight decay factor
+            init_conv_filters: number of layers in the initial convolution layer
             include_top: whether to include the fully-connected
                 layer at the top of the network.
             weights: one of `None` (random initialization) or
@@ -271,7 +270,8 @@ def DenseNetFCN(nb_dense_block=5, growth_rate=12, nb_filter=16, nb_layers_per_bl
     x = __create_fcn_dense_net(classes, img_input, include_top, nb_dense_block,
                                growth_rate, nb_filter, bottleneck, reduction,
                                dropout_rate, weight_decay, nb_layers_per_block,
-                               upsampling_conv, upsampling_type, batchsize, input_shape)
+                               upsampling_conv, upsampling_type, batchsize, init_conv_filters,
+                               input_shape)
 
     # Ensure that the model takes into account
     # any potential predecessors of `input_tensor`.
@@ -504,7 +504,7 @@ def __create_dense_net(nb_classes, img_input, include_top, depth=40, nb_dense_bl
 def __create_fcn_dense_net(nb_classes, img_input, include_top, nb_dense_block=5, growth_rate=12,
                            nb_filter=-1, bottleneck=False, reduction=0.0, dropout_rate=None, weight_decay=1E-4,
                            nb_layers_per_block=4, nb_upsampling_conv=128, upsampling_type='upsampling',
-                           batchsize=None, input_shape=None):
+                           batchsize=None, init_conv_filters=48, input_shape=None):
     ''' Build the DenseNet model
 
     Args:
@@ -576,7 +576,7 @@ def __create_fcn_dense_net(nb_classes, img_input, include_top, nb_dense_block=5,
     compression = 1.0 - reduction
 
     # Initial convolution
-    x = Convolution2D(48, 3, 3, init="he_uniform", border_mode="same", name="initial_conv2D", bias=False,
+    x = Convolution2D(init_conv_filters, 3, 3, init="he_uniform", border_mode="same", name="initial_conv2D", bias=False,
                       W_regularizer=l2(weight_decay))(img_input)
 
     skip_connection = x
@@ -627,18 +627,17 @@ def __create_fcn_dense_net(nb_classes, img_input, include_top, nb_dense_block=5,
         x, nb_filter = __dense_block(x, nb_layers[-block_idx], nb_filter, growth_rate, bottleneck=bottleneck,
                                      dropout_rate=dropout_rate, weight_decay=weight_decay)
 
-    x = Convolution2D(nb_classes, 1, 1, activation='linear', border_mode='same', W_regularizer=l2(weight_decay),
-                      bias=False)(x)
+    if include_top:
+        x = Convolution2D(nb_classes, 1, 1, activation='linear', border_mode='same', W_regularizer=l2(weight_decay),
+                          bias=False)(x)
 
-    if K.image_dim_ordering() == 'th':
-        channel, row, col = input_shape
-    else:
-        row, col, channel = input_shape
+        if K.image_dim_ordering() == 'th':
+            channel, row, col = input_shape
+        else:
+            row, col, channel = input_shape
 
-    x = Reshape((row * col, nb_classes))(x)
-
-    x = Activation('softmax')(x)
-
-    x = Reshape((row, col, nb_classes))(x)
+        x = Reshape((row * col, nb_classes))(x)
+        x = Activation('softmax')(x)
+        x = Reshape((row, col, nb_classes))(x)
 
     return x

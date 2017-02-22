@@ -120,7 +120,7 @@ def extract_image_patches(X, ksizes, strides, border_mode="valid", dim_ordering=
 
 
 def depth_to_space(input, scale):
-    ''' Uses phase shift algorithm to convert channels/depth for spacial resolution '''
+    ''' Uses phase shift algorithm to convert channels/depth for spatial resolution '''
 
     b, k, row, col = input.shape
     output_shape = (b, input._keras_shape[1] // (scale ** 2), row * scale, col * scale)
