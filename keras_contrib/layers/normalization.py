@@ -27,9 +27,9 @@ class BatchRenormalization(Layer):
                 During training and testing we use running averages
                 computed during the training phase to normalize the data
             - 1: sample-wise normalization. This mode assumes a 2D input.
-            - 2: feature-wise normalization - no difference to mode 0.
-                Parameter kept for easy of switching out BatchNormalization
-                with BatchRenormalization.
+            - 2: feature-wise normalization, like mode 0, but
+                using per-batch statistics to normalize the data during both
+                testing and training.
         axis: integer, axis along which to normalize in mode 0. For instance,
             if your input tensor has shape (samples, channels, rows, cols),
             set axis to 1 to normalize per feature map (channels axis).
@@ -85,7 +85,7 @@ class BatchRenormalization(Layer):
         self.r_max_value = r_max_val
         self.d_max_value = d_max_val
         self.t_delta = t_delta
-        if self.mode == 0 or self.mode == 2:
+        if self.mode == 0:
             self.uses_learning_phase = True
         super(BatchRenormalization, self).__init__(**kwargs)
 
@@ -170,25 +170,26 @@ class BatchRenormalization(Layer):
                              K.update(self.d_max, d_val),
                              K.update(self.t, t_val)], x)
 
-            if sorted(reduction_axes) == range(K.ndim(x))[:-1]:
-                x_normed_running = K.batch_normalization(
-                    x, self.running_mean, self.running_std,
-                    self.beta, self.gamma,
-                    epsilon=self.epsilon)
-            else:
-                # need broadcasting
-                broadcast_running_mean = K.reshape(self.running_mean, broadcast_shape)
-                broadcast_running_std = K.reshape(self.running_std, broadcast_shape)
-                broadcast_beta = K.reshape(self.beta, broadcast_shape)
-                broadcast_gamma = K.reshape(self.gamma, broadcast_shape)
-                x_normed_running = K.batch_normalization(
-                    x, broadcast_running_mean, broadcast_running_std,
-                    broadcast_beta, broadcast_gamma,
-                    epsilon=self.epsilon)
+            if self.mode == 0:
+                if sorted(reduction_axes) == range(K.ndim(x))[:-1]:
+                    x_normed_running = K.batch_normalization(
+                        x, self.running_mean, self.running_std,
+                        self.beta, self.gamma,
+                        epsilon=self.epsilon)
+                else:
+                    # need broadcasting
+                    broadcast_running_mean = K.reshape(self.running_mean, broadcast_shape)
+                    broadcast_running_std = K.reshape(self.running_std, broadcast_shape)
+                    broadcast_beta = K.reshape(self.beta, broadcast_shape)
+                    broadcast_gamma = K.reshape(self.gamma, broadcast_shape)
+                    x_normed_running = K.batch_normalization(
+                        x, broadcast_running_mean, broadcast_running_std,
+                        broadcast_beta, broadcast_gamma,
+                        epsilon=self.epsilon)
 
-            # pick the normalized form of x corresponding to the training phase
-            # for batch renormalization, inference time remains same as batchnorm
-            x_normed = K.in_train_phase(x_normed, x_normed_running)
+                # pick the normalized form of x corresponding to the training phase
+                # for batch renormalization, inference time remains same as batchnorm
+                x_normed = K.in_train_phase(x_normed, x_normed_running)
 
         elif self.mode == 1:
             # sample-wise normalization
