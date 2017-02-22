@@ -120,7 +120,7 @@ def extract_image_patches(X, ksizes, strides, border_mode="valid", dim_ordering=
 def moments(x, axes, shift=None, keep_dims=False):
     ''' Calculates and returns the mean and variance of the input '''
 
-    mean_batch = K.mean(x, axis=axes, keepdims=keep_dims)
-    var_batch = K.var(x, axis=axes, keepdims=keep_dims)
+    mean_batch = KTH.mean(x, axis=axes, keepdims=keep_dims)
+    var_batch = KTH.var(x, axis=axes, keepdims=keep_dims)
 
     return mean_batch, var_batch
