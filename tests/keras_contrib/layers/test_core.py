@@ -55,7 +55,7 @@ def test_cosinedense():
     model.add(core.CosineDense(1, bias=False, input_shape=(20,)))
     model.compile(loss='mse', optimizer='rmsprop')
     W = model.get_weights()
-    W[0] = -X.T
+    W[0] = -2*X.T
     model.set_weights(W)
     out = model.predict(X)
     assert_allclose(out, -np.ones((1, 1), dtype=K.floatx()), atol=1e-5)
