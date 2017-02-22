@@ -123,8 +123,8 @@ class TestBackend(object):
                     th_var_val = KTH.eval(th_var)
                     tf_var_val = KTF.eval(tf_var)
 
-                    assert_allclose(th_mean_val, tf_mean_val)
-                    assert_allclose(th_var_val, tf_var_val)
+                    assert_allclose(th_mean_val, tf_mean_val, rtol=1e-4)
+                    assert_allclose(th_var_val, tf_var_val, rtol=1e-4)
 
 
 if __name__ == '__main__':
