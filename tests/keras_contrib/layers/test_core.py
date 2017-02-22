@@ -61,6 +61,5 @@ def test_cosinedense():
     assert_allclose(out, -np.ones((1, 1), dtype=K.floatx()))
 
 
-
 if __name__ == '__main__':
     pytest.main([__file__])

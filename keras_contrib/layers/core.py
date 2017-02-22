@@ -44,6 +44,8 @@ class CosineDense(Layer):
         # after the first layer, you don't need to specify
         # the size of the input anymore:
         model.add(CosineDense(32))
+
+        **Note that a regular Dense layer may work better as the final layer
     ```
 
     # Arguments
@@ -151,7 +153,7 @@ class CosineDense(Layer):
         W = self.W / Wnorm
         output = K.dot(x, W)
         if self.bias:
-            output += (self.b / (xnorm*Wnorm))
+            output += (self.b / (xnorm * Wnorm))
         return self.activation(output)
 
     def get_output_shape_for(self, input_shape):
