@@ -115,3 +115,12 @@ def extract_image_patches(X, ksizes, strides, border_mode="valid", dim_ordering=
     if dim_ordering == "tf":
         patches = KTH.permute_dimensions(patches, [0, 1, 2, 4, 5, 3])
     return patches
+
+
+def moments(x, axes, shift=None, keep_dims=False):
+    ''' Calculates and returns the mean and variance of the input '''
+
+    mean_batch = KTH.mean(x, axis=axes, keepdims=keep_dims)
+    var_batch = KTH.var(x, axis=axes, keepdims=keep_dims)
+
+    return mean_batch, var_batch
