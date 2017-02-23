@@ -136,7 +136,7 @@ def test_cosineconvolution_2d():
     model.add(convolutional.CosineConvolution2D(1, 5, 5, bias=False, input_shape=input_dim))
     model.compile(loss='mse', optimizer='rmsprop')
     W = model.get_weights()
-    W[0] = -2*W0
+    W[0] = -2 * W0
     model.set_weights(W)
     out = model.predict(X)
     assert_allclose(out, -np.ones((1, 1, 1, 1), dtype=K.floatx()), atol=1e-5)
