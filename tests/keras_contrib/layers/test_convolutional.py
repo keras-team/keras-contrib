@@ -84,6 +84,11 @@ def test_cosineconvolution_2d():
     nb_row = 10
     nb_col = 6
 
+    if K.backend() == 'theano':
+        dim_ordering = 'th'
+    elif K.backend() == 'tensorflow':
+        dim_ordering = 'tf'
+
     for border_mode in _convolution_border_modes:
         for subsample in [(1, 1), (2, 2)]:
             for bias_mode in [True, False]:
@@ -96,7 +101,8 @@ def test_cosineconvolution_2d():
                                    'nb_col': 3,
                                    'border_mode': border_mode,
                                    'subsample': subsample,
-                                   'bias': bias_mode},
+                                   'bias': bias_mode,
+                                   'dim_ordering': dim_ordering},
                            input_shape=(nb_samples, nb_row, nb_col, stack_size))
 
                 layer_test(convolutional.CosineConvolution2D,
@@ -108,7 +114,8 @@ def test_cosineconvolution_2d():
                                    'b_regularizer': 'l2',
                                    'activity_regularizer': 'activity_l2',
                                    'subsample': subsample,
-                                   'bias': bias_mode},
+                                   'bias': bias_mode,
+                                   'dim_ordering': dim_ordering},
                            input_shape=(nb_samples, nb_row, nb_col, stack_size))
 
     dim_ordering = K.image_dim_ordering()
