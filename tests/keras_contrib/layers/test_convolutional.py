@@ -118,9 +118,6 @@ def test_cosineconvolution_2d():
                                    'dim_ordering': dim_ordering},
                            input_shape=(nb_samples, nb_row, nb_col, stack_size))
 
-    dim_ordering = K.image_dim_ordering()
-    assert dim_ordering in {'tf', 'th'}, 'dim_ordering must be in {tf, th}'
-
     if dim_ordering == 'th':
         X = np.random.randn(1, 3, 5, 5)
         input_dim = (3, 5, 5)
@@ -131,7 +128,7 @@ def test_cosineconvolution_2d():
         W0 = X[0, :, :, :, None]
 
     model = Sequential()
-    model.add(convolutional.CosineConvolution2D(1, 5, 5, bias=True, input_shape=input_dim))
+    model.add(convolutional.CosineConvolution2D(1, 5, 5, bias=True, input_shape=input_dim, dim_ordering=dim_ordering))
     model.compile(loss='mse', optimizer='rmsprop')
     W = model.get_weights()
     W[0] = W0
@@ -141,7 +138,7 @@ def test_cosineconvolution_2d():
     assert_allclose(out, np.ones((1, 1, 1, 1), dtype=K.floatx()), atol=1e-5)
 
     model = Sequential()
-    model.add(convolutional.CosineConvolution2D(1, 5, 5, bias=False, input_shape=input_dim))
+    model.add(convolutional.CosineConvolution2D(1, 5, 5, bias=False, input_shape=input_dim, dim_ordering=dim_ordering))
     model.compile(loss='mse', optimizer='rmsprop')
     W = model.get_weights()
     W[0] = -2 * W0
