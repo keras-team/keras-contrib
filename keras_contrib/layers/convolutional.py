@@ -231,7 +231,9 @@ get_custom_objects().update({"Deconv3D": Deconv3D})
 
 
 class CosineConvolution2D(Layer):
-    """Convolution operator for filtering windows of two-dimensional inputs.
+    """Cosine Normalized Convolution operator for filtering windows of two-dimensional inputs.
+    Cosine Normalization: Using Cosine Similarity Instead of Dot Product in Neural Networks
+    https://arxiv.org/pdf/1702.05870.pdf
 
     When using this layer as the first layer in a model,
     provide the keyword argument `input_shape`
@@ -243,13 +245,13 @@ class CosineConvolution2D(Layer):
     ```python
         # apply a 3x3 convolution with 64 output filters on a 256x256 image:
         model = Sequential()
-        model.add(Convolution2D(64, 3, 3,
+        model.add(CosineConvolution2D(64, 3, 3,
                                 border_mode='same',
                                 input_shape=(3, 256, 256)))
         # now model.output_shape == (None, 64, 256, 256)
 
         # add a 3x3 convolution on top, with 32 output filters:
-        model.add(Convolution2D(32, 3, 3, border_mode='same'))
+        model.add(CosineConvolution2D(32, 3, 3, border_mode='same'))
         # now model.output_shape == (None, 32, 256, 256)
     ```
 
@@ -314,7 +316,7 @@ class CosineConvolution2D(Layer):
         if dim_ordering == 'default':
             dim_ordering = K.image_dim_ordering()
         if border_mode not in {'valid', 'same', 'full'}:
-            raise ValueError('Invalid border mode for Convolution2D:', border_mode)
+            raise ValueError('Invalid border mode for CosineConvolution2D:', border_mode)
         self.nb_filter = nb_filter
         self.nb_row = nb_row
         self.nb_col = nb_col
@@ -393,14 +395,24 @@ class CosineConvolution2D(Layer):
             return (input_shape[0], rows, cols, self.nb_filter)
 
     def call(self, x, mask=None):
+        b, xb = 0, 0
         if self.dim_ordering == 'th':
             W_sum_axes = [1, 2, 3]
-            b = K.reshape(self.b, (self.nb_filter, 1, 1, 1))
+            if self.bias:
+                b = K.reshape(self.b, (self.nb_filter, 1, 1, 1))
+                xb = 1
         elif self.dim_ordering == 'tf':
             W_sum_axes = [0, 1, 2]
-            b = K.reshape(self.b, (1, 1, 1, self.nb_filter))
+            if self.bias:
+                b = K.reshape(self.b, (1, 1, 1, self.nb_filter))
+                xb = 1
 
         Wnorm = K.sqrt(K.sum(K.square(self.W), axis=W_sum_axes, keepdims=True) + K.square(b) + K.epsilon())
+        xnorm = K.sqrt(K.conv2d(x**2, self.W_norm, strides=self.subsample,
+                       border_mode=self.border_mode,
+                       dim_ordering=self.dim_ordering,
+                       filter_shape=self.W_shape) + xb + K.epsilon())
+
         W = self.W / Wnorm
 
         output = K.conv2d(x, W, strides=self.subsample,
@@ -408,23 +420,21 @@ class CosineConvolution2D(Layer):
                           dim_ordering=self.dim_ordering,
                           filter_shape=self.W_shape)
 
-        xnorm = K.sqrt(K.conv2d(x**2, self.W_norm, strides=self.subsample,
-                  border_mode=self.border_mode,
-                  dim_ordering=self.dim_ordering,
-                  filter_shape=self.W_shape) + K.epsilon())
-
         if K.backend() == 'theano':
             xnorm = K.pattern_broadcast(xnorm, [False, True, False, False])
 
         output /= xnorm
 
         if self.bias:
+            b /= Wnorm
             if self.dim_ordering == 'th':
-                output += K.reshape(self.b, (1, self.nb_filter, 1, 1))
+                b = K.reshape(b, (1, self.nb_filter, 1, 1))
             elif self.dim_ordering == 'tf':
-                output += K.reshape(self.b, (1, 1, 1, self.nb_filter))
+                b = K.reshape(b, (1, 1, 1, self.nb_filter))
             else:
                 raise ValueError('Invalid dim_ordering:', self.dim_ordering)
+            b /= xnorm
+            output += b
         output = self.activation(output)
         return output
 
