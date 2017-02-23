@@ -107,7 +107,7 @@ def extract_image_patches(X, ksizes, ssizes, border_mode="same", dim_ordering="t
         patches = KTF.permute_dimensions(patches, [0, 1, 2, 4, 5, 3])
     return patches
 
-
+  
 def data_to_tfrecord(images, labels, filename):
     def _int64_feature(value):
         return tf.train.Feature(int64_list=tf.train.Int64List(value=[value]))
@@ -410,3 +410,8 @@ def fit_tfrecord(train_model, nb_train_sample, batch_size, nb_epoch=10, verbose=
     # sess.close()
 
     return train_model.history
+
+def moments(x, axes, shift=None, keep_dims=False):
+    ''' Wrapper over tensorflow backend call '''
+
+    return tf.nn.moments(x, axes, shift=shift, keep_dims=keep_dims)
