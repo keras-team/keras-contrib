@@ -395,23 +395,23 @@ class CosineConvolution2D(Layer):
             return (input_shape[0], rows, cols, self.nb_filter)
 
     def call(self, x, mask=None):
-        b, xb = 0, 0
+        b, xb = 0., 0.
         if self.dim_ordering == 'th':
             W_sum_axes = [1, 2, 3]
             if self.bias:
                 b = K.reshape(self.b, (self.nb_filter, 1, 1, 1))
-                xb = 1
+                xb = 1.
         elif self.dim_ordering == 'tf':
             W_sum_axes = [0, 1, 2]
             if self.bias:
                 b = K.reshape(self.b, (1, 1, 1, self.nb_filter))
-                xb = 1
+                xb = 1.
 
         Wnorm = K.sqrt(K.sum(K.square(self.W), axis=W_sum_axes, keepdims=True) + K.square(b) + K.epsilon())
-        xnorm = K.sqrt(K.conv2d(x**2, self.W_norm, strides=self.subsample,
+        xnorm = K.sqrt(K.conv2d(K.square(x), self.W_norm, strides=self.subsample,
                        border_mode=self.border_mode,
                        dim_ordering=self.dim_ordering,
-                       filter_shape=self.W_shape) + xb + K.epsilon())
+                       filter_shape=self.W_norm_shape) + xb + K.epsilon())
 
         W = self.W / Wnorm
 
