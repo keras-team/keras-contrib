@@ -121,7 +121,7 @@ def test_cosineconvolution_2d():
     elif dim_ordering == 'tf':
         X = np.random.randn(1, 5, 5, 3)
         input_dim = (5, 5, 3)
-        W0 = X[0, ::-1, ::-1, :, None]
+        W0 = X[0, :, :, :, None]
 
     model = Sequential()
     model.add(convolutional.CosineConvolution2D(1, 5, 5, bias=True, input_shape=input_dim))
