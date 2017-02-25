@@ -1,9 +1,8 @@
 from __future__ import absolute_import
 
-import keras_contrib.backend as KC
-from keras.utils.generic_utils import get_from_module
-
 from keras.objectives import *
+
+import keras_contrib.backend as KC
 
 
 def get(identifier):
@@ -11,7 +10,7 @@ def get(identifier):
 
 
 class DSSIMObjective():
-    def __init__(self, batch_size, k1=0.01, k2=0.03, kernel_size=3, max_value=1.0):
+    def __init__(self, k1=0.01, k2=0.03, kernel_size=3, max_value=1.0):
         """
         Difference of Structural Similarity (DSSIM loss function). Clipped between 0 and 0.5
         Note : You shoul add a regularization term like a l2 loss in addition to this one.
@@ -22,7 +21,6 @@ class DSSIMObjective():
         :param max_value: Max value of the output (default 1.0)
         """
         self.__name__ = "DSSIMObjective"
-        self.batch_size = batch_size
         self.kernel_size = kernel_size
         self.k1 = k1
         self.k2 = k2
@@ -39,8 +37,8 @@ class DSSIMObjective():
         #   and cannot be used for learning
 
         kernel = [self.kernel_size, self.kernel_size]
-        y_true = KC.reshape(y_true, [self.batch_size] + list(self.__int_shape(y_pred)[1:]))
-        y_pred = KC.reshape(y_pred, [self.batch_size] + list(self.__int_shape(y_pred)[1:]))
+        y_true = KC.reshape(y_true, (-1,) + self.__int_shape(y_pred)[1:])
+        y_pred = KC.reshape(y_pred, (-1,) + self.__int_shape(y_pred)[1:])
         patches_pred = KC.extract_image_patches(y_pred, kernel, kernel, "valid", self.dim_ordering)
         patches_true = KC.extract_image_patches(y_true, kernel, kernel, "valid", self.dim_ordering)
 

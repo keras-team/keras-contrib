@@ -94,8 +94,8 @@ def extract_image_patches(X, ksizes, ssizes, border_mode="same", dim_ordering="t
     patches = tf.extract_image_patches(X, kernel, strides, [1, 1, 1, 1], padding)
     # Reshaping to fit Theano
     bs, w, h, ch = KTF.int_shape(patches)
-    patches = tf.reshape(tf.transpose(tf.reshape(patches, [bs, w, h, -1, ch_i]), [0, 1, 2, 4, 3]),
-                         [bs, w, h, ch_i, ksizes[0], ksizes[1]])
+    patches = tf.reshape(tf.transpose(tf.reshape(patches, [-1, w, h, tf.floordiv(ch, ch_i), ch_i]), [0, 1, 2, 4, 3]),
+                         [-1, w, h, ch_i, ksizes[0], ksizes[1]])
     if dim_ordering == "tf":
         patches = KTF.permute_dimensions(patches, [0, 1, 2, 4, 5, 3])
     return patches
