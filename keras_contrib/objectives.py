@@ -37,8 +37,8 @@ class DSSIMObjective():
         #   and cannot be used for learning
 
         kernel = [self.kernel_size, self.kernel_size]
-        y_true = KC.reshape(y_true, [-1,] + list(self.__int_shape(y_pred)[1:]))
-        y_pred = KC.reshape(y_pred, [-1,] + list(self.__int_shape(y_pred)[1:]))
+        y_true = KC.reshape(y_true, [-1] + list(self.__int_shape(y_pred)[1:]))
+        y_pred = KC.reshape(y_pred, [-1] + list(self.__int_shape(y_pred)[1:]))
         patches_pred = KC.extract_image_patches(y_pred, kernel, kernel, "valid", self.dim_ordering)
         patches_true = KC.extract_image_patches(y_true, kernel, kernel, "valid", self.dim_ordering)
 
