@@ -97,8 +97,8 @@ def extract_image_patches(x, ksizes, ssizes, border_mode="same",
                                        padding)
     # Reshaping to fit Theano
     bs, w, h, ch = KTF.int_shape(patches)
-    patches = tf.reshape(tf.transpose(
-        tf.reshape(patches, [bs, w, h, -1, ch_i]), [0, 1, 2, 4, 3]),
+    patches = tf.reshape(patches, [bs, w, h, -1, ch_i])
+    patches = tf.reshape(tf.transpose(patches, [0, 1, 2, 4, 3]),
                          [bs, w, h, ch_i, ksizes[0], ksizes[1]])
     if dim_ordering == "tf":
         patches = KTF.permute_dimensions(patches, [0, 1, 2, 4, 5, 3])
