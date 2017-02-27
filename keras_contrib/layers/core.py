@@ -153,7 +153,7 @@ class CosineDense(Layer):
 
         xWnorm = (xnorm * Wnorm)
 
-        output = K.dot(x, self.W)/xWnorm
+        output = K.dot(x, self.W) / xWnorm
         if self.bias:
             output += (self.b / xWnorm)
         return self.activation(output)
