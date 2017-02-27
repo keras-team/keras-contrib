@@ -149,14 +149,13 @@ class CosineDense(Layer):
             b, xb = 0., 0.
 
         xnorm = K.sqrt(K.sum(K.square(x), axis=-1, keepdims=True) + xb + K.epsilon())
-        x /= xnorm
-
         Wnorm = K.sqrt(K.sum(K.square(self.W), axis=0) + K.square(b) + K.epsilon())
-        W = self.W / Wnorm
 
-        output = K.dot(x, W)
+        xWnorm = (xnorm * Wnorm)
+
+        output = K.dot(x, self.W)/xWnorm
         if self.bias:
-            output += (self.b / (xnorm * Wnorm))
+            output += (self.b / xWnorm)
         return self.activation(output)
 
     def get_output_shape_for(self, input_shape):
