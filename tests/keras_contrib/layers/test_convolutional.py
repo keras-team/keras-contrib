@@ -96,8 +96,7 @@ def test_sub_pixel_upscaling():
                    kwargs={'scale_factor': scale_factor},
                    input_data=input_data,
                    expected_output=expected_output,
-                   expected_output_dtype=K.floatx(),
-                   fixed_batch_size=False)
+                   expected_output_dtype=K.floatx())
 
 
 if __name__ == '__main__':
