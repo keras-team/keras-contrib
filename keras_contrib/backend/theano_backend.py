@@ -121,7 +121,7 @@ def extract_image_patches(X, ksizes, strides, border_mode="valid", dim_ordering=
 
 def depth_to_space(input, scale):
     ''' Uses phase shift algorithm to convert channels/depth for spatial resolution '''
-    assert K.image_dim_ordering() == 'th', 'depth_to_scale backend function can only be used with "th" dim ' \
+    assert K.image_dim_ordering() == 'th', 'depth_to_space backend function can only be used with "th" dim ' \
                                            'ordering when using theano backend'
 
     b, k, row, col = input.shape

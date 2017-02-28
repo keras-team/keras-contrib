@@ -103,7 +103,7 @@ def extract_image_patches(X, ksizes, ssizes, border_mode="same", dim_ordering="t
 
 def depth_to_space(input, scale):
     ''' Uses phase shift algorithm to convert channels/depth for spatial resolution '''
-    assert K.image_dim_ordering() == 'tf', 'depth_to_scale backend function can only be used with "tf" dim ' \
+    assert K.image_dim_ordering() == 'tf', 'depth_to_space backend function can only be used with "tf" dim ' \
                                            'ordering when using tensorflow backend'
 
     return tf.depth_to_space(input, scale)
