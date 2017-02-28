@@ -231,10 +231,14 @@ get_custom_objects().update({"Deconv3D": Deconv3D})
 
 class SubPixelUpscaling(Layer):
 
-    def __init__(self, scale_factor=2, **kwargs):
+    def __init__(self, scale_factor=2, dim_ordering='default', **kwargs):
         super(SubPixelUpscaling, self).__init__(**kwargs)
 
         self.scale_factor = scale_factor
+        self.dim_ordering = dim_ordering
+
+        if self.dim_ordering == 'default':
+            self.dim_ordering = K.image_dim_ordering()
 
     def build(self, input_shape):
         pass
@@ -244,7 +248,7 @@ class SubPixelUpscaling(Layer):
         return y
 
     def get_output_shape_for(self, input_shape):
-        if K.image_dim_ordering() == "th":
+        if self.dim_ordering == 'th':
             b, k, r, c = input_shape
             return (b, k // (self.scale_factor ** 2), r * self.scale_factor, c * self.scale_factor)
         else:
@@ -252,6 +256,9 @@ class SubPixelUpscaling(Layer):
             return (b, r * self.scale_factor, c * self.scale_factor, k // (self.scale_factor ** 2))
 
     def get_config(self):
-        config = {'scale_factor': self.scale_factor}
+        config = {'scale_factor': self.scale_factor,
+                  'dim_ordering': self.dim_ordering}
         base_config = super(SubPixelUpscaling, self).get_config()
         return dict(list(base_config.items()) + list(config.items()))
+
+get_custom_objects().update({'SubPixelUpscaling': SubPixelUpscaling})

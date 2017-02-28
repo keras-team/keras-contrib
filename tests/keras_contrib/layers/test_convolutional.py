@@ -1,5 +1,6 @@
 import pytest
 import numpy as np
+import itertools
 from numpy.testing import assert_allclose
 
 from keras.utils.test_utils import layer_test, keras_test
@@ -74,6 +75,29 @@ def test_deconvolution_3d():
                                    'activity_regularizer': 'activity_l2',
                                    'subsample': subsample},
                            input_shape=(nb_samples, stack_size, kernel_dim1, kernel_dim2, kernel_dim3))
+
+
+@keras_test
+def test_sub_pixel_upscaling():
+    nb_samples = 2
+    nb_row = 16
+    nb_col = 16
+
+    for scale_factor in [2, 3, 4]:
+        input_data = np.random.random((nb_samples, 4 * (scale_factor ** 2), nb_row, nb_col))
+
+        if K.image_dim_ordering() == 'tf':
+            input_data = input_data.transpose((0, 2, 3, 1))
+
+        input_tensor = K.variable(input_data)
+        expected_output = K.eval(KC.depth_to_space(input_tensor, scale=scale_factor))
+
+        layer_test(convolutional.SubPixelUpscaling,
+                   kwargs={'scale_factor': scale_factor},
+                   input_data=input_data,
+                   expected_output=expected_output,
+                   expected_output_dtype=K.floatx(),
+                   fixed_batch_size=False)
 
 
 if __name__ == '__main__':

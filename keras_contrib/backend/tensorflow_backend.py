@@ -101,7 +101,7 @@ def extract_image_patches(X, ksizes, ssizes, border_mode="same", dim_ordering="t
     return patches
 
 
-def depth_to_space(input, scale, **kwargs):
+def depth_to_space(input, scale):
     ''' Uses phase shift algorithm to convert channels/depth for spatial resolution '''
 
     return tf.depth_to_space(input, scale)
