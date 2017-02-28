@@ -172,7 +172,7 @@ def DenseNet(depth=40, nb_dense_block=3, growth_rate=12, nb_filter=16, nb_layers
 
 
 def DenseNetFCN(input_shape, nb_dense_block=5, growth_rate=16, nb_layers_per_block=4,
-                bottleneck=False, reduction=0.0, dropout_rate=0.0, weight_decay=1E-4, init_conv_filters=48,
+                reduction=0.0, dropout_rate=0.0, weight_decay=1E-4, init_conv_filters=48,
                 include_top=True, weights=None, input_tensor=None, classes=1,
                 upsampling_conv=128, upsampling_type='upsampling', batchsize=None):
     """Instantiate the DenseNet FCN architecture.
@@ -278,13 +278,6 @@ def DenseNetFCN(input_shape, nb_dense_block=5, growth_rate=16, nb_layers_per_blo
         inputs = img_input
     # Create model.
     model = Model(inputs, x, name='fcn-densenet')
-
-    conv_count = 0
-    for layer in model.layers:
-        if 'Convolution' in layer.__class__.__name__:
-            conv_count += 1
-
-    print("Number of convolutions : ", conv_count)
 
     return model
 
@@ -412,7 +405,7 @@ def __transition_up_block(ip, nb_filters, type='upsampling', output_shape=None, 
     elif type == 'subpixel':
         x = Convolution2D(nb_filters, 3, 3, activation="relu", border_mode='same', W_regularizer=l2(weight_decay),
                           bias=False, init='he_uniform')(ip)
-        x = SubPixelUpscaling(r=2, channels=int(nb_filters // 4))(x)
+        x = SubPixelUpscaling(r=2)(x)
         x = Convolution2D(nb_filters, 3, 3, activation="relu", border_mode='same', W_regularizer=l2(weight_decay),
                           bias=False, init='he_uniform')(x)
     elif type == 'atrous':
