@@ -189,7 +189,6 @@ def DenseNetFCN(input_shape, nb_dense_block=5, growth_rate=16, nb_layers_per_blo
                 If positive integer, a set number of layers per dense block.
                 If list, nb_layer is used as provided. Note that list size must
                 be (nb_dense_block + 1)
-            bottleneck: flag to add bottleneck blocks in between dense blocks
             reduction: reduction factor of transition blocks.
                 Note : reduction value is inverted to compute compression.
             dropout_rate: dropout rate
@@ -405,7 +404,7 @@ def __transition_up_block(ip, nb_filters, type='upsampling', output_shape=None, 
     elif type == 'subpixel':
         x = Convolution2D(nb_filters, 3, 3, activation="relu", border_mode='same', W_regularizer=l2(weight_decay),
                           bias=False, init='he_uniform')(ip)
-        x = SubPixelUpscaling(r=2)(x)
+        x = SubPixelUpscaling(scale_factor=2)(x)
         x = Convolution2D(nb_filters, 3, 3, activation="relu", border_mode='same', W_regularizer=l2(weight_decay),
                           bias=False, init='he_uniform')(x)
     elif type == 'atrous':
@@ -652,3 +651,11 @@ def __create_fcn_dense_net(nb_classes, img_input, include_top, nb_dense_block=5,
         x = Reshape((row, col, nb_classes))(x)
 
     return x
+
+if __name__ == '__main__':
+    model = DenseNetFCN((32, 32, 3), growth_rate=16, nb_layers_per_block=[4, 5, 7, 10, 12, 15],
+                        dropout_rate=0.2, upsampling_type='subpixel')
+
+    from keras.utils.visualize_util import plot
+
+    plot(model, to_file='densenet fcn.png', show_shapes=True)
