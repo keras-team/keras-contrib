@@ -469,7 +469,7 @@ class SubPixelUpscaling(Layer):
     and Video Super-Resolution Using an Efficient Sub-Pixel Convolutional Neural Network"
     (https://arxiv.org/abs/1609.05158).
 
-    This layer requires a Convolution2D prior to it, having output nb_filter computed accordomg to
+    This layer requires a Convolution2D prior to it, having output nb_filter computed according to
     the formula :
 
         nb_filter = k * (scale_factor * scale_factor)
