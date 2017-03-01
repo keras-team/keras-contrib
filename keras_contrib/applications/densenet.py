@@ -651,11 +651,3 @@ def __create_fcn_dense_net(nb_classes, img_input, include_top, nb_dense_block=5,
         x = Reshape((row, col, nb_classes))(x)
 
     return x
-
-if __name__ == '__main__':
-    model = DenseNetFCN((32, 32, 3), growth_rate=16, nb_layers_per_block=[4, 5, 7, 10, 12, 15],
-                        dropout_rate=0.2, upsampling_type='subpixel')
-
-    from keras.utils.visualize_util import plot
-
-    plot(model, to_file='densenet fcn.png', show_shapes=True)

@@ -479,10 +479,6 @@ class SubPixelUpscaling(Layer):
     This layer performs the depth to space operation on the convolution filters, and returns a
     tensor with the size as defined below.
 
-    # Note:
-        This layer does not work with mismatched backend and dim ordering.
-        For example, TH dim ordering with Tensorflow backend / TF dim ordering with Theano backend.
-
     # Example :
     ```python
         # A standard subpixel upscaling block
@@ -502,8 +498,7 @@ class SubPixelUpscaling(Layer):
 
     # Arguments
         scale_factor: Upscaling factor.
-        dim_ordering: Can be 'th' or 'tf'. Note: mismatched dim ordering will
-                      cause a ValueError to be raised.
+        dim_ordering: Can be 'default', 'th' or 'tf'.
 
     # Input shape
         4D tensor with shape:
@@ -527,11 +522,6 @@ class SubPixelUpscaling(Layer):
 
         if self.dim_ordering == 'default':
             self.dim_ordering = K.image_dim_ordering()
-
-        if (K.backend() == 'theano' and self.dim_ordering == 'tf') or \
-                (K.backend() == 'tensorflow' and self.dim_ordering == 'th'):
-            raise ValueError('SubPixelUpscaling cannot be used with mismatched backend / dim ordering combinations. '
-                             'Backend : %s, Dim Ordering : %s' % (K.backend(), self.dim_ordering))
 
     def build(self, input_shape):
         pass
