@@ -144,17 +144,18 @@ class CosineDense(Layer):
 
     def call(self, x, mask=None):
         if self.bias:
-            xnorm = K.sqrt(K.sum(K.square(x), axis=-1, keepdims=True) + 1 + K.epsilon())
-            x /= xnorm
-            Wnorm = K.sqrt(K.sum(K.square(self.W), axis=0) + K.square(self.b) + K.epsilon())
+            b, xb = self.b, 1.
         else:
-            x /= K.sqrt(K.sum(K.square(x), axis=-1, keepdims=True) + K.epsilon())
-            Wnorm = K.sqrt(K.sum(K.square(self.W), axis=0) + K.epsilon())
+            b, xb = 0., 0.
 
-        W = self.W / Wnorm
-        output = K.dot(x, W)
+        xnorm = K.sqrt(K.sum(K.square(x), axis=-1, keepdims=True) + xb + K.epsilon())
+        Wnorm = K.sqrt(K.sum(K.square(self.W), axis=0) + K.square(b) + K.epsilon())
+
+        xWnorm = (xnorm * Wnorm)
+
+        output = K.dot(x, self.W) / xWnorm
         if self.bias:
-            output += (self.b / (xnorm * Wnorm))
+            output += (self.b / xWnorm)
         return self.activation(output)
 
     def get_output_shape_for(self, input_shape):
