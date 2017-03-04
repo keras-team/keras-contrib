@@ -451,7 +451,6 @@ def __create_dense_net(nb_classes, img_input, include_top, depth=40, nb_dense_bl
         assert reduction <= 1.0 and reduction > 0.0, "reduction value must lie between 0.0 and 1.0"
 
     # layers in each dense block
-    # layers in each dense block
     if type(nb_layers_per_block) is list or type(nb_layers_per_block) is tuple:
         nb_layers = list(nb_layers_per_block)  # Convert tuple to list
 
