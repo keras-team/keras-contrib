@@ -157,6 +157,7 @@ class Deconvolution3D(Convolution3D):
         - [Transposed convolution arithmetic](http://deeplearning.net/software/theano_versions/dev/tutorial/conv_arithmetic.html#transposed-convolution-arithmetic)
         - [Deconvolutional Networks](http://www.matthewzeiler.com/pubs/cvpr2010/cvpr2010.pdf)
     """
+
     def __init__(self, nb_filter, kernel_dim1, kernel_dim2, kernel_dim3,
                  output_shape, init='glorot_uniform', activation=None, weights=None,
                  border_mode='valid', subsample=(1, 1, 1),
@@ -224,6 +225,7 @@ class Deconvolution3D(Convolution3D):
         config = {'output_shape': self.output_shape_}
         base_config = super(Deconvolution3D, self).get_config()
         return dict(list(base_config.items()) + list(config.items()))
+
 
 Deconv3D = Deconvolution3D
 get_custom_objects().update({"Deconvolution3D": Deconvolution3D})
@@ -409,9 +411,9 @@ class CosineConvolution2D(Layer):
 
         Wnorm = K.sqrt(K.sum(K.square(self.W), axis=W_sum_axes, keepdims=True) + K.square(b) + K.epsilon())
         xnorm = K.sqrt(K.conv2d(K.square(x), self.W_norm, strides=self.subsample,
-                       border_mode=self.border_mode,
-                       dim_ordering=self.dim_ordering,
-                       filter_shape=self.W_norm_shape) + xb + K.epsilon())
+                                border_mode=self.border_mode,
+                                dim_ordering=self.dim_ordering,
+                                filter_shape=self.W_norm_shape) + xb + K.epsilon())
 
         W = self.W / Wnorm
 
@@ -456,6 +458,91 @@ class CosineConvolution2D(Layer):
         base_config = super(CosineConvolution2D, self).get_config()
         return dict(list(base_config.items()) + list(config.items()))
 
+
 CosineConv2D = CosineConvolution2D
 get_custom_objects().update({"CosineConvolution2D": CosineConvolution2D})
 get_custom_objects().update({"CosineConv2D": CosineConv2D})
+
+
+class SubPixelUpscaling(Layer):
+    """ Sub-pixel convolutional upscaling layer based on the paper "Real-Time Single Image
+    and Video Super-Resolution Using an Efficient Sub-Pixel Convolutional Neural Network"
+    (https://arxiv.org/abs/1609.05158).
+
+    This layer requires a Convolution2D prior to it, having output nb_filter computed according to
+    the formula :
+
+        nb_filter = k * (scale_factor * scale_factor)
+        where k = a user defined number of filters (generally larger than 32)
+              scale_factor = the upscaling factor (generally 2)
+
+    This layer performs the depth to space operation on the convolution filters, and returns a
+    tensor with the size as defined below.
+
+    # Example :
+    ```python
+        # A standard subpixel upscaling block
+        x = Convolution2D(256, 3, 3, border_mode='same', activation='relu')(...)
+        u = SubPixelUpscaling(scale_factor=2)(x)
+
+        [Optional]
+        x = Convolution2D(256, 3, 3, border_mode='same', activation='relu')(u)
+    ```
+
+        In practice, it is useful to have a second convolution layer after the
+        SubPixelUpscaling layer to speed up the learning process.
+
+        However, if you are stacking multiple SubPixelUpscaling blocks, it may increase
+        the number of parameters greatly, so the Convolution layer after SubPixelUpscaling
+        layer can be removed.
+
+    # Arguments
+        scale_factor: Upscaling factor.
+        dim_ordering: Can be 'default', 'th' or 'tf'.
+
+    # Input shape
+        4D tensor with shape:
+        `(samples, k * (scale_factor * scale_factor) channels, rows, cols)` if dim_ordering='th'
+        or 4D tensor with shape:
+        `(samples, rows, cols, k * (scale_factor * scale_factor) channels)` if dim_ordering='tf'.
+
+    # Output shape
+        4D tensor with shape:
+        `(samples, k channels, rows * scale_factor, cols * scale_factor))` if dim_ordering='th'
+        or 4D tensor with shape:
+        `(samples, rows * scale_factor, cols * scale_factor, k channels)` if dim_ordering='tf'.
+
+    """
+
+    def __init__(self, scale_factor=2, dim_ordering='default', **kwargs):
+        super(SubPixelUpscaling, self).__init__(**kwargs)
+
+        self.scale_factor = scale_factor
+        self.dim_ordering = dim_ordering
+
+        if self.dim_ordering == 'default':
+            self.dim_ordering = K.image_dim_ordering()
+
+    def build(self, input_shape):
+        pass
+
+    def call(self, x, mask=None):
+        y = K.depth_to_space(x, self.scale_factor)
+        return y
+
+    def get_output_shape_for(self, input_shape):
+        if self.dim_ordering == 'th':
+            b, k, r, c = input_shape
+            return (b, k // (self.scale_factor ** 2), r * self.scale_factor, c * self.scale_factor)
+        else:
+            b, r, c, k = input_shape
+            return (b, r * self.scale_factor, c * self.scale_factor, k // (self.scale_factor ** 2))
+
+    def get_config(self):
+        config = {'scale_factor': self.scale_factor,
+                  'dim_ordering': self.dim_ordering}
+        base_config = super(SubPixelUpscaling, self).get_config()
+        return dict(list(base_config.items()) + list(config.items()))
+
+
+get_custom_objects().update({'SubPixelUpscaling': SubPixelUpscaling})

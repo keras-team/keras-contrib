@@ -17,6 +17,9 @@ from keras.backend.tensorflow_backend import _preprocess_conv3d_kernel
 from keras.backend.tensorflow_backend import _preprocess_border_mode
 from keras.backend.tensorflow_backend import _postprocess_conv3d_output
 from keras.backend.tensorflow_backend import _preprocess_border_mode
+from keras.backend.tensorflow_backend import _preprocess_conv2d_input
+from keras.backend.tensorflow_backend import _postprocess_conv2d_output
+
 py_all = all
 
 
@@ -103,6 +106,15 @@ def extract_image_patches(x, ksizes, ssizes, border_mode="same",
     if dim_ordering == "tf":
         patches = KTF.permute_dimensions(patches, [0, 1, 2, 4, 5, 3])
     return patches
+
+
+def depth_to_space(input, scale):
+    ''' Uses phase shift algorithm to convert channels/depth for spatial resolution '''
+
+    input = _preprocess_conv2d_input(input, image_dim_ordering())
+    out = tf.depth_to_space(input, scale)
+    out = _postprocess_conv2d_output(out, image_dim_ordering())
+    return out
 
 
 def moments(x, axes, shift=None, keep_dims=False):

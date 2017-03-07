@@ -1,5 +1,6 @@
 import pytest
 import numpy as np
+import itertools
 from numpy.testing import assert_allclose
 
 from keras.utils.test_utils import layer_test, keras_test
@@ -145,6 +146,28 @@ def test_cosineconvolution_2d():
     model.set_weights(W)
     out = model.predict(X)
     assert_allclose(out, -np.ones((1, 1, 1, 1), dtype=K.floatx()), atol=1e-5)
+
+
+@keras_test
+def test_sub_pixel_upscaling():
+    nb_samples = 2
+    nb_row = 16
+    nb_col = 16
+
+    for scale_factor in [2, 3, 4]:
+        input_data = np.random.random((nb_samples, 4 * (scale_factor ** 2), nb_row, nb_col))
+
+        if K.image_dim_ordering() == 'tf':
+            input_data = input_data.transpose((0, 2, 3, 1))
+
+        input_tensor = K.variable(input_data)
+        expected_output = K.eval(KC.depth_to_space(input_tensor, scale=scale_factor))
+
+        layer_test(convolutional.SubPixelUpscaling,
+                   kwargs={'scale_factor': scale_factor},
+                   input_data=input_data,
+                   expected_output=expected_output,
+                   expected_output_dtype=K.floatx())
 
 
 if __name__ == '__main__':
