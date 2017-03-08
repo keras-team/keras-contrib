@@ -24,6 +24,10 @@ from keras.backend.theano_backend import _preprocess_conv3d_kernel
 from keras.backend.theano_backend import _preprocess_conv3d_filter_shape
 from keras.backend.theano_backend import _preprocess_border_mode
 from keras.backend.theano_backend import _postprocess_conv3d_output
+from keras.backend.theano_backend import _preprocess_conv2d_input
+from keras.backend.theano_backend import _postprocess_conv2d_output
+
+import itertools
 
 py_all = all
 
@@ -115,3 +119,30 @@ def extract_image_patches(X, ksizes, strides, border_mode="valid", dim_ordering=
     if dim_ordering == "tf":
         patches = KTH.permute_dimensions(patches, [0, 1, 2, 4, 5, 3])
     return patches
+
+
+def depth_to_space(input, scale):
+    ''' Uses phase shift algorithm to convert channels/depth for spatial resolution '''
+
+    input = _preprocess_conv2d_input(input, image_dim_ordering())
+
+    b, k, row, col = input.shape
+    output_shape = (b, k // (scale ** 2), row * scale, col * scale)
+
+    out = T.zeros(output_shape)
+    r = scale
+
+    for y, x in itertools.product(range(scale), repeat=2):
+        out = T.inc_subtensor(out[:, :, y::r, x::r], input[:, r * y + x:: r * r, :, :])
+
+    out = _postprocess_conv2d_output(out, input, None, None, None, image_dim_ordering())
+    return out
+
+
+def moments(x, axes, shift=None, keep_dims=False):
+    ''' Calculates and returns the mean and variance of the input '''
+
+    mean_batch = KTH.mean(x, axis=axes, keepdims=keep_dims)
+    var_batch = KTH.var(x, axis=axes, keepdims=keep_dims)
+
+    return mean_batch, var_batch

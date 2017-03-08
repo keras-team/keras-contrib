@@ -17,6 +17,9 @@ from keras.backend.tensorflow_backend import _preprocess_conv3d_kernel
 from keras.backend.tensorflow_backend import _preprocess_border_mode
 from keras.backend.tensorflow_backend import _postprocess_conv3d_output
 from keras.backend.tensorflow_backend import _preprocess_border_mode
+from keras.backend.tensorflow_backend import _preprocess_conv2d_input
+from keras.backend.tensorflow_backend import _postprocess_conv2d_output
+
 py_all = all
 
 
@@ -58,7 +61,8 @@ def deconv3d(x, kernel, output_shape, strides=(1, 1, 1),
         raise ValueError('Unknown dim_ordering ' + str(dim_ordering))
 
     x = _preprocess_conv3d_input(x, dim_ordering)
-    output_shape = _preprocess_deconv_output_shape(x, output_shape, dim_ordering)
+    output_shape = _preprocess_deconv_output_shape(x, output_shape,
+                                                   dim_ordering)
     kernel = _preprocess_conv3d_kernel(kernel, dim_ordering)
     kernel = tf.transpose(kernel, (0, 1, 2, 4, 3))
     padding = _preprocess_border_mode(border_mode)
@@ -69,33 +73,56 @@ def deconv3d(x, kernel, output_shape, strides=(1, 1, 1),
     return _postprocess_conv3d_output(x, dim_ordering)
 
 
-def extract_image_patches(X, ksizes, ssizes, border_mode="same", dim_ordering="tf"):
+def extract_image_patches(x, ksizes, ssizes, border_mode="same",
+                          dim_ordering="tf"):
     '''
     Extract the patches from an image
-    Parameters
-    ----------
-    X : The input image
-    ksizes : 2-d tuple with the kernel size
-    ssizes : 2-d tuple with the strides size
-    border_mode : 'same' or 'valid'
-    dim_ordering : 'tf' or 'th'
-    Returns
-    -------
-    The (k_w,k_h) patches extracted
-    TF ==> (batch_size,w,h,k_w,k_h,c)
-    TH ==> (batch_size,w,h,c,k_w,k_h)
+    # Parameters
+
+        x : The input image
+        ksizes : 2-d tuple with the kernel size
+        ssizes : 2-d tuple with the strides size
+        border_mode : 'same' or 'valid'
+        dim_ordering : 'tf' or 'th'
+
+    # Returns
+        The (k_w,k_h) patches extracted
+        TF ==> (batch_size,w,h,k_w,k_h,c)
+        TH ==> (batch_size,w,h,c,k_w,k_h)
     '''
     kernel = [1, ksizes[0], ksizes[1], 1]
     strides = [1, ssizes[0], ssizes[1], 1]
     padding = _preprocess_border_mode(border_mode)
     if dim_ordering == "th":
-        X = KTF.permute_dimensions(X, (0, 2, 3, 1))
-    bs_i, w_i, h_i, ch_i = KTF.int_shape(X)
-    patches = tf.extract_image_patches(X, kernel, strides, [1, 1, 1, 1], padding)
+        x = KTF.permute_dimensions(x, (0, 2, 3, 1))
+    bs_i, w_i, h_i, ch_i = KTF.int_shape(x)
+    patches = tf.extract_image_patches(x, kernel, strides, [1, 1, 1, 1],
+                                       padding)
     # Reshaping to fit Theano
     bs, w, h, ch = KTF.int_shape(patches)
+<<<<<<< HEAD
     patches = tf.reshape(tf.transpose(tf.reshape(patches, [-1, w, h, tf.floordiv(ch, ch_i), ch_i]), [0, 1, 2, 4, 3]),
                          [-1, w, h, ch_i, ksizes[0], ksizes[1]])
+=======
+    patches = tf.reshape(patches, [bs, w, h, -1, ch_i])
+    patches = tf.reshape(tf.transpose(patches, [0, 1, 2, 4, 3]),
+                         [bs, w, h, ch_i, ksizes[0], ksizes[1]])
+>>>>>>> d19534136b4f1c31f8cfe4ff70aca3298c1cb960
     if dim_ordering == "tf":
         patches = KTF.permute_dimensions(patches, [0, 1, 2, 4, 5, 3])
     return patches
+
+
+def depth_to_space(input, scale):
+    ''' Uses phase shift algorithm to convert channels/depth for spatial resolution '''
+
+    input = _preprocess_conv2d_input(input, image_dim_ordering())
+    out = tf.depth_to_space(input, scale)
+    out = _postprocess_conv2d_output(out, image_dim_ordering())
+    return out
+
+
+def moments(x, axes, shift=None, keep_dims=False):
+    ''' Wrapper over tensorflow backend call '''
+
+    return tf.nn.moments(x, axes, shift=shift, keep_dims=keep_dims)

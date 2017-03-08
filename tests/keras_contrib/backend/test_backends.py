@@ -73,6 +73,7 @@ def check_composed_tensor_operations(first_function_name, first_function_args,
 
 
 class TestBackend(object):
+
     def test_extract(self):
         for input_shape in [(1, 3, 40, 40), (1, 3, 10, 10)]:
             for kernel_shape in [2, 5]:
@@ -98,6 +99,32 @@ class TestBackend(object):
                 zth = KTH.eval(KCTH.extract_image_patches(xth, kernel, strides, dim_ordering='tf', border_mode="same"))
                 assert zth.shape == ztf.shape
                 assert_allclose(zth, ztf, atol=1e-02)
+
+    def test_moments(self):
+        input_shape = (10, 10, 10, 10)
+        x_0 = np.zeros(input_shape)
+        x_1 = np.ones(input_shape)
+        x_random = np.random.random(input_shape)
+
+        th_axes = [0, 2, 3]
+        tf_axes = [0, 1, 2]
+
+        for ip in [x_0, x_1, x_random]:
+            for axes in [th_axes, tf_axes]:
+                for keep_dims in [True, False]:
+                    ip_th = KTH.variable(ip)
+                    th_mean, th_var = KCTH.moments(ip_th, axes, keep_dims=keep_dims)
+
+                    ip_tf = KTF.variable(ip)
+                    tf_mean, tf_var = KCTF.moments(ip_tf, axes, keep_dims=keep_dims)
+
+                    th_mean_val = KTH.eval(th_mean)
+                    tf_mean_val = KTF.eval(tf_mean)
+                    th_var_val = KTH.eval(th_var)
+                    tf_var_val = KTF.eval(tf_var)
+
+                    assert_allclose(th_mean_val, tf_mean_val, rtol=1e-4)
+                    assert_allclose(th_var_val, tf_var_val, rtol=1e-4)
 
 
 if __name__ == '__main__':
