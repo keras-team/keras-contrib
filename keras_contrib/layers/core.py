@@ -26,158 +26,163 @@ from keras.utils.generic_utils import get_custom_objects
 
 class CosineDense(Layer):
     """A cosine normalized densely-connected NN layer
-    Cosine Normalization: Using Cosine Similarity Instead of Dot Product in Neural Networks
+    Cosine Normalization: Using Cosine Similarity Instead of Dot Product
+    in Neural Networks
     https://arxiv.org/pdf/1702.05870.pdf
+
+    `CosineDense` implements the operation:
+    `output = activation(cosine_distance([input, 1], [kernel, bias]))`
+    where `activation` is the element-wise activation function
+    passed as the `activation` argument, `kernel` is a weights matrix
+    created by the layer, and `bias` is a bias vector created by the layer
+    (only applicable if `use_bias` is `True`).
+
+    Note: if the input to the layer has a rank greater than 2, then
+    it is flattened prior to the initial dot product with `kernel`.
+
+    Note: a regular Dense layer may work better as the final layer
 
     # Example
 
     ```python
         # as first layer in a sequential model:
         model = Sequential()
-        model.add(CosineDense(32, input_dim=16))
+        model.add(CosineDense(32, input_shape=(16,)))
         # now the model will take as input arrays of shape (*, 16)
         # and output arrays of shape (*, 32)
-
-        # this is equivalent to the above:
-        model = Sequential()
-        model.add(CosineDense(32, input_shape=(16,)))
 
         # after the first layer, you don't need to specify
         # the size of the input anymore:
         model.add(CosineDense(32))
-
-        **Note that a regular Dense layer may work better as the final layer
     ```
 
     # Arguments
-        output_dim: int > 0.
-        init: name of initialization function for the weights of the layer
-            (see [initializations](../initializations.md)),
-            or alternatively, Theano function to use for weights
-            initialization. This parameter is only relevant
-            if you don't pass a `weights` argument.
-        activation: name of activation function to use
-            (see [activations](../activations.md)),
-            or alternatively, elementwise Theano function.
+        units: Positive integer, dimensionality of the output space.
+        activation: Activation function to use
+            (see [activations](../activations.md)).
             If you don't specify anything, no activation is applied
-            (ie. "linear" activation: a(x) = x).
-        weights: list of Numpy arrays to set as initial weights.
-            The list should have 2 elements, of shape `(input_dim, output_dim)`
-            and (output_dim,) for weights and biases respectively.
-        W_regularizer: instance of [WeightRegularizer](../regularizers.md)
-            (eg. L1 or L2 regularization), applied to the main weights matrix.
-        b_regularizer: instance of [WeightRegularizer](../regularizers.md),
-            applied to the bias.
-        activity_regularizer: instance of [ActivityRegularizer](../regularizers.md),
-            applied to the network output.
-        W_constraint: instance of the [constraints](../constraints.md) module
-            (eg. maxnorm, nonneg), applied to the main weights matrix.
-        b_constraint: instance of the [constraints](../constraints.md) module,
-            applied to the bias.
-        bias: whether to include a bias
-            (i.e. make the layer affine rather than linear).
-        input_dim: dimensionality of the input (integer). This argument
-            (or alternatively, the keyword argument `input_shape`)
-            is required when using this layer as the first layer in a model.
+            (ie. "linear" activation: `a(x) = x`).
+        use_bias: Boolean, whether the layer uses a bias vector.
+        kernel_initializer: Initializer for the `kernel` weights matrix
+            (see [initializers](../initializers.md)).
+        bias_initializer: Initializer for the bias vector
+            (see [initializers](../initializers.md)).
+        kernel_regularizer: Regularizer function applied to
+            the `kernel` weights matrix
+            (see [regularizer](../regularizers.md)).
+        bias_regularizer: Regularizer function applied to the bias vector
+            (see [regularizer](../regularizers.md)).
+        activity_regularizer: Regularizer function applied to
+            the output of the layer (its "activation").
+            (see [regularizer](../regularizers.md)).
+        kernel_constraint: Constraint function applied to
+            the `kernel` weights matrix
+            (see [constraints](../constraints.md)).
+        bias_constraint: Constraint function applied to the bias vector
+            (see [constraints](../constraints.md)).
 
     # Input shape
-        nD tensor with shape: `(nb_samples, ..., input_dim)`.
+        nD tensor with shape: `(batch_size, ..., input_dim)`.
         The most common situation would be
-        a 2D input with shape `(nb_samples, input_dim)`.
+        a 2D input with shape `(batch_size, input_dim)`.
 
     # Output shape
-        nD tensor with shape: `(nb_samples, ..., output_dim)`.
-        For instance, for a 2D input with shape `(nb_samples, input_dim)`,
-        the output would have shape `(nb_samples, output_dim)`.
+        nD tensor with shape: `(batch_size, ..., units)`.
+        For instance, for a 2D input with shape `(batch_size, input_dim)`,
+        the output would have shape `(batch_size, units)`.
     """
 
-    def __init__(self, output_dim, init='glorot_uniform',
-                 activation=None, weights=None,
-                 W_regularizer=None, b_regularizer=None, activity_regularizer=None,
-                 W_constraint=None, b_constraint=None,
-                 bias=True, input_dim=None, **kwargs):
-        self.init = initializations.get(init)
-        self.activation = activations.get(activation)
-        self.output_dim = output_dim
-        self.input_dim = input_dim
-
-        self.W_regularizer = regularizers.get(W_regularizer)
-        self.b_regularizer = regularizers.get(b_regularizer)
-        self.activity_regularizer = regularizers.get(activity_regularizer)
-
-        self.W_constraint = constraints.get(W_constraint)
-        self.b_constraint = constraints.get(b_constraint)
-
-        self.bias = bias
-        self.initial_weights = weights
-        self.input_spec = [InputSpec(ndim='2+')]
-
-        if self.input_dim:
-            kwargs['input_shape'] = (self.input_dim,)
+    @interfaces.legacy_dense_support
+    def __init__(self, units,
+                 activation=None,
+                 use_bias=True,
+                 kernel_initializer='glorot_uniform',
+                 bias_initializer='zeros',
+                 kernel_regularizer=None,
+                 bias_regularizer=None,
+                 activity_regularizer=None,
+                 kernel_constraint=None,
+                 bias_constraint=None,
+                 **kwargs):
+        if 'input_shape' not in kwargs and 'input_dim' in kwargs:
+            kwargs['input_shape'] = (kwargs.pop('input_dim'),)
         super(CosineDense, self).__init__(**kwargs)
+        self.units = units
+        self.activation = activations.get(activation)
+        self.use_bias = use_bias
+        self.kernel_initializer = initializers.get(kernel_initializer)
+        self.bias_initializer = initializers.get(bias_initializer)
+        self.kernel_regularizer = regularizers.get(kernel_regularizer)
+        self.bias_regularizer = regularizers.get(bias_regularizer)
+        self.activity_regularizer = regularizers.get(activity_regularizer)
+        self.kernel_constraint = constraints.get(kernel_constraint)
+        self.bias_constraint = constraints.get(bias_constraint)
+        self.input_spec = InputSpec(min_ndim=2)
+        self.supports_masking = True
 
     def build(self, input_shape):
         assert len(input_shape) >= 2
         input_dim = input_shape[-1]
-        self.input_dim = input_dim
-        self.input_spec = [InputSpec(dtype=K.floatx(),
-                                     ndim='2+')]
 
-        self.W = self.add_weight((input_dim, self.output_dim),
-                                 initializer=self.init,
-                                 name='{}_W'.format(self.name),
-                                 regularizer=self.W_regularizer,
-                                 constraint=self.W_constraint)
-        if self.bias:
-            self.b = self.add_weight((self.output_dim,),
-                                     initializer='zero',
-                                     name='{}_b'.format(self.name),
-                                     regularizer=self.b_regularizer,
-                                     constraint=self.b_constraint)
+        self.kernel = self.add_weight((input_dim, self.units),
+                                      initializer=self.kernel_initializer,
+                                      name='kernel',
+                                      regularizer=self.kernel_regularizer,
+                                      constraint=self.kernel_constraint)
+        if self.use_bias:
+            self.bias = self.add_weight((self.units,),
+                                        initializer=self.bias_initializer,
+                                        name='bias',
+                                        regularizer=self.bias_regularizer,
+                                        constraint=self.bias_constraint)
         else:
-            self.b = None
-
-        if self.initial_weights is not None:
-            self.set_weights(self.initial_weights)
-            del self.initial_weights
+            self.bias = None
+        self.input_spec = InputSpec(min_ndim=2, axes={-1: input_dim})
         self.built = True
 
-    def call(self, x, mask=None):
+    def call(self, inputs):
         if self.bias:
-            b, xb = self.b, 1.
+            b, xb = self.bias, 1.
         else:
             b, xb = 0., 0.
 
-        xnorm = K.sqrt(K.sum(K.square(x), axis=-1, keepdims=True) + xb + K.epsilon())
-        Wnorm = K.sqrt(K.sum(K.square(self.W), axis=0) + K.square(b) + K.epsilon())
+        xnorm = K.sqrt(K.sum(K.square(inputs), axis=-1, keepdims=True) +
+                       xb +
+                       K.epsilon())
+        Wnorm = K.sqrt(K.sum(K.square(self.kernel), axis=0) +
+                       K.square(b) +
+                       K.epsilon())
 
         xWnorm = (xnorm * Wnorm)
 
-        output = K.dot(x, self.W) / xWnorm
+        output = K.dot(inputs, self.kernel) / xWnorm
         if self.bias:
-            output += (self.b / xWnorm)
-        return self.activation(output)
+            output += (self.bias / xWnorm)
+        if self.activation is not None:
+            output = self.activation(output)
+        return output
 
-    def get_output_shape_for(self, input_shape):
+    def compute_output_shape(self, input_shape):
         assert input_shape and len(input_shape) >= 2
-        assert input_shape[-1] and input_shape[-1] == self.input_dim
+        assert input_shape[-1]
         output_shape = list(input_shape)
-        output_shape[-1] = self.output_dim
+        output_shape[-1] = self.units
         return tuple(output_shape)
 
     def get_config(self):
-        config = {'output_dim': self.output_dim,
-                  'init': self.init.__name__,
-                  'activation': self.activation.__name__,
-                  'W_regularizer': self.W_regularizer.get_config() if self.W_regularizer else None,
-                  'b_regularizer': self.b_regularizer.get_config() if self.b_regularizer else None,
-                  'activity_regularizer': self.activity_regularizer.get_config() if self.activity_regularizer else None,
-                  'W_constraint': self.W_constraint.get_config() if self.W_constraint else None,
-                  'b_constraint': self.b_constraint.get_config() if self.b_constraint else None,
-                  'bias': self.bias,
-                  'input_dim': self.input_dim}
+        config = {
+            'units': self.units,
+            'activation': activations.serialize(self.activation),
+            'use_bias': self.use_bias,
+            'kernel_initializer': initializers.serialize(self.kernel_initializer),
+            'bias_initializer': initializers.serialize(self.kernel_initializer),
+            'kernel_regularizer': regularizers.serialize(self.kernel_regularizer),
+            'bias_regularizer': regularizers.serialize(self.bias_regularizer),
+            'activity_regularizer': regularizers.serialize(self.activity_regularizer),
+            'kernel_constraint': constraints.serialize(self.kernel_constraint),
+            'bias_constraint': constraints.serialize(self.bias_constraint)
+        }
         base_config = super(CosineDense, self).get_config()
         return dict(list(base_config.items()) + list(config.items()))
-
 
 get_custom_objects().update({"CosineDense": CosineDense})
