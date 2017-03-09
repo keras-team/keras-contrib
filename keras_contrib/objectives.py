@@ -13,7 +13,7 @@ class DSSIMObjective():
     def __init__(self, k1=0.01, k2=0.03, kernel_size=3, max_value=1.0):
         """
         Difference of Structural Similarity (DSSIM loss function). Clipped between 0 and 0.5
-        Note : You shoul add a regularization term like a l2 loss in addition to this one.
+        Note : You should add a regularization term like a l2 loss in addition to this one.
         :param batch_size: Batch size used in the model
         :param k1: Parameter of the SSIM (default 0.01)
         :param k2: Parameter of the SSIM (default 0.03)
@@ -25,6 +25,8 @@ class DSSIMObjective():
         self.k1 = k1
         self.k2 = k2
         self.max_value = max_value
+        self.c1 = (self.k1 * self.max_value) ** 2
+        self.c2 = (self.k2 * self.max_value) ** 2
         self.dim_ordering = K.image_dim_ordering()
         self.backend = KC.backend()
 
@@ -46,15 +48,17 @@ class DSSIMObjective():
         bs, w, h, c1, c2, c3 = self.__int_shape(patches_pred)
         patches_pred = KC.reshape(patches_pred, [-1, w, h, c1 * c2 * c3])
         patches_true = KC.reshape(patches_true, [-1, w, h, c1 * c2 * c3])
+        # Get mean
         u_true = KC.mean(patches_true, axis=-1)
         u_pred = KC.mean(patches_pred, axis=-1)
+        # Get variance
         var_true = K.var(patches_true, axis=-1)
         var_pred = K.var(patches_pred, axis=-1)
+        # Get std dev
         std_true = K.sqrt(var_true + KC.epsilon())
         std_pred = K.sqrt(var_pred + KC.epsilon())
-        c1 = (self.k1 * self.max_value) ** 2
-        c2 = (self.k2 * self.max_value) ** 2
-        ssim = (2 * u_true * u_pred + c1) * (2 * std_pred * std_true + c2)
-        denom = (u_true ** 2 + u_pred ** 2 + c1) * (var_pred + var_true + c2)
+
+        ssim = (2 * u_true * u_pred + self.c1) * (2 * std_pred * std_true + self.c2)
+        denom = (K.square(u_true) + K.square(u_pred) + self.c1) * (var_pred + var_true + self.c2)
         ssim /= denom  # no need for clipping, c1 and c2 make the denom non-zero
         return K.mean((1.0 - ssim) / 2.0)
