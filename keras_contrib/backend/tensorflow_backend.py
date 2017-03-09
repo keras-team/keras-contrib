@@ -2,6 +2,7 @@ import tensorflow as tf
 from tensorflow.python.training import moving_averages
 from tensorflow.python.ops import tensor_array_ops
 from tensorflow.python.ops import control_flow_ops
+
 try:
     from tensorflow.python.ops import ctc_ops as ctc
 except ImportError:
@@ -28,7 +29,7 @@ def _preprocess_deconv_output_shape(x, shape, dim_ordering):
         shape = (shape[0],) + tuple(shape[2:]) + (shape[1],)
 
     if shape[0] is None:
-        shape = (tf.shape(x)[0], ) + tuple(shape[1:])
+        shape = (tf.shape(x)[0],) + tuple(shape[1:])
         shape = tf.stack(list(shape))
     return shape
 
@@ -100,9 +101,8 @@ def extract_image_patches(x, ksizes, ssizes, border_mode="same",
                                        padding)
     # Reshaping to fit Theano
     bs, w, h, ch = KTF.int_shape(patches)
-    patches = tf.reshape(patches, [bs, w, h, -1, ch_i])
-    patches = tf.reshape(tf.transpose(patches, [0, 1, 2, 4, 3]),
-                         [bs, w, h, ch_i, ksizes[0], ksizes[1]])
+    patches = tf.reshape(tf.transpose(tf.reshape(patches, [-1, w, h, tf.floordiv(ch, ch_i), ch_i]), [0, 1, 2, 4, 3]),
+                         [-1, w, h, ch_i, ksizes[0], ksizes[1]])
     if dim_ordering == "tf":
         patches = KTF.permute_dimensions(patches, [0, 1, 2, 4, 5, 3])
     return patches
