@@ -11,12 +11,12 @@ from keras.backend import tensorflow_backend as KTF
 import numpy as np
 import os
 import warnings
-from keras.backend.common import floatx, _EPSILON, image_dim_ordering, reset_uids
+from keras.backend.common import floatx, _EPSILON, image_data_format, reset_uids
 from keras.backend.tensorflow_backend import _preprocess_conv3d_input
 from keras.backend.tensorflow_backend import _preprocess_conv3d_kernel
 from keras.backend.tensorflow_backend import _preprocess_border_mode
 from keras.backend.tensorflow_backend import _postprocess_conv3d_output
-from keras.backend.tensorflow_backend import _preprocess_border_mode
+from keras.backend.tensorflow_backend import _preprocess_padding
 from keras.backend.tensorflow_backend import _preprocess_conv2d_input
 from keras.backend.tensorflow_backend import _postprocess_conv2d_output
 

@@ -1,4 +1,4 @@
-from .. import initializations
+from .. import initializers
 from keras.engine import Layer
 from keras.utils.generic_utils import get_custom_objects
 from .. import backend as K
@@ -35,8 +35,8 @@ class PELU(Layer):
 
     def __init__(self, alphas_init='one', betas_init='one', weights=None, shared_axes=None, **kwargs):
         self.supports_masking = True
-        self.alphas_init = initializations.get(alphas_init)
-        self.betas_init = initializations.get(betas_init)
+        self.alphas_init = initializers.get(alphas_init)
+        self.betas_init = initializers.get(betas_init)
         self.initial_weights = weights
         if not isinstance(shared_axes, (list, tuple)):
             self.shared_axes = [shared_axes]
@@ -54,9 +54,9 @@ class PELU(Layer):
 
         # Initialised as ones to emulate the default ELU
         self.alphas = self.alphas_init(param_shape,
-                                       name='{}_alphas'.format(self.name))
+                                       name='alphas')
         self.betas = self.betas_init(param_shape,
-                                     name='{}_betas'.format(self.name))
+                                     name='betas')
 
         self.trainable_weights = [self.alphas, self.betas]
 
