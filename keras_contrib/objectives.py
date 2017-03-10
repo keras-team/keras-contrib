@@ -14,7 +14,6 @@ class DSSIMObjective():
         """
         Difference of Structural Similarity (DSSIM loss function). Clipped between 0 and 0.5
         Note : You should add a regularization term like a l2 loss in addition to this one.
-        :param batch_size: Batch size used in the model
         :param k1: Parameter of the SSIM (default 0.01)
         :param k2: Parameter of the SSIM (default 0.03)
         :param kernel_size: Size of the sliding window (default 3)
