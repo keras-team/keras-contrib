@@ -22,7 +22,7 @@ class DSSIMObjective():
         self.max_value = max_value
         self.c1 = (self.k1 * self.max_value) ** 2
         self.c2 = (self.k2 * self.max_value) ** 2
-        self.dim_ordering = K.image_dim_ordering()
+        self.dim_ordering = KC.image_dim_ordering()
         self.backend = KC.backend()
 
     def __int_shape(self, x):
@@ -47,13 +47,13 @@ class DSSIMObjective():
         u_true = KC.mean(patches_true, axis=-1)
         u_pred = KC.mean(patches_pred, axis=-1)
         # Get variance
-        var_true = K.var(patches_true, axis=-1)
-        var_pred = K.var(patches_pred, axis=-1)
+        var_true = KC.var(patches_true, axis=-1)
+        var_pred = KC.var(patches_pred, axis=-1)
         # Get std dev
-        std_true = K.sqrt(var_true + KC.epsilon())
-        std_pred = K.sqrt(var_pred + KC.epsilon())
+        std_true = KC.sqrt(var_true + KC.epsilon())
+        std_pred = KC.sqrt(var_pred + KC.epsilon())
 
         ssim = (2 * u_true * u_pred + self.c1) * (2 * std_pred * std_true + self.c2)
-        denom = (K.square(u_true) + K.square(u_pred) + self.c1) * (var_pred + var_true + self.c2)
+        denom = (KC.square(u_true) + KC.square(u_pred) + self.c1) * (var_pred + var_true + self.c2)
         ssim /= denom  # no need for clipping, c1 and c2 make the denom non-zero
-        return K.mean((1.0 - ssim) / 2.0)
+        return KC.mean((1.0 - ssim) / 2.0)
