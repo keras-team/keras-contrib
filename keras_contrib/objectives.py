@@ -5,10 +5,6 @@ from keras.objectives import *
 import keras_contrib.backend as KC
 
 
-def get(identifier):
-    return get_from_module(identifier, globals(), 'objective')
-
-
 class DSSIMObjective():
     def __init__(self, k1=0.01, k2=0.03, kernel_size=3, max_value=1.0):
         """
