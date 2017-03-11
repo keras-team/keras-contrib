@@ -9,7 +9,7 @@ from keras.backend import tensorflow_backend as KTF
 from keras_contrib import backend as KC
 import keras_contrib.backend.theano_backend as KCTH
 import keras_contrib.backend.tensorflow_backend as KCTF
-from keras.utils.np_utils import convert_kernel
+from keras.utils.conv_utils import convert_kernel
 
 
 def check_dtype(var, dtype):
