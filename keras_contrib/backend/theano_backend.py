@@ -33,7 +33,7 @@ py_all = all
 
 
 def deconv3d(x, kernel, output_shape, strides=(1, 1, 1),
-             border_mode='valid',
+             padding='valid',
              data_format='default',
              image_shape=None, filter_shape=None):
     '''3D deconvolution (transposed convolution).
@@ -42,18 +42,18 @@ def deconv3d(x, kernel, output_shape, strides=(1, 1, 1),
         kernel: kernel tensor.
         output_shape: desired dimensions of output.
         strides: strides tuple.
-        border_mode: string, "same" or "valid".
+        padding: string, "same" or "valid".
         data_format: "channels_last" or "channels_first".
             Whether to use Theano or TensorFlow dimension ordering
         in inputs/kernels/ouputs.
     '''
     flip_filters = False
     if data_format == 'default':
-        data_format = image_dim_ordering()
+        data_format = image_data_format()
     if data_format not in {'channels_last', 'channels_first'}:
         raise ValueError('Unknown image data format ' + str(data_format))
 
-    if daa_format == 'channels_last':
+    if data_format == 'channels_last':
         output_shape = (output_shape[0], output_shape[4], output_shape[1],
                         output_shape[2], output_shape[3])
 
