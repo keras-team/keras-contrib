@@ -7,7 +7,7 @@ from . import utils
 from . import wrappers
 from . import callbacks
 from . import constraints
-from . import initializations
+from . import initializers
 from . import metrics
 from . import objectives
 from . import optimizers
