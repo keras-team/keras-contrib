@@ -37,7 +37,7 @@ TF_WEIGHTS_PATH_NO_TOP = 'https://github.com/titu1994/DenseNet/releases/download
 def DenseNet(depth=40, nb_dense_block=3, growth_rate=12, nb_filter=16, nb_layers_per_block=-1,
              bottleneck=False, reduction=0.0, dropout_rate=0.0, weight_decay=1E-4,
              include_top=True, weights='cifar10', input_tensor=None, input_shape=None,
-             classes=10):
+             classes=10, dilation_rate=1, pooling="avg"):
     """Instantiate the DenseNet architecture,
         optionally loading weights pre-trained
         on CIFAR-10. Note that when using TensorFlow,
@@ -83,6 +83,11 @@ def DenseNet(depth=40, nb_dense_block=3, growth_rate=12, nb_filter=16, nb_layers
             classes: optional number of classes to classify images
                 into, only to be specified if `include_top` is True, and
                 if no `weights` argument is specified.
+            dilation_rate: an integer or tuple/list of 2 integers, specifying
+                the dilation rate to use for dilated convolution. Can be a
+                single integer to specify the same value for all spatial
+                dimensions.
+            pooling: Data pooling to reduce resolution, one of "avg", "max", None
 
         # Returns
             A Keras model instance.
@@ -113,8 +118,9 @@ def DenseNet(depth=40, nb_dense_block=3, growth_rate=12, nb_filter=16, nb_layers
             img_input = input_tensor
 
     x = __create_dense_net(classes, img_input, include_top, depth, nb_dense_block,
-                           growth_rate, nb_filter, nb_layers_per_block, bottleneck, reduction,
-                           dropout_rate, weight_decay)
+                           growth_rate, nb_filter, nb_layers_per_block, bottleneck,
+                           reduction, dropout_rate, weight_decay, dilation_rate,
+                           pooling, input_shape)
 
     # Ensure that the model takes into account
     # any potential predecessors of `input_tensor`.
@@ -321,7 +327,8 @@ def __conv_block(ip, nb_filter, bottleneck=False, dropout_rate=None, weight_deca
     return x
 
 
-def __transition_block(ip, nb_filter, compression=1.0, dropout_rate=None, weight_decay=1E-4):
+def __transition_block(ip, nb_filter, compression=1.0, dropout_rate=None,
+                       weight_decay=1E-4, dilation_rate=1, pooling="avg" ):
     ''' Apply BatchNorm, Relu 1x1, Conv2D, optional compression, dropout and Maxpooling2D
 
     Args:
@@ -331,6 +338,9 @@ def __transition_block(ip, nb_filter, compression=1.0, dropout_rate=None, weight
                     in the transition block.
         dropout_rate: dropout rate
         weight_decay: weight decay factor
+        dilation_rate: an integer or tuple/list of 2 integers, specifying the dilation rate to
+        use for dilated convolution. Can be a single integer to specify the same value for
+        all spatial dimensions.
 
     Returns: keras tensor, after applying batch_norm, relu-conv, dropout, maxpool
     '''
@@ -341,10 +351,14 @@ def __transition_block(ip, nb_filter, compression=1.0, dropout_rate=None, weight
                            beta_regularizer=l2(weight_decay))(ip)
     x = Activation('relu')(x)
     x = Convolution2D(int(nb_filter * compression), 1, 1, init="he_uniform", border_mode="same", bias=False,
-                      W_regularizer=l2(weight_decay))(x)
+                      W_regularizer=l2(weight_decay), dilation_rate=dilation_rate)(x)
     if dropout_rate:
         x = Dropout(dropout_rate)(x)
-    x = AveragePooling2D((2, 2), strides=(2, 2))(x)
+
+    if pooling == "avg":
+        x = AveragePooling2D((2, 2), strides=(2, 2))(x)
+    elif pooling == "max":
+        x = MaxPooling2D((2, 2), strides=(2, 2))(x)
 
     return x
 
@@ -418,8 +432,11 @@ def __transition_up_block(ip, nb_filters, type='upsampling', output_shape=None, 
     return x
 
 
-def __create_dense_net(nb_classes, img_input, include_top, depth=40, nb_dense_block=3, growth_rate=12, nb_filter=-1,
-                       nb_layers_per_block=-1, bottleneck=False, reduction=0.0, dropout_rate=None, weight_decay=1E-4):
+def __create_dense_net(nb_classes, img_input, include_top, depth=40,
+                       nb_dense_block=3, growth_rate=12, nb_filter=-1,
+                       nb_layers_per_block=-1, bottleneck=False, reduction=0.0,
+                       dropout_rate=None, weight_decay=1E-4, dilation_rate=1,
+                       pooling="avg", input_shape=None):
     ''' Build the DenseNet model
 
     Args:
@@ -440,6 +457,12 @@ def __create_dense_net(nb_classes, img_input, include_top, depth=40, nb_dense_bl
         reduction: reduction factor of transition blocks. Note : reduction value is inverted to compute compression
         dropout_rate: dropout rate
         weight_decay: weight decay
+        dilation_rate: an integer or tuple/list of 2 integers, specifying
+            the dilation rate to use for dilated convolution. Can be a
+            single integer to specify the same value for all spatial
+            dimensions.
+        pooling: Data pooling to reduce resolution, one of "avg", "max", None
+        input_shape: Only used for shape inference in fully convolutional networks.
 
     Returns: keras tensor with nb_layers of conv_block appended
     '''
@@ -487,7 +510,7 @@ def __create_dense_net(nb_classes, img_input, include_top, depth=40, nb_dense_bl
                                      dropout_rate=dropout_rate, weight_decay=weight_decay)
         # add transition_block
         x = __transition_block(x, nb_filter, compression=compression, dropout_rate=dropout_rate,
-                               weight_decay=weight_decay)
+                               weight_decay=weight_decay, dilation_rate=dilation_rate, pooling=pooling)
         nb_filter = int(nb_filter * compression)
 
     # The last dense_block does not have a transition_block
@@ -497,10 +520,23 @@ def __create_dense_net(nb_classes, img_input, include_top, depth=40, nb_dense_bl
     x = BatchNormalization(mode=0, axis=concat_axis, gamma_regularizer=l2(weight_decay),
                            beta_regularizer=l2(weight_decay))(x)
     x = Activation('relu')(x)
-    x = GlobalAveragePooling2D()(x)
+    if pooling is not None:
+        x = GlobalAveragePooling2D()(x)
 
-    if include_top:
+    if include_top and pooling is not None:
         x = Dense(nb_classes, activation='softmax', W_regularizer=l2(weight_decay), b_regularizer=l2(weight_decay))(x)
+    elif include_top and pooling is None:
+        x = Convolution2D(nb_classes, 1, 1, activation='linear', border_mode='same', W_regularizer=l2(weight_decay),
+                          bias=False)(x)
+
+        if K.image_dim_ordering() == 'th':
+            channel, row, col = input_shape
+        else:
+            row, col, channel = input_shape
+
+        x = Reshape((row * col, nb_classes))(x)
+        x = Activation('softmax')(x)
+        x = Reshape((row, col, nb_classes))(x)
 
     return x
 
