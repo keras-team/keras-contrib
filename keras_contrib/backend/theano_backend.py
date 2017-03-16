@@ -22,7 +22,7 @@ from keras.backend.common import _FLOATX, floatx, _EPSILON, image_dim_ordering
 from keras.backend.theano_backend import _preprocess_conv3d_input
 from keras.backend.theano_backend import _preprocess_conv3d_kernel
 from keras.backend.theano_backend import _preprocess_conv3d_filter_shape
-from keras.backend.theano_backend import _preprocess_border_mode
+from keras.backend.theano_backend import _preprocess_padding
 from keras.backend.theano_backend import _postprocess_conv3d_output
 from keras.backend.theano_backend import _preprocess_conv2d_input
 from keras.backend.theano_backend import _postprocess_conv2d_output
@@ -42,7 +42,7 @@ def deconv3d(x, kernel, output_shape, strides=(1, 1, 1),
         kernel: kernel tensor.
         output_shape: desired dimensions of output.
         strides: strides tuple.
-        border_mode: string, "same" or "valid".
+        padding: string, "same" or "valid".
         dim_ordering: "tf" or "th".
             Whether to use Theano or TensorFlow dimension ordering
         in inputs/kernels/ouputs.
@@ -60,7 +60,7 @@ def deconv3d(x, kernel, output_shape, strides=(1, 1, 1),
     x = _preprocess_conv3d_input(x, dim_ordering)
     kernel = _preprocess_conv3d_kernel(kernel, dim_ordering)
     kernel = kernel.dimshuffle((1, 0, 2, 3, 4))
-    th_border_mode = _preprocess_border_mode(border_mode)
+    th_padding = _preprocess_padding(padding)
 
     if hasattr(kernel, '_keras_shape'):
         kernel_shape = kernel._keras_shape
@@ -74,11 +74,11 @@ def deconv3d(x, kernel, output_shape, strides=(1, 1, 1),
     conv_out = T.nnet.abstract_conv.conv3d_grad_wrt_inputs(
         x, kernel, output_shape,
         filter_shape=filter_shape,
-        border_mode=th_border_mode,
+        border_mode=th_padding,
         subsample=strides,
         filter_flip=not flip_filters)
 
-    conv_out = _postprocess_conv3d_output(conv_out, x, border_mode,
+    conv_out = _postprocess_conv3d_output(conv_out, x, padding,
                                           kernel_shape, strides, dim_ordering)
     return conv_out
 
@@ -91,7 +91,7 @@ def extract_image_patches(X, ksizes, strides, border_mode="valid", dim_ordering=
     X : The input image
     ksizes : 2-d tuple with the kernel size
     strides : 2-d tuple with the strides size
-    border_mode : 'same' or 'valid'
+    padding : 'same' or 'valid'
     dim_ordering : 'tf' or 'th'
     Returns
     -------
@@ -100,8 +100,8 @@ def extract_image_patches(X, ksizes, strides, border_mode="valid", dim_ordering=
     TH ==> (batch_size,w,h,c,k_w,k_h)
     '''
     patch_size = ksizes[1]
-    if border_mode == "same":
-        border_mode = "ignore_borders"
+    if padding == "same":
+        padding = "ignore_borders"
     if dim_ordering == "tf":
         X = KTH.permute_dimensions(X, [0, 3, 1, 2])
     # Thanks to https://github.com/awentzonline for the help!
@@ -110,7 +110,7 @@ def extract_image_patches(X, ksizes, strides, border_mode="valid", dim_ordering=
     num_rows = 1 + (xs[-2] - patch_size) // strides[1]
     num_cols = 1 + (xs[-1] - patch_size) // strides[1]
     num_channels = xs[-3]
-    patches = images2neibs(X, ksizes, strides, border_mode)
+    patches = images2neibs(X, ksizes, strides, padding)
     # Theano is sorting by channel
     patches = KTH.reshape(patches, (batch, num_channels, KTH.shape(patches)[0] // num_channels, patch_size, patch_size))
     patches = KTH.permute_dimensions(patches, (0, 2, 1, 3, 4))

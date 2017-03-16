@@ -15,7 +15,7 @@ import warnings
 from keras.backend.common import floatx, _EPSILON, image_dim_ordering, reset_uids
 from keras.backend.tensorflow_backend import _preprocess_conv3d_input
 from keras.backend.tensorflow_backend import _preprocess_conv3d_kernel
-from keras.backend.tensorflow_backend import _preprocess_border_mode
+from keras.backend.tensorflow_backend import _preprocess_padding
 from keras.backend.tensorflow_backend import _postprocess_conv3d_output
 from keras.backend.tensorflow_backend import _preprocess_border_mode
 from keras.backend.tensorflow_backend import _preprocess_conv2d_input
@@ -35,7 +35,7 @@ def _preprocess_deconv_output_shape(x, shape, dim_ordering):
 
 
 def deconv3d(x, kernel, output_shape, strides=(1, 1, 1),
-             border_mode='valid',
+             padding='valid',
              dim_ordering='default',
              image_shape=None, filter_shape=None):
     '''3D deconvolution (i.e. transposed convolution).
@@ -45,7 +45,7 @@ def deconv3d(x, kernel, output_shape, strides=(1, 1, 1),
         kernel: kernel tensor.
         output_shape: 1D int tensor for the output shape.
         strides: strides tuple.
-        border_mode: string, "same" or "valid".
+        padding: string, "same" or "valid".
         dim_ordering: "tf" or "th".
             Whether to use Theano or TensorFlow dimension ordering
             for inputs/kernels/ouputs.
@@ -66,7 +66,7 @@ def deconv3d(x, kernel, output_shape, strides=(1, 1, 1),
                                                    dim_ordering)
     kernel = _preprocess_conv3d_kernel(kernel, dim_ordering)
     kernel = tf.transpose(kernel, (0, 1, 2, 4, 3))
-    padding = _preprocess_border_mode(border_mode)
+    padding = _preprocess_padding(padding)
     strides = (1,) + strides + (1,)
 
     x = tf.nn.conv3d_transpose(x, kernel, output_shape, strides,
@@ -74,7 +74,7 @@ def deconv3d(x, kernel, output_shape, strides=(1, 1, 1),
     return _postprocess_conv3d_output(x, dim_ordering)
 
 
-def extract_image_patches(x, ksizes, ssizes, border_mode="same",
+def extract_image_patches(x, ksizes, ssizes, padding="same",
                           dim_ordering="tf"):
     '''
     Extract the patches from an image
@@ -83,7 +83,7 @@ def extract_image_patches(x, ksizes, ssizes, border_mode="same",
         x : The input image
         ksizes : 2-d tuple with the kernel size
         ssizes : 2-d tuple with the strides size
-        border_mode : 'same' or 'valid'
+        padding : 'same' or 'valid'
         dim_ordering : 'tf' or 'th'
 
     # Returns
@@ -93,7 +93,7 @@ def extract_image_patches(x, ksizes, ssizes, border_mode="same",
     '''
     kernel = [1, ksizes[0], ksizes[1], 1]
     strides = [1, ssizes[0], ssizes[1], 1]
-    padding = _preprocess_border_mode(border_mode)
+    padding = _preprocess_padding(padding)
     if dim_ordering == "th":
         x = KTF.permute_dimensions(x, (0, 2, 3, 1))
     bs_i, w_i, h_i, ch_i = KTF.int_shape(x)
