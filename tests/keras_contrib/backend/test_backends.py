@@ -9,7 +9,7 @@ from keras.backend import tensorflow_backend as KTF
 from keras_contrib import backend as KC
 import keras_contrib.backend.theano_backend as KCTH
 import keras_contrib.backend.tensorflow_backend as KCTF
-from keras.utils.np_utils import convert_kernel
+from keras.utils.conv_utils import convert_kernel
 
 
 def check_dtype(var, dtype):
@@ -82,8 +82,8 @@ class TestBackend(object):
                 strides = [kernel_shape, kernel_shape]
                 xth = KTH.variable(xval)
                 xtf = KTF.variable(xval)
-                ztf = KTF.eval(KCTF.extract_image_patches(xtf, kernel, strides, dim_ordering='th', border_mode="valid"))
-                zth = KTH.eval(KCTH.extract_image_patches(xth, kernel, strides, dim_ordering='th', border_mode="valid"))
+                ztf = KTF.eval(KCTF.extract_image_patches(xtf, kernel, strides, data_format='channels_first', padding="valid"))
+                zth = KTH.eval(KCTH.extract_image_patches(xth, kernel, strides, data_format='channels_first', padding="valid"))
                 assert zth.shape == ztf.shape
                 assert_allclose(zth, ztf, atol=1e-02)
 
@@ -95,8 +95,8 @@ class TestBackend(object):
                 strides = [kernel_shape, kernel_shape]
                 xth = KTH.variable(xval)
                 xtf = KTF.variable(xval)
-                ztf = KTF.eval(KCTF.extract_image_patches(xtf, kernel, strides, dim_ordering='tf', border_mode="same"))
-                zth = KTH.eval(KCTH.extract_image_patches(xth, kernel, strides, dim_ordering='tf', border_mode="same"))
+                ztf = KTF.eval(KCTF.extract_image_patches(xtf, kernel, strides, data_format='channels_last', padding="same"))
+                zth = KTH.eval(KCTH.extract_image_patches(xth, kernel, strides, data_format='channels_last', padding="same"))
                 assert zth.shape == ztf.shape
                 assert_allclose(zth, ztf, atol=1e-02)
 
