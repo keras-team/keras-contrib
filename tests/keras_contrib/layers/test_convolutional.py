@@ -151,7 +151,7 @@ def test_sub_pixel_upscaling():
     for scale_factor in [2, 3, 4]:
         input_data = np.random.random((nb_samples, 4 * (scale_factor ** 2), nb_row, nb_col))
 
-        if K.image_data_format() == 'tf':
+        if K.image_data_format() == 'channels_last':
             input_data = input_data.transpose((0, 2, 3, 1))
 
         input_tensor = K.variable(input_data)
