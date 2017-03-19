@@ -12,15 +12,13 @@ import warnings
 
 from .. import backend as K
 from .. import activations
-from .. import initializations
+from .. import initializers
 from .. import regularizers
 from .. import constraints
 from keras.engine import InputSpec
 from keras.engine import Layer
-from keras.engine import Merge
 from keras.utils.generic_utils import func_dump
 from keras.utils.generic_utils import func_load
-from keras.utils.generic_utils import get_from_module
 from keras.utils.generic_utils import get_custom_objects
 
 

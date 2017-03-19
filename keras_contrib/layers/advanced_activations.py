@@ -1,4 +1,4 @@
-from .. import initializations
+from .. import initializers
 from keras.engine import Layer
 from keras.utils.generic_utils import get_custom_objects
 from .. import backend as K
