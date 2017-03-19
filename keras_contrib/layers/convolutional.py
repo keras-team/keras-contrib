@@ -314,7 +314,7 @@ class CosineConvolution2D(Layer):
                  activity_regularizer=None,
                  kernel_constraint=None, bias_constraint=None,
                  use_bias=True, **kwargs):
-        if data_format == None:
+        if data_format is None:
             data_format = K.image_data_format()
         if padding not in {'valid', 'same', 'full'}:
             raise ValueError('Invalid border mode for CosineConvolution2D:', padding)
