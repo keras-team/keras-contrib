@@ -76,6 +76,6 @@ class PELU(Layer):
 
     def get_config(self):
         config = {'alphas_initializer': initializers.serialize(self.alphas_initializer),
-                  'betas_initializer': initializers.serialize(betas_initializer)}
+                  'betas_initializer': initializers.serialize(self.betas_initializer)}
         base_config = super(PELU, self).get_config()
         return dict(list(base_config.items()) + list(config.items()))
