@@ -53,7 +53,7 @@ def conv2d(x, kernel, strides=(1, 1), padding='valid', data_format='channels_fir
 
     strides = (1,) + strides + (1,)
 
-    if _FLOATX == 'float64':
+    if floatx() == 'float64':
         # tf conv2d only supports float32
         x = tf.cast(x, 'float32')
         kernel = tf.cast(kernel, 'float32')
@@ -74,7 +74,7 @@ def conv2d(x, kernel, strides=(1, 1), padding='valid', data_format='channels_fir
     else:
         raise Exception('Unknown data_format: ' + str(data_format))
 
-    if _FLOATX == 'float64':
+    if floatx() == 'float64':
         x = tf.cast(x, 'float64')
     return x
 
