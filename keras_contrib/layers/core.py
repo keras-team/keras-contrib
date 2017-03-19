@@ -119,7 +119,7 @@ class CosineDense(Layer):
         input_dim = input_shape[-1]
         self.input_dim = input_dim
         self.input_spec = [InputSpec(dtype=K.floatx(),
-                                     ndim='2+')]
+                                     ndim=2)]
 
         self.kernel = self.add_weight((input_dim, self.units),
                                       initializer=self.init,
@@ -142,7 +142,7 @@ class CosineDense(Layer):
 
     def call(self, x, mask=None):
         if self.use_bias:
-            b, xb = self.b, 1.
+            b, xb = self.bias, 1.
         else:
             b, xb = 0., 0.
 
