@@ -41,7 +41,7 @@ def test_cosinedense():
 
     X = np.random.randn(1, 20)
     model = Sequential()
-    model.add(core.CosineDense(1, bias=True, input_shape=(20,)))
+    model.add(core.CosineDense(1, use_bias=True, input_shape=(20,)))
     model.compile(loss='mse', optimizer='rmsprop')
     W = model.get_weights()
     W[0] = X.T
@@ -52,7 +52,7 @@ def test_cosinedense():
 
     X = np.random.randn(1, 20)
     model = Sequential()
-    model.add(core.CosineDense(1, bias=False, input_shape=(20,)))
+    model.add(core.CosineDense(1, use_bias=False, input_shape=(20,)))
     model.compile(loss='mse', optimizer='rmsprop')
     W = model.get_weights()
     W[0] = -2 * X.T
