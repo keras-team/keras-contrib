@@ -34,7 +34,6 @@ def _preprocess_deconv_output_shape(x, shape, data_format):
     return shape
 
 
-
 def conv2d(x, kernel, strides=(1, 1), padding='valid', data_format='channels_first',
            image_shape=None, filter_shape=None):
     '''2D convolution.
@@ -78,7 +77,6 @@ def conv2d(x, kernel, strides=(1, 1), padding='valid', data_format='channels_fir
     if _FLOATX == 'float64':
         x = tf.cast(x, 'float64')
     return x
-
 
 
 def deconv3d(x, kernel, output_shape, strides=(1, 1, 1),

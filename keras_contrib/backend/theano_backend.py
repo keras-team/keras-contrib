@@ -32,8 +32,6 @@ import itertools
 py_all = all
 
 
-
-
 def conv2d(x, kernel, strides=(1, 1), padding='valid', data_format='channels_first',
            image_shape=None, filter_shape=None):
     '''
