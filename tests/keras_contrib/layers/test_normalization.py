@@ -38,7 +38,7 @@ def test_batchrenorm_mode_0_or_2():
 
         # centered on 5.0, variance 10.0
         X = np.random.normal(loc=5.0, scale=10.0, size=(1000, 10))
-        model.fit(X, X, nb_epoch=4, verbose=0)
+        model.fit(X, X, epochs=4, verbose=0)
         out = model.predict(X)
         out -= K.eval(norm_m0.beta)
         out /= K.eval(norm_m0.gamma)
@@ -57,7 +57,7 @@ def test_batchrenorm_mode_0_or_2_twice():
     model.compile(loss='mse', optimizer='sgd')
 
     X = np.random.normal(loc=5.0, scale=10.0, size=(20, 10, 5, 5))
-    model.fit(X, X, nb_epoch=1, verbose=0)
+    model.fit(X, X, epochs=1, verbose=0)
     model.predict(X)
 
 
@@ -70,7 +70,7 @@ def test_batchrenorm_mode_0_convnet():
 
     # centered on 5.0, variance 10.0
     X = np.random.normal(loc=5.0, scale=10.0, size=(1000, 3, 4, 4))
-    model.fit(X, X, nb_epoch=4, verbose=0)
+    model.fit(X, X, epochs=4, verbose=0)
     out = model.predict(X)
     out -= np.reshape(K.eval(norm_m0.beta), (1, 3, 1, 1))
     out /= np.reshape(K.eval(norm_m0.gamma), (1, 3, 1, 1))
