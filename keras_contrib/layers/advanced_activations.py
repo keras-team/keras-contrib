@@ -1,6 +1,5 @@
 from .. import initializers
 from keras.engine import Layer
-from keras.utils.generic_utils import get_custom_objects
 from .. import backend as K
 import numpy as np
 
@@ -18,8 +17,8 @@ class PELU(Layer):
     # Output shape
         Same shape as the input.
     # Arguments
-        alphas_init: initialization function for the alpha variable weights.
-        betas_init: initialization function for the beta variable weights.
+        alphas_initializer: initialization function for the alpha variable weights.
+        betas_initializer: initialization function for the beta variable weights.
         weights: initial weights, as a list of a single Numpy array.
         shared_axes: the axes along which to share learnable
             parameters for the activation function.
@@ -33,16 +32,16 @@ class PELU(Layer):
         - [PARAMETRIC EXPONENTIAL LINEAR UNIT FOR DEEP CONVOLUTIONAL NEURAL NETWORKS](https://arxiv.org/abs/1605.09332v3)
     """
 
-    def __init__(self, alphas_init='one', betas_init='one', weights=None, shared_axes=None, **kwargs):
+    def __init__(self, alphas_initializer='one', betas_initializer='one', weights=None, shared_axes=None, **kwargs):
         self.supports_masking = True
-        self.alphas_init = initializations.get(alphas_init)
-        self.betas_init = initializations.get(betas_init)
+        self.alphas_initializer = initializers.get(alphas_initializer)
+        self.betas_initializer = initializers.get(betas_initializer)
         self.initial_weights = weights
         if not isinstance(shared_axes, (list, tuple)):
             self.shared_axes = [shared_axes]
         else:
             self.shared_axes = list(shared_axes)
-        super(PELU, self).__init__(**kwargs)
+        super(PELU, self).__initializer__(**kwargs)
 
     def build(self, input_shape):
         param_shape = list(input_shape[1:])
@@ -53,10 +52,10 @@ class PELU(Layer):
                 self.param_broadcast[i - 1] = True
 
         # Initialised as ones to emulate the default ELU
-        self.alphas = self.alphas_init(param_shape,
-                                       name='{}_alphas'.format(self.name))
-        self.betas = self.betas_init(param_shape,
-                                     name='{}_betas'.format(self.name))
+        self.alphas = self.add_weight(param_shape,
+                                     name='alpha',
+                                     initializer=self.alphas_initializerializer)
+        self.betas = self.add_weight(param_shape, name='betas', initializer=self.betas_initializerializer)
 
         self.trainable_weights = [self.alphas, self.betas]
 
@@ -76,9 +75,7 @@ class PELU(Layer):
         return neg + pos
 
     def get_config(self):
-        config = {'alphas_init': self.alphas_init.__name__,
-                  'betas_init': self.betas_init.__name__}
+        config = {'alphas_initializer': initializers.serialize(self.alphas_initializer),
+                  'betas_initializer': initializers.serialize(betas_initializer)}
         base_config = super(PELU, self).get_config()
         return dict(list(base_config.items()) + list(config.items()))
-
-get_custom_objects().update({"PELU": PELU})
