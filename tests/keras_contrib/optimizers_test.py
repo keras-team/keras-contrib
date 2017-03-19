@@ -9,8 +9,8 @@ import numpy as np
 np.random.seed(1337)
 
 
-(X_train, y_train), (X_test, y_test) = get_test_data(nb_train=1000,
-                                                     nb_test=200,
+(X_train, y_train), (X_test, y_test) = get_test_data(num_train=1000,
+                                                     num_test=200,
                                                      input_shape=(10,),
                                                      classification=True,
                                                      nb_class=2)
