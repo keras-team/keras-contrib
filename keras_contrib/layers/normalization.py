@@ -44,11 +44,11 @@ class BatchRenormalization(Layer):
             `[(input_shape,), (input_shape,)]`
             Note that the order of this list is [gamma, beta, mean, std]
         beta_init: name of initialization function for shift parameter
-            (see [initializer](../initializer.md)), or alternatively,
+            (see [initializers](../initializers.md)), or alternatively,
             Theano/TensorFlow function to use for weights initialization.
             This parameter is only relevant if you don't pass a `weights` argument.
         gamma_init: name of initialization function for scale parameter (see
-            [initializer](../initializer.md)), or alternatively,
+            [initializers](../initializers.md)), or alternatively,
             Theano/TensorFlow function to use for weights initialization.
             This parameter is only relevant if you don't pass a `weights` argument.
         gamma_regularizer: instance of [WeightRegularizer](../regularizers.md)
@@ -73,8 +73,8 @@ class BatchRenormalization(Layer):
                  gamma_init='one', gamma_regularizer=None, beta_regularizer=None,
                  **kwargs):
         self.supports_masking = True
-        self.beta_init = initializer.get(beta_init)
-        self.gamma_init = initializer.get(gamma_init)
+        self.beta_init = initializers.get(beta_init)
+        self.gamma_init = initializers.get(gamma_init)
         self.epsilon = epsilon
         self.mode = mode
         self.axis = axis
