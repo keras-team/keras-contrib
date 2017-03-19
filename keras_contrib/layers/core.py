@@ -50,7 +50,7 @@ class CosineDense(Layer):
     # Arguments
         units: Positive integer, dimensionality of the output space.
         init: name of initialization function for the weights of the layer
-            (see [initializations](../initializations.md)),
+            (see [initializers](../initializers.md)),
             or alternatively, Theano function to use for weights
             initialization. This parameter is only relevant
             if you don't pass a `weights` argument.
@@ -94,7 +94,7 @@ class CosineDense(Layer):
                  kernel_regularizer=None, bias_regularizer=None, activity_regularizer=None,
                  kernel_constraint=None, bias_constraint=None,
                  use_bias=True, input_dim=None, **kwargs):
-        self.init = initializations.get(init)
+        self.init = initializers.get(init)
         self.activation = activations.get(activation)
         self.units = units
         self.input_dim = input_dim
@@ -122,16 +122,16 @@ class CosineDense(Layer):
                                      ndim='2+')]
 
         self.kernel = self.add_weight((input_dim, self.units),
-                                 initializer=self.init,
-                                 name='{}_W'.format(self.name),
-                                 regularizer=self.kernel_regularizer,
-                                 constraint=self.kernel_constraint)
+                                      initializer=self.init,
+                                      name='{}_W'.format(self.name),
+                                      regularizer=self.kernel_regularizer,
+                                      constraint=self.kernel_constraint)
         if self.use_bias:
             self.bias = self.add_weight((self.units,),
-                                     initializer='zero',
-                                     name='{}_b'.format(self.name),
-                                     regularizer=self.bias_regularizer,
-                                     constraint=self.bias_constraint)
+                                        initializer='zero',
+                                        name='{}_b'.format(self.name),
+                                        regularizer=self.bias_regularizer,
+                                        constraint=self.bias_constraint)
         else:
             self.bias = None
 
