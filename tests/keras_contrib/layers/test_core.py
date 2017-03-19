@@ -34,7 +34,7 @@ def test_cosinedense():
                kwargs={'units': 3,
                        'W_regularizer': regularizers.l2(0.01),
                        'b_regularizer': regularizers.l1(0.01),
-                       'activity_regularizer': regularizers.activity_l2(0.01),
+                       'regularizer': regularizers.l2(0.01),
                        'W_constraint': constraints.MaxNorm(1),
                        'b_constraint': constraints.MaxNorm(1)},
                input_shape=(3, 2))
