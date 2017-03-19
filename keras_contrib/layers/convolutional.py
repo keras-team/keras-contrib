@@ -13,6 +13,7 @@ from keras.layers.convolutional import Convolution3D
 from keras.utils.generic_utils import get_custom_objects
 from keras.utils.conv_utils import conv_output_length
 from keras.utils.conv_utils import conv_input_length
+from keras.utils.conv_utils import normalize_data_format
 import numpy as np
 
 
@@ -308,12 +309,12 @@ class CosineConvolution2D(Layer):
 
     def __init__(self, filters, kernel_size,
                  kernel_initializer='glorot_uniform', activation=None, weights=None,
-                 padding='valid', strides=(1, 1), data_format='default',
+                 padding='valid', strides=(1, 1), data_format=None,
                  kernel_regularizer=None, bias_regularizer=None,
                  activity_regularizer=None,
                  kernel_constraint=None, bias_constraint=None,
                  use_bias=True, **kwargs):
-        if data_format == 'default':
+        if data_format == None:
             data_format = K.image_data_format()
         if padding not in {'valid', 'same', 'full'}:
             raise ValueError('Invalid border mode for CosineConvolution2D:', padding)
@@ -324,10 +325,7 @@ class CosineConvolution2D(Layer):
         self.activation = activations.get(activation)
         self.padding = padding
         self.strides = tuple(strides)
-        if data_format not in {'channels_last', 'channels_first'}:
-            raise ValueError('data_format must be in {\'channels_last\', \'channels_first\'}.')
-        self.data_format = data_format
-
+        self.data_format = normalize_data_format(data_format)
         self.kernel_regularizer = regularizers.get(kernel_regularizer)
         self.bias_regularizer = regularizers.get(bias_regularizer)
         self.activity_regularizer = regularizers.get(activity_regularizer)
@@ -494,7 +492,7 @@ class SubPixelUpscaling(Layer):
 
     # Arguments
         scale_factor: Upscaling factor.
-        data_format: Can be 'default', 'channels_first' or 'channels_last'.
+        data_format: Can be None, 'channels_first' or 'channels_last'.
 
     # Input shape
         4D tensor with shape:
@@ -510,20 +508,17 @@ class SubPixelUpscaling(Layer):
 
     """
 
-    def __init__(self, scale_factor=2, data_format='default', **kwargs):
+    def __init__(self, scale_factor=2, data_format=None, **kwargs):
         super(SubPixelUpscaling, self).__init__(**kwargs)
 
         self.scale_factor = scale_factor
-        self.data_format = data_format
-
-        if self.data_format == 'default':
-            self.data_format = K.image_data_format()
+        self.data_format = normalize_data_format(data_format)
 
     def build(self, input_shape):
         pass
 
     def call(self, x, mask=None):
-        y = K.depth_to_space(x, self.scale_factor)
+        y = K.depth_to_space(x, self.scale_factor, self.data_format)
         return y
 
     def compute_output_shape(self, input_shape):
