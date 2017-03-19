@@ -89,12 +89,12 @@ class CosineDense(Layer):
         the output would have shape `(nb_samples, units)`.
     """
 
-    def __init__(self, units, init='glorot_uniform',
+    def __init__(self, units, kernel_initializer='glorot_uniform',
                  activation=None, weights=None,
                  kernel_regularizer=None, bias_regularizer=None, activity_regularizer=None,
                  kernel_constraint=None, bias_constraint=None,
                  use_bias=True, input_dim=None, **kwargs):
-        self.init = initializers.get(init)
+        self.kernel_initializer = initializers.get(kernel_initializer)
         self.activation = activations.get(activation)
         self.units = units
         self.input_dim = input_dim
@@ -122,7 +122,7 @@ class CosineDense(Layer):
                                      ndim=2)]
 
         self.kernel = self.add_weight((input_dim, self.units),
-                                      initializer=self.init,
+                                      initializer=self.kernel_initializer,
                                       name='{}_W'.format(self.name),
                                       regularizer=self.kernel_regularizer,
                                       constraint=self.kernel_constraint)
@@ -165,8 +165,8 @@ class CosineDense(Layer):
 
     def get_config(self):
         config = {'units': self.units,
-                  'init': self.init.__name__,
-                  'activation': self.activation.__name__,
+                  'kernel_initializer': initializers.serialize(self.kernel_initializer),
+                  'activation': activations.serialize(self.activation),
                   'kernel_regularizer': regularizers.serialize(self.kernel_regularizer),
                   'bias_regularizer': regularizers.serialize(self.bias_regularizer),
                   'activity_regularizer': regularizers.serialize(self.activity_regularizer),
