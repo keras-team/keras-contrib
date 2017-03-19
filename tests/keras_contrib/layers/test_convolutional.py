@@ -3,7 +3,7 @@ import numpy as np
 import itertools
 from numpy.testing import assert_allclose
 
-from ..utils.test_utils import layer_test, keras_test
+from keras_contrib.utils.test_utils import layer_test, keras_test
 from keras.utils.conv_utils import conv_input_length
 from keras import backend as K
 from keras_contrib import backend as KC
