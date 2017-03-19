@@ -8,10 +8,12 @@ class DSSIMObjective():
         """
         Difference of Structural Similarity (DSSIM loss function). Clipped between 0 and 0.5
         Note : You should add a regularization term like a l2 loss in addition to this one.
-        :param k1: Parameter of the SSIM (default 0.01)
-        :param k2: Parameter of the SSIM (default 0.03)
-        :param kernel_size: Size of the sliding window (default 3)
-        :param max_value: Max value of the output (default 1.0)
+
+        # Arguments
+            k1: Parameter of the SSIM (default 0.01)
+            k2: Parameter of the SSIM (default 0.03)
+            kernel_size: Size of the sliding window (default 3)
+            max_value: Max value of the output (default 1.0)
         """
         self.__name__ = "DSSIMObjective"
         self.kernel_size = kernel_size
