@@ -9,8 +9,8 @@ from . import callbacks
 from . import constraints
 from . import initializers
 from . import metrics
-from . import objectives
+from . import losses
 from . import optimizers
 from . import regularizers
 
-__version__ = '0.0.1'
+__version__ = '0.0.2'
