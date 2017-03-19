@@ -123,7 +123,7 @@ def test_cosineconvolution_2d():
         W0 = X[0, :, :, :, None]
 
     model = Sequential()
-    model.add(convolutional.CosineConvolution2D(1, 5, 5, use_bias=True, input_shape=input_dim, dim_ordering=dim_ordering))
+    model.add(convolutional.CosineConvolution2D(1, (5, 5), use_bias=True, input_shape=input_dim, data_format=data_format))
     model.compile(loss='mse', optimizer='rmsprop')
     W = model.get_weights()
     W[0] = W0
@@ -133,7 +133,7 @@ def test_cosineconvolution_2d():
     assert_allclose(out, np.ones((1, 1, 1, 1), dtype=K.floatx()), atol=1e-5)
 
     model = Sequential()
-    model.add(convolutional.CosineConvolution2D(1, 5, 5, use_bias=False, input_shape=input_dim, dim_ordering=dim_ordering))
+    model.add(convolutional.CosineConvolution2D(1, (5, 5), use_bias=False, input_shape=input_dim, data_format=data_format))
     model.compile(loss='mse', optimizer='rmsprop')
     W = model.get_weights()
     W[0] = -2 * W0
@@ -151,7 +151,7 @@ def test_sub_pixel_upscaling():
     for scale_factor in [2, 3, 4]:
         input_data = np.random.random((nb_samples, 4 * (scale_factor ** 2), nb_row, nb_col))
 
-        if K.image_dim_ordering() == 'tf':
+        if K.image_data_format() == 'tf':
             input_data = input_data.transpose((0, 2, 3, 1))
 
         input_tensor = K.variable(input_data)
