@@ -526,7 +526,7 @@ class SubPixelUpscaling(Layer):
         y = K.depth_to_space(x, self.scale_factor)
         return y
 
-    def get_output_shape_for(self, input_shape):
+    def compute_output_shape(self, input_shape):
         if self.data_format == 'channels_first':
             b, k, r, c = input_shape
             return (b, k // (self.scale_factor ** 2), r * self.scale_factor, c * self.scale_factor)
