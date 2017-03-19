@@ -1,6 +1,7 @@
 from .. import initializers
 from keras.engine import Layer
 from .. import backend as K
+from keras.utils.generic_utils import get_custom_objects
 import numpy as np
 
 
@@ -79,3 +80,6 @@ class PELU(Layer):
                   'betas_initializer': initializers.serialize(self.betas_initializer)}
         base_config = super(PELU, self).get_config()
         return dict(list(base_config.items()) + list(config.items()))
+
+
+get_custom_objects().update({'PELU': PELU})
