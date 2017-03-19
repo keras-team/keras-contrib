@@ -184,10 +184,12 @@ def extract_image_patches(X, ksizes, strides, padding="valid", data_format="chan
     return patches
 
 
-def depth_to_space(input, scale):
+def depth_to_space(input, scale, data_format=None):
     ''' Uses phase shift algorithm to convert channels/depth for spatial resolution '''
-
-    input = _preprocess_conv2d_input(input, image_data_format())
+    if data_format is None:
+        data_format = image_data_format()
+    data_format = data_format.lower()
+    input = _preprocess_conv2d_input(input, data_format)
 
     b, k, row, col = input.shape
     output_shape = (b, k // (scale ** 2), row * scale, col * scale)
@@ -198,7 +200,7 @@ def depth_to_space(input, scale):
     for y, x in itertools.product(range(scale), repeat=2):
         out = T.inc_subtensor(out[:, :, y::r, x::r], input[:, r * y + x:: r * r, :, :])
 
-    out = _postprocess_conv2d_output(out, input, None, None, None, image_data_format())
+    out = _postprocess_conv2d_output(out, input, None, None, None, data_format)
     return out
 
 
