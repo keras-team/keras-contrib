@@ -53,7 +53,7 @@ def conv2d(x, kernel, strides=(1, 1), padding='valid', data_format='channels_fir
 
     strides = (1,) + strides + (1,)
 
-    if _FLOATX == 'float64':
+    if floatx() == 'float64':
         # tf conv2d only supports float32
         x = tf.cast(x, 'float32')
         kernel = tf.cast(kernel, 'float32')
@@ -74,7 +74,7 @@ def conv2d(x, kernel, strides=(1, 1), padding='valid', data_format='channels_fir
     else:
         raise Exception('Unknown data_format: ' + str(data_format))
 
-    if _FLOATX == 'float64':
+    if floatx() == 'float64':
         x = tf.cast(x, 'float64')
     return x
 
@@ -139,7 +139,7 @@ def extract_image_patches(x, ksizes, ssizes, padding="same",
     kernel = [1, ksizes[0], ksizes[1], 1]
     strides = [1, ssizes[0], ssizes[1], 1]
     padding = _preprocess_padding(padding)
-    if data_format == "th":
+    if data_format == "channels_first":
         x = KTF.permute_dimensions(x, (0, 2, 3, 1))
     bs_i, w_i, h_i, ch_i = KTF.int_shape(x)
     patches = tf.extract_image_patches(x, kernel, strides, [1, 1, 1, 1],
@@ -148,7 +148,7 @@ def extract_image_patches(x, ksizes, ssizes, padding="same",
     bs, w, h, ch = KTF.int_shape(patches)
     patches = tf.reshape(tf.transpose(tf.reshape(patches, [-1, w, h, tf.floordiv(ch, ch_i), ch_i]), [0, 1, 2, 4, 3]),
                          [-1, w, h, ch_i, ksizes[0], ksizes[1]])
-    if data_format == "tf":
+    if data_format == "channels_last":
         patches = KTF.permute_dimensions(patches, [0, 1, 2, 4, 5, 3])
     return patches
 
