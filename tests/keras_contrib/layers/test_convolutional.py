@@ -3,7 +3,7 @@ import numpy as np
 import itertools
 from numpy.testing import assert_allclose
 
-from keras.utils.test_utils import layer_test, keras_test
+from ..utils.test_utils import layer_test, keras_test
 from keras.utils.conv_utils import conv_input_length
 from keras import backend as K
 from keras_contrib import backend as KC
@@ -43,7 +43,7 @@ def test_deconvolution_3d():
                                    'strides': subsample,
                                    'data_format': 'channels_first'},
                            input_shape=(nb_samples, stack_size, kernel_dim1, kernel_dim2, kernel_dim3),
-                           fixed_batch_size=True)
+                           fixed_batch_size=True, tolerance=1e-2)
 
                 layer_test(convolutional.Deconvolution3D,
                            kwargs={'filters': nb_filter,
@@ -56,7 +56,7 @@ def test_deconvolution_3d():
                                    'b_regularizer': 'l2',
                                    'activity_regularizer': 'activity_l2'},
                            input_shape=(nb_samples, stack_size, kernel_dim1, kernel_dim2, kernel_dim3),
-                           fixed_batch_size=True)
+                           fixed_batch_size=True, tolerance=1e-2)
 
                 layer_test(convolutional.Deconvolution3D,
                            kwargs={'filters': nb_filter,
@@ -68,7 +68,7 @@ def test_deconvolution_3d():
                                    'W_regularizer': 'l2',
                                    'b_regularizer': 'l2',
                                    'activity_regularizer': 'activity_l2'},
-                           input_shape=(nb_samples, stack_size, kernel_dim1, kernel_dim2, kernel_dim3))
+                           input_shape=(nb_samples, stack_size, kernel_dim1, kernel_dim2, kernel_dim3), tolerance=1e-2)
 
 
 @keras_test
