@@ -41,7 +41,7 @@ class PELU(Layer):
             self.shared_axes = [shared_axes]
         else:
             self.shared_axes = list(shared_axes)
-        super(PELU, self).__initializer__(**kwargs)
+        super(PELU, self).__init__(**kwargs)
 
     def build(self, input_shape):
         param_shape = list(input_shape[1:])
