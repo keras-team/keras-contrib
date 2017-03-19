@@ -48,7 +48,7 @@ class CosineDense(Layer):
     ```
 
     # Arguments
-        output_dim: int > 0.
+        units: Positive integer, dimensionality of the output space.
         init: name of initialization function for the weights of the layer
             (see [initializations](../initializations.md)),
             or alternatively, Theano function to use for weights
@@ -60,19 +60,19 @@ class CosineDense(Layer):
             If you don't specify anything, no activation is applied
             (ie. "linear" activation: a(x) = x).
         weights: list of Numpy arrays to set as initial weights.
-            The list should have 2 elements, of shape `(input_dim, output_dim)`
-            and (output_dim,) for weights and biases respectively.
-        W_regularizer: instance of [WeightRegularizer](../regularizers.md)
+            The list should have 2 elements, of shape `(input_dim, units)`
+            and (units,) for weights and biases respectively.
+        kernel_regularizer: instance of [WeightRegularizer](../regularizers.md)
             (eg. L1 or L2 regularization), applied to the main weights matrix.
-        b_regularizer: instance of [WeightRegularizer](../regularizers.md),
+        bias_regularizer: instance of [WeightRegularizer](../regularizers.md),
             applied to the bias.
         activity_regularizer: instance of [ActivityRegularizer](../regularizers.md),
             applied to the network output.
-        W_constraint: instance of the [constraints](../constraints.md) module
+        kernel_constraint: instance of the [constraints](../constraints.md) module
             (eg. maxnorm, nonneg), applied to the main weights matrix.
-        b_constraint: instance of the [constraints](../constraints.md) module,
+        bias_constraint: instance of the [constraints](../constraints.md) module,
             applied to the bias.
-        bias: whether to include a bias
+        use_bias: whether to include a bias
             (i.e. make the layer affine rather than linear).
         input_dim: dimensionality of the input (integer). This argument
             (or alternatively, the keyword argument `input_shape`)
@@ -84,29 +84,29 @@ class CosineDense(Layer):
         a 2D input with shape `(nb_samples, input_dim)`.
 
     # Output shape
-        nD tensor with shape: `(nb_samples, ..., output_dim)`.
+        nD tensor with shape: `(nb_samples, ..., units)`.
         For instance, for a 2D input with shape `(nb_samples, input_dim)`,
-        the output would have shape `(nb_samples, output_dim)`.
+        the output would have shape `(nb_samples, units)`.
     """
 
-    def __init__(self, output_dim, init='glorot_uniform',
+    def __init__(self, units, init='glorot_uniform',
                  activation=None, weights=None,
-                 W_regularizer=None, b_regularizer=None, activity_regularizer=None,
-                 W_constraint=None, b_constraint=None,
-                 bias=True, input_dim=None, **kwargs):
+                 kernel_regularizer=None, bias_regularizer=None, activity_regularizer=None,
+                 kernel_constraint=None, bias_constraint=None,
+                 use_bias=True, input_dim=None, **kwargs):
         self.init = initializations.get(init)
         self.activation = activations.get(activation)
-        self.output_dim = output_dim
+        self.units = units
         self.input_dim = input_dim
 
-        self.W_regularizer = regularizers.get(W_regularizer)
-        self.b_regularizer = regularizers.get(b_regularizer)
+        self.kernel_regularizer = regularizers.get(kernel_regularizer)
+        self.bias_regularizer = regularizers.get(bias_regularizer)
         self.activity_regularizer = regularizers.get(activity_regularizer)
 
-        self.W_constraint = constraints.get(W_constraint)
-        self.b_constraint = constraints.get(b_constraint)
+        self.kernel_constraint = constraints.get(kernel_constraint)
+        self.bias_constraint = constraints.get(bias_constraint)
 
-        self.bias = bias
+        self.use_bias = use_bias
         self.initial_weights = weights
         self.input_spec = [InputSpec(ndim='2+')]
 
@@ -121,19 +121,19 @@ class CosineDense(Layer):
         self.input_spec = [InputSpec(dtype=K.floatx(),
                                      ndim='2+')]
 
-        self.W = self.add_weight((input_dim, self.output_dim),
+        self.kernel = self.add_weight((input_dim, self.units),
                                  initializer=self.init,
                                  name='{}_W'.format(self.name),
-                                 regularizer=self.W_regularizer,
-                                 constraint=self.W_constraint)
-        if self.bias:
-            self.b = self.add_weight((self.output_dim,),
+                                 regularizer=self.kernel_regularizer,
+                                 constraint=self.kernel_constraint)
+        if self.use_bias:
+            self.bias = self.add_weight((self.units,),
                                      initializer='zero',
                                      name='{}_b'.format(self.name),
-                                     regularizer=self.b_regularizer,
-                                     constraint=self.b_constraint)
+                                     regularizer=self.bias_regularizer,
+                                     constraint=self.bias_constraint)
         else:
-            self.b = None
+            self.bias = None
 
         if self.initial_weights is not None:
             self.set_weights(self.initial_weights)
@@ -141,38 +141,38 @@ class CosineDense(Layer):
         self.built = True
 
     def call(self, x, mask=None):
-        if self.bias:
+        if self.use_bias:
             b, xb = self.b, 1.
         else:
             b, xb = 0., 0.
 
         xnorm = K.sqrt(K.sum(K.square(x), axis=-1, keepdims=True) + xb + K.epsilon())
-        Wnorm = K.sqrt(K.sum(K.square(self.W), axis=0) + K.square(b) + K.epsilon())
+        Wnorm = K.sqrt(K.sum(K.square(self.kernel), axis=0) + K.square(b) + K.epsilon())
 
         xWnorm = (xnorm * Wnorm)
 
-        output = K.dot(x, self.W) / xWnorm
-        if self.bias:
-            output += (self.b / xWnorm)
+        output = K.dot(x, self.kernel) / xWnorm
+        if self.use_bias:
+            output += (self.bias / xWnorm)
         return self.activation(output)
 
-    def get_output_shape_for(self, input_shape):
+    def compute_output_shape(self, input_shape):
         assert input_shape and len(input_shape) >= 2
         assert input_shape[-1] and input_shape[-1] == self.input_dim
         output_shape = list(input_shape)
-        output_shape[-1] = self.output_dim
+        output_shape[-1] = self.units
         return tuple(output_shape)
 
     def get_config(self):
-        config = {'output_dim': self.output_dim,
+        config = {'units': self.units,
                   'init': self.init.__name__,
                   'activation': self.activation.__name__,
-                  'W_regularizer': self.W_regularizer.get_config() if self.W_regularizer else None,
-                  'b_regularizer': self.b_regularizer.get_config() if self.b_regularizer else None,
-                  'activity_regularizer': self.activity_regularizer.get_config() if self.activity_regularizer else None,
-                  'W_constraint': self.W_constraint.get_config() if self.W_constraint else None,
-                  'b_constraint': self.b_constraint.get_config() if self.b_constraint else None,
-                  'bias': self.bias,
+                  'kernel_regularizer': regularizers.serialize(self.kernel_regularizer),
+                  'bias_regularizer': regularizers.serialize(self.bias_regularizer),
+                  'activity_regularizer': regularizers.serialize(self.activity_regularizer),
+                  'kernel_constraint': constraints.serialize(self.kernel_constraint),
+                  'bias_constraint': constraints.serialize(self.bias_constraint),
+                  'use_bias': self.use_bias,
                   'input_dim': self.input_dim}
         base_config = super(CosineDense, self).get_config()
         return dict(list(base_config.items()) + list(config.items()))
