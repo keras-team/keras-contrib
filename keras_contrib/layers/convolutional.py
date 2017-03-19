@@ -97,9 +97,8 @@ class Deconvolution3D(Convolution3D):
 
     # Arguments
         filters: Number of transposed convolution filters to use.
-        kernel_dim1: Length of the first dimension in the transposed convolution kernel.
-        kernel_dim2: Length of the second dimension in the transposed convolution kernel.
-        kernel_dim3: Length of the third dimension in the transposed convolution kernel.
+        kernel_size: kernel_size: An integer or tuple/list of 3 integers, specifying the
+            dimensions of the convolution window.
         output_shape: Output shape of the transposed convolution operation.
             tuple of integers
             `(nb_samples, filters, conv_dim1, conv_dim2, conv_dim3)`.
@@ -258,8 +257,8 @@ class CosineConvolution2D(Layer):
 
     # Arguments
         filters: Number of convolution filters to use.
-        nb_row: Number of rows in the convolution kernel.
-        nb_col: Number of columns in the convolution kernel.
+        kernel_size: kernel_size: An integer or tuple/list of 2 integers, specifying the
+            dimensions of the convolution window.
         init: name of initialization function for the weights of the layer
             (see [initializers](../initializers.md)), or alternatively,
             Theano function to use for weights initialization.
