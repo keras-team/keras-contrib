@@ -54,8 +54,8 @@ class PELU(Layer):
         # Initialised as ones to emulate the default ELU
         self.alphas = self.add_weight(param_shape,
                                      name='alpha',
-                                     initializer=self.alphas_initializerializer)
-        self.betas = self.add_weight(param_shape, name='betas', initializer=self.betas_initializerializer)
+                                     initializer=self.alphas_initializer)
+        self.betas = self.add_weight(param_shape, name='betas', initializer=self.betas_initializer)
 
         self.trainable_weights = [self.alphas, self.betas]
 
