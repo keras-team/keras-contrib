@@ -13,7 +13,7 @@ np.random.seed(1337)
                                                      num_test=200,
                                                      input_shape=(10,),
                                                      classification=True,
-                                                     nb_class=2)
+                                                     num_classes=2)
 y_train = to_categorical(y_train)
 y_test = to_categorical(y_test)
 
