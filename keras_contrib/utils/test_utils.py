@@ -93,7 +93,8 @@ def layer_test(layer_cls, kwargs={}, input_shape=None, input_dtype=None,
         if expected_dim is not None:
             assert expected_dim == actual_dim
     if expected_output is not None:
-        assert_allclose(actual_output, expected_output, rtol=tolerance)
+        if tolerance is not None:
+            assert_allclose(actual_output, expected_output, rtol=tolerance)
 
     # test serialization, weight setting at model level
     model_config = model.get_config()
@@ -102,7 +103,8 @@ def layer_test(layer_cls, kwargs={}, input_shape=None, input_dtype=None,
         weights = model.get_weights()
         recovered_model.set_weights(weights)
         _output = recovered_model.predict(input_data)
-        assert_allclose(_output, actual_output, rtol=tolerance)
+        if tolerance is not None:
+            assert_allclose(_output, actual_output, rtol=tolerance)
 
     # test training mode (e.g. useful for dropout tests)
     model.compile('rmsprop', 'mse')
@@ -122,7 +124,8 @@ def layer_test(layer_cls, kwargs={}, input_shape=None, input_dtype=None,
         if expected_dim is not None:
             assert expected_dim == actual_dim
     if expected_output is not None:
-        assert_allclose(actual_output, expected_output, rtol=1e-3)
+        if tolerance is not None:
+            assert_allclose(actual_output, expected_output, rtol=1e-3)
 
     # test serialization, weight setting at model level
     model_config = model.get_config()
@@ -131,7 +134,8 @@ def layer_test(layer_cls, kwargs={}, input_shape=None, input_dtype=None,
         weights = model.get_weights()
         recovered_model.set_weights(weights)
         _output = recovered_model.predict(input_data)
-        assert_allclose(_output, actual_output, rtol=1e-3)
+        if tolerance is not None:
+            assert_allclose(_output, actual_output, rtol=1e-3)
 
     # test training mode (e.g. useful for dropout tests)
     model.compile('rmsprop', 'mse')
