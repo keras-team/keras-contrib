@@ -26,7 +26,7 @@ img_rows, img_cols = 32, 32
 img_channels = 3
 
 # Parameters for the DenseNet model builder
-img_dim = (img_channels, img_rows, img_cols) if K.image_dim_ordering() == "th" else (img_rows, img_cols, img_channels)
+img_dim = (img_channels, img_rows, img_cols) if K.imgae_data_format() == "channels_first" else (img_rows, img_cols, img_channels)
 depth = 40
 nb_dense_block = 3
 growth_rate = 12
