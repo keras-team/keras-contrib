@@ -12,7 +12,7 @@ from keras.backend import tensorflow_backend as KTF
 import numpy as np
 import os
 import warnings
-from keras.backend.common import floatx, _EPSILON, image_data_format, reset_uids
+from keras.backend.common import floatx, _EPSILON, image_data_format
 from keras.backend.tensorflow_backend import _preprocess_conv3d_input
 from keras.backend.tensorflow_backend import _preprocess_conv3d_kernel
 from keras.backend.tensorflow_backend import _preprocess_padding
