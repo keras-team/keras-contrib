@@ -108,18 +108,18 @@ class CosineDense(Layer):
 
         self.use_bias = use_bias
         self.initial_weights = weights
-        self.input_spec = [InputSpec(ndim='2+')]
 
         if self.input_dim:
             kwargs['input_shape'] = (self.input_dim,)
         super(CosineDense, self).__init__(**kwargs)
 
     def build(self, input_shape):
-        assert len(input_shape) >= 2
+        ndim = len(input_shape)
+        assert ndim >= 2
         input_dim = input_shape[-1]
         self.input_dim = input_dim
         self.input_spec = [InputSpec(dtype=K.floatx(),
-                                     ndim=2)]
+                                     ndim=ndim)]
 
         self.kernel = self.add_weight((input_dim, self.units),
                                       initializer=self.kernel_initializer,
