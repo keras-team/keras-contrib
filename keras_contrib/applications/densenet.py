@@ -109,7 +109,7 @@ def DenseNet(depth=40, nb_dense_block=3, growth_rate=12, nb_filter=16, nb_layers
                                       data_format=K.image_data_format(),
                                       # If doing segmentation we still include top
                                       # but _obtain_input_shape only supports labeling.
-                                      include_top=(include_top and dilation_rate is not 1))
+                                      include_top=(include_top and dilation_rate is 1))
 
     if input_tensor is None:
         img_input = Input(shape=input_shape)
@@ -264,7 +264,7 @@ def DenseNetFCN(input_shape, nb_dense_block=5, growth_rate=16, nb_layers_per_blo
                                       data_format=K.image_data_format(),
                                       # If doing segmentation we still include top
                                       # but _obtain_input_shape only supports labeling.
-                                      include_top=(include_top and dilation_rate is not 1))
+                                      include_top=(include_top and dilation_rate is 1))
 
     if input_tensor is None:
         img_input = Input(shape=input_shape)
