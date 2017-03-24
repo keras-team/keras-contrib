@@ -320,7 +320,7 @@ def __conv_block(ip, nb_filter, bottleneck=False, dropout_rate=None, weight_deca
         # https://github.com/liuzhuang13/DenseNet/blob/master/densenet.lua
         inter_channel = nb_filter * 4
 
-        x = Convolution2D(inter_channel, (1, 1), kernel_initializer='he_uniform', padding='same', use_bias=False,
+        x = Conv2D(inter_channel, (1, 1), kernel_initializer='he_uniform', padding='same', use_bias=False,
                           kernel_regularizer=l2(weight_decay))(x)
 
         if dropout_rate:
