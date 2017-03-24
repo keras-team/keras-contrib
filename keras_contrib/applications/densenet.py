@@ -473,7 +473,7 @@ def __create_dense_net(nb_classes, img_input, include_top, depth=40,
 
     concat_axis = 1 if K.image_dim_ordering() == "th" else -1
 
-    assert (depth - 4) % nb_dense_block == 0, "Depth must be nb_dense_block * N + 4"
+    assert (depth - 4) % 3 == 0, "Depth must be nb_dense_block * N + 4"
     if reduction != 0.0:
         assert reduction <= 1.0 and reduction > 0.0, "reduction value must lie between 0.0 and 1.0"
 
@@ -487,7 +487,7 @@ def __create_dense_net(nb_classes, img_input, include_top, depth=40,
         nb_layers = nb_layers[:-1]
     else:
         if nb_layers_per_block == -1:
-            count = int((depth - 4) / nb_dense_block)
+            count = int((depth - 4) / 3)
             nb_layers = [count for _ in range(nb_dense_block)]
             final_nb_layer = count
         else:
