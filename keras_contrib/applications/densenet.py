@@ -107,7 +107,9 @@ def DenseNet(depth=40, nb_dense_block=3, growth_rate=12, nb_filter=16, nb_layers
                                       default_size=32,
                                       min_size=8,
                                       data_format=K.image_data_format(),
-                                      include_top=include_top)
+                                      # If doing segmentation we still include top
+                                      # but _obtain_input_shape only supports labeling.
+                                      include_top=(include_top and dilation_rate is not 1)
 
     if input_tensor is None:
         img_input = Input(shape=input_shape)
@@ -137,7 +139,7 @@ def DenseNet(depth=40, nb_dense_block=3, growth_rate=12, nb_filter=16, nb_layers
                 (bottleneck is False) and (reduction == 0.0) and (dropout_rate == 0.0) and (weight_decay == 1E-4):
             # Default parameters match. Weights for this model exist:
 
-            if K.image_dim_ordering() == 'th':
+            if K.data_format() == 'channels_first':
                 if include_top:
                     weights_path = get_file('densenet_40_12_th_dim_ordering_th_kernels.h5',
                                             TH_WEIGHTS_PATH,
@@ -259,8 +261,10 @@ def DenseNetFCN(input_shape, nb_dense_block=5, growth_rate=16, nb_layers_per_blo
     input_shape = _obtain_input_shape(input_shape,
                                       default_size=32,
                                       min_size=16,
-                                      dim_ordering=K.image_dim_ordering(),
-                                      include_top=include_top)
+                                      data_format=K.image_data_format(),
+                                      # If doing segmentation we still include top
+                                      # but _obtain_input_shape only supports labeling.
+                                      include_top=(include_top and dilation_rate is not 1))
 
     if input_tensor is None:
         img_input = Input(shape=input_shape)
@@ -529,7 +533,7 @@ def __create_dense_net(nb_classes, img_input, include_top, depth=40,
         x = Convolution2D(nb_classes, 1, 1, activation='linear', border_mode='same', W_regularizer=l2(weight_decay),
                           bias=False)(x)
 
-        if K.image_dim_ordering() == 'th':
+        if K.data_format() == 'channels_first':
             channel, row, col = input_shape
         else:
             row, col, channel = input_shape
@@ -636,7 +640,7 @@ def __create_fcn_dense_net(nb_classes, img_input, include_top, nb_dense_block=5,
 
     skip_list = skip_list[::-1]  # reverse the skip list
 
-    if K.image_dim_ordering() == 'th':
+    if K.data_format() == 'channels_first':
         out_shape = [batchsize, nb_filter, rows // 16, cols // 16]
     else:
         out_shape = [batchsize, rows // 16, cols // 16, nb_filter]
@@ -645,7 +649,7 @@ def __create_fcn_dense_net(nb_classes, img_input, include_top, nb_dense_block=5,
     for block_idx in range(nb_dense_block):
         n_filters_keep = growth_rate * nb_layers[nb_dense_block + block_idx]
 
-        if K.image_dim_ordering() == 'th':
+        if K.data_format() == 'channels_first':
             out_shape[1] = n_filters_keep
         else:
             out_shape[3] = n_filters_keep
@@ -659,7 +663,7 @@ def __create_fcn_dense_net(nb_classes, img_input, include_top, nb_dense_block=5,
         # concatenate the skip connection with the transition block
         x = merge([t, skip_list[block_idx]], mode='concat', concat_axis=concat_axis)
 
-        if K.image_dim_ordering() == 'th':
+        if K.data_format() == 'channels_first':
             out_shape[2] *= 2
             out_shape[3] *= 2
         else:
@@ -676,7 +680,7 @@ def __create_fcn_dense_net(nb_classes, img_input, include_top, nb_dense_block=5,
         x = Convolution2D(nb_classes, 1, 1, activation='linear', border_mode='same', W_regularizer=l2(weight_decay),
                           bias=False)(x)
 
-        if K.image_dim_ordering() == 'th':
+        if K.data_format() == 'channels_first':
             channel, row, col = input_shape
         else:
             row, col, channel = input_shape
