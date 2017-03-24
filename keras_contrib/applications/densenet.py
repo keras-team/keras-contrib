@@ -106,7 +106,7 @@ def DenseNet(depth=40, nb_dense_block=3, growth_rate=12, nb_filter=16, nb_layers
     input_shape = _obtain_input_shape(input_shape,
                                       default_size=32,
                                       min_size=8,
-                                      dim_ordering=K.image_dim_ordering(),
+                                      data_format=K.image_data_format(),
                                       include_top=include_top)
 
     if input_tensor is None:
