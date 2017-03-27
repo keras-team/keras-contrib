@@ -250,7 +250,7 @@ def DenseNetFCN(input_shape, nb_dense_block=5, growth_rate=16, nb_layers_per_blo
         upsampling_type = 'upsampling'
 
     # Determine proper input shape
-    min_size = 16
+    min_size = 2 ** nb_dense_block
 
     if K.image_dim_ordering() == 'th':
         if input_shape is not None:
