@@ -173,7 +173,7 @@ def DenseNet(depth=40, nb_dense_block=3, growth_rate=12, nb_filter=16, nb_layers
 
 def DenseNetFCN(input_shape, nb_dense_block=5, growth_rate=16, nb_layers_per_block=4,
                 reduction=0.0, dropout_rate=0.0, weight_decay=1E-4, init_conv_filters=48,
-                include_top=True, weights=None, input_tensor=None, classes=1,
+                include_top=True, weights=None, input_tensor=None, classes=1, activation='softmax',
                 upsampling_conv=128, upsampling_type='upsampling', batchsize=None):
     """Instantiate the DenseNet FCN architecture.
         Note that when using TensorFlow,
@@ -210,6 +210,8 @@ def DenseNetFCN(input_shape, nb_dense_block=5, growth_rate=16, nb_layers_per_blo
             classes: optional number of classes to classify images
                 into, only to be specified if `include_top` is True, and
                 if no `weights` argument is specified.
+            activation: Type of activation at the top layer. Can be one of 'softmax' or 'sigmoid'.
+                Note that if sigmoid is used, classes must be 1.
             upsampling_conv: number of convolutional layers in upsampling via subpixel convolution
             upsampling_type: Can be one of 'upsampling', 'deconv', 'atrous' and
                 'subpixel'. Defines type of upsampling algorithm used.
@@ -249,6 +251,12 @@ def DenseNetFCN(input_shape, nb_dense_block=5, growth_rate=16, nb_layers_per_blo
                       'Switching to `upsampling` type upscaling.')
         upsampling_type = 'upsampling'
 
+    if activation not in ['softmax', 'sigmoid']:
+        raise ValueError('Parameter "activation" must be one of "softmax" or "sigmoid"')
+
+    if activation == 'sigmoid' and classes != 1:
+        raise ValueError('Parameter "activation" can be "sigmoid" only when parameter "classes" is equal to 1')
+
     # Determine proper input shape
     min_size = 2 ** nb_dense_block
 
@@ -282,7 +290,7 @@ def DenseNetFCN(input_shape, nb_dense_block=5, growth_rate=16, nb_layers_per_blo
     x = __create_fcn_dense_net(classes, img_input, include_top, nb_dense_block,
                                growth_rate, reduction, dropout_rate, weight_decay,
                                nb_layers_per_block, upsampling_conv, upsampling_type,
-                               batchsize, init_conv_filters, input_shape)
+                               batchsize, init_conv_filters, input_shape, activation)
 
     # Ensure that the model takes into account
     # any potential predecessors of `input_tensor`.
@@ -523,7 +531,7 @@ def __create_dense_net(nb_classes, img_input, include_top, depth=40, nb_dense_bl
 def __create_fcn_dense_net(nb_classes, img_input, include_top, nb_dense_block=5, growth_rate=12,
                            reduction=0.0, dropout_rate=None, weight_decay=1E-4,
                            nb_layers_per_block=4, nb_upsampling_conv=128, upsampling_type='upsampling',
-                           batchsize=None, init_conv_filters=48, input_shape=None):
+                           batchsize=None, init_conv_filters=48, input_shape=None, activation='softmax'):
     ''' Build the DenseNet model
 
     Args:
@@ -548,6 +556,8 @@ def __create_fcn_dense_net(nb_classes, img_input, include_top, nb_dense_block=5,
             Parameter will be removed in next iteration of Keras, which infers
             output shape of deconvolution layers automatically.
         input_shape: Only used for shape inference in fully convolutional networks.
+        activation: Type of activation at the top layer. Can be one of 'softmax' or 'sigmoid'.
+            Note that if sigmoid is used, classes must be 1.
 
     Returns: keras tensor with nb_layers of conv_block appended
     '''
@@ -661,7 +671,7 @@ def __create_fcn_dense_net(nb_classes, img_input, include_top, nb_dense_block=5,
             row, col, channel = input_shape
 
         x = Reshape((row * col, nb_classes))(x)
-        x = Activation('softmax')(x)
+        x = Activation(activation)(x)
         x = Reshape((row, col, nb_classes))(x)
 
     return x
