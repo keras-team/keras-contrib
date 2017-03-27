@@ -99,7 +99,6 @@ def test_cosineconvolution_2d():
                                    'data_format': data_format},
                            input_shape=(nbias_samples, nbias_row, nbias_col, stack_size))
 
-
                 layer_test(convolutional.CosineConvolution2D,
                            kwargs={'filters': nbias_filter,
                                    'kernel_size': (3, 3),
@@ -111,7 +110,6 @@ def test_cosineconvolution_2d():
                                    'bias_regularizer': 'l2',
                                    'activity_regularizer': 'l2'},
                            input_shape=(nbias_samples, nbias_row, nbias_col, stack_size))
-
 
     if data_format == 'channels_first':
         X = np.random.randn(1, 3, 5, 5)
