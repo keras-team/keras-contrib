@@ -430,17 +430,17 @@ def __transition_up_block(ip, nb_filters, type='upsampling', output_shape=None, 
     if type == 'upsampling':
         x = UpSampling2D()(ip)
     elif type == 'subpixel':
-        x = Conv2D(nb_filters, 3, 3, activation="relu", padding='same', kernel_regularizer=l2(weight_decay),
+        x = Conv2D(nb_filters, (3, 3), activation="relu", padding='same', kernel_regularizer=l2(weight_decay),
                    use_bias=False, kernel_initializer='he_uniform')(ip)
         x = SubPixelUpscaling(scale_factor=2)(x)
-        x = Conv2D(nb_filters, 3, 3, activation="relu", padding='same', kernel_regularizer=l2(weight_decay),
+        x = Conv2D(nb_filters, (3, 3), activation="relu", padding='same', kernel_regularizer=l2(weight_decay),
                    use_bias=False, kernel_initializer='he_uniform')(x)
     elif type == 'atrous':
         # waiting on https://github.com/fchollet/keras/issues/4018
-        x = Conv2D(nb_filters, 3, 3, activation="relu", kernel_regularizer=l2(weight_decay),
+        x = Conv2D(nb_filters, (3, 3), activation="relu", kernel_regularizer=l2(weight_decay),
                    use_bias=False, atrous_rate=(2, 2), kernel_initializer='he_uniform')(ip)
     else:
-        x = Conv2DTranspose(nb_filters, 3, 3, output_shape, activation='relu', padding='same',
+        x = Conv2DTranspose(nb_filters, (3, 3), output_shape, activation='relu', padding='same',
                             subsample=(2, 2), kernel_initializer='he_uniform')(ip)
 
     return x
