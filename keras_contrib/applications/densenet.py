@@ -60,7 +60,7 @@ def DenseNet(depth=40, nb_dense_block=3, growth_rate=12, nb_filter=16, nb_layers
                 number of filters is 2 * growth_rate
             nb_layers_per_block: number of layers in each dense block.
                 Can be a -1, positive integer or a list.
-                If -1, calculates nb_layer_per_block from the depth of the network.
+                If -1, calculates nb_layer_per_block from the network depth.
                 If positive integer, a set number of layers per dense block.
                 If list, nb_layer is used as provided. Note that list size must
                 be (nb_dense_block + 1)
@@ -322,7 +322,7 @@ def __conv_block(ip, nb_filter, bottleneck=False, dropout_rate=None, weight_deca
         inter_channel = nb_filter * 4
 
         x = Conv2D(inter_channel, (1, 1), kernel_initializer='he_uniform', padding='same', use_bias=False,
-                          kernel_regularizer=l2(weight_decay))(x)
+                   kernel_regularizer=l2(weight_decay))(x)
 
         if dropout_rate:
             x = Dropout(dropout_rate)(x)
@@ -363,7 +363,7 @@ def __transition_block(ip, nb_filter, compression=1.0, dropout_rate=None,
                            beta_regularizer=l2(weight_decay))(ip)
     x = Activation('relu')(x)
     x = Conv2D(int(nb_filter * compression), (1, 1), kernel_initializer="he_uniform", padding="same", use_bias=False,
-                      kernel_regularizer=l2(weight_decay), dilation_rate=dilation_rate)(x)
+               kernel_regularizer=l2(weight_decay), dilation_rate=dilation_rate)(x)
     if dropout_rate:
         x = Dropout(dropout_rate)(x)
 
@@ -431,10 +431,10 @@ def __transition_up_block(ip, nb_filters, type='upsampling', output_shape=None, 
         x = UpSampling2D()(ip)
     elif type == 'subpixel':
         x = Conv2D(nb_filters, 3, 3, activation="relu", padding='same', kernel_regularizer=l2(weight_decay),
-                          use_bias=False, kernel_initializer='he_uniform')(ip)
+                   use_bias=False, kernel_initializer='he_uniform')(ip)
         x = SubPixelUpscaling(scale_factor=2)(x)
         x = Conv2D(nb_filters, 3, 3, activation="relu", padding='same', kernel_regularizer=l2(weight_decay),
-                          use_bias=False, kernel_initializer='he_uniform')(x)
+                   use_bias=False, kernel_initializer='he_uniform')(x)
     elif type == 'atrous':
         # waiting on https://github.com/fchollet/keras/issues/4018
         x = Conv2D(nb_filters, 3, 3, activation="relu", kernel_regularizer=l2(weight_decay),
@@ -516,7 +516,8 @@ def __create_dense_net(nb_classes, img_input, include_top, depth=40,
     compression = 1.0 - reduction
 
     # Initial convolution
-    x = Conv2D(nb_filter, (3, 3), kernel_initializer="he_uniform", padding="same", name="initial_conv2D", use_bias=False,
+    x = Conv2D(nb_filter, (3, 3), kernel_initializer="he_uniform",
+               padding="same", name="initial_conv2D", use_bias=False,
                kernel_regularizer=l2(weight_decay))(img_input)
 
     # Add dense blocks
@@ -679,7 +680,8 @@ def __create_fcn_dense_net(nb_classes, img_input, include_top, nb_dense_block=5,
             l, nb_filters=n_filters_keep, type=upsampling_type, output_shape=out_shape)
 
         # concatenate the skip connection with the transition block
-        x = merge([t, skip_list[block_idx]], mode='concat', concat_axis=concat_axis)
+        x = merge([t, skip_list[block_idx]],
+                  mode='concat', concat_axis=concat_axis)
         # x = concatenate([t, skip_list[block_idx]], axis=concat_axis)
 
         if K.image_data_format() == 'channels_first':
