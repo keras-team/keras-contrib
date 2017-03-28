@@ -52,7 +52,8 @@ def DenseNet(depth=40, nb_dense_block=3, growth_rate=12, nb_filter=16, nb_layers
         specified in your Keras config file.
 
         # Arguments
-            depth: number or layers in the DenseNet
+            depth: Number of layers in the DenseNet. May be None if
+                nb_dense_block and nb_layers_per_block are set.
             nb_dense_block: number of dense blocks to add to end (generally = 3)
             growth_rate: number of filters to add per dense block
             nb_filter: initial number of filters. -1 indicates initial
@@ -482,7 +483,8 @@ def __create_dense_net(nb_classes, img_input, include_top, depth=40,
 
     concat_axis = 1 if K.image_data_format() == 'channels_first' else -1
 
-    assert (depth - 4) % 3 == 0, "Depth must be nb_dense_block * N + 4"
+    if depth is not None:
+        assert (depth - 4) % 3 == 0, "Depth must be nb_dense_block * N + 4"
     if reduction != 0.0:
         assert reduction <= 1.0 and reduction > 0.0, "reduction value must lie between 0.0 and 1.0"
 
