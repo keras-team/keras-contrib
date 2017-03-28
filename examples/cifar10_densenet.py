@@ -26,7 +26,7 @@ img_rows, img_cols = 32, 32
 img_channels = 3
 
 # Parameters for the DenseNet model builder
-img_dim = (img_channels, img_rows, img_cols) if K.imgae_data_format() == "channels_first" else (img_rows, img_cols, img_channels)
+img_dim = (img_channels, img_rows, img_cols) if K.image_data_format() == "channels_first" else (img_rows, img_cols, img_channels)
 depth = 40
 nb_dense_block = 3
 growth_rate = 12
@@ -71,11 +71,11 @@ model_checkpoint = ModelCheckpoint(weights_file, monitor="val_acc", save_best_on
 
 callbacks = [lr_reducer, early_stopper, model_checkpoint]
 
-model.fit_generator(generator.flow(trainX, Y_train, batch_size=batch_size), samples_per_epoch=len(trainX),
-                    nb_epoch=nb_epoch,
+model.fit_generator(generator.flow(trainX, Y_train, batch_size=batch_size), steps_per_epoch=len(trainX) // batch_size,
+                    epochs=nb_epoch,
                     callbacks=callbacks,
                     validation_data=(testX, Y_test),
-                    nb_val_samples=testX.shape[0], verbose=2)
+                    verbose=2)
 
 scores = model.evaluate(testX, Y_test, batch_size=batch_size)
 print("Test loss : ", scores[0])
