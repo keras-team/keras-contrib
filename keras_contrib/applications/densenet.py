@@ -223,7 +223,7 @@ def DenseNetFCN(input_shape, nb_dense_block=5, growth_rate=16, nb_layers_per_blo
                 into, only to be specified if `include_top` is True, and
                 if no `weights` argument is specified.
             upsampling_conv: number of convolutional layers in upsampling via subpixel convolution
-            upsampling_type: Can be one of 'upsampling', 'deconv', 'atrous' and
+            upsampling_type: Can be one of 'upsampling', 'deconv', and
                 'subpixel'. Defines type of upsampling algorithm used.
             batchsize: Fixed batch size. This is a temporary requirement for
                 computation of output shape in the case of Deconvolution2D layers.
@@ -241,9 +241,9 @@ def DenseNetFCN(input_shape, nb_dense_block=5, growth_rate=16, nb_layers_per_blo
 
     upsampling_type = upsampling_type.lower()
 
-    if upsampling_type not in ['upsampling', 'deconv', 'atrous', 'subpixel']:
-        raise ValueError('Parameter "upsampling_type" must be one of "upsampling", '
-                         '"deconv", "atrous" or "subpixel".')
+    if upsampling_type not in ['upsampling', 'deconv', 'subpixel']:
+        raise ValueError('Parameter "upsampling_type" must be one of '
+                         '"upsampling", "deconv", or "subpixel".')
 
     if upsampling_type == 'deconv' and batchsize is None:
         raise ValueError('If "upsampling_type" is deconvoloution, then a fixed '
@@ -256,11 +256,6 @@ def DenseNetFCN(input_shape, nb_dense_block=5, growth_rate=16, nb_layers_per_blo
     if type(nb_layers_per_block) is not list and nb_dense_block < 1:
         raise ValueError('Number of dense layers per block must be greater than 1. Argument '
                          'value was %d.' % (nb_layers_per_block))
-
-    if upsampling_type == 'atrous':
-        warnings.warn('Atrous Convolution upsampling does not correctly work (see https://github.com/fchollet/keras/issues/4018).\n'
-                      'Switching to `upsampling` type upscaling.')
-        upsampling_type = 'upsampling'
 
     # Determine proper input shape
     input_shape = _obtain_input_shape(input_shape,
@@ -420,7 +415,7 @@ def __transition_up_block(ip, nb_filters, type='upsampling', output_shape=None, 
     Args:
         ip: keras tensor
         nb_filters: number of layers
-        type: can be 'upsampling', 'subpixel', 'deconv', or 'atrous'. Determines type of upsampling performed
+        type: can be 'upsampling', 'subpixel', or 'deconv'. Determines type of upsampling performed
         output_shape: required if type = 'deconv'. Output shape of tensor
         weight_decay: weight decay factor
 
@@ -435,10 +430,6 @@ def __transition_up_block(ip, nb_filters, type='upsampling', output_shape=None, 
         x = SubPixelUpscaling(scale_factor=2)(x)
         x = Conv2D(nb_filters, (3, 3), activation="relu", padding='same', kernel_regularizer=l2(weight_decay),
                    use_bias=False, kernel_initializer='he_uniform')(x)
-    elif type == 'atrous':
-        # waiting on https://github.com/fchollet/keras/issues/4018
-        x = Conv2D(nb_filters, (3, 3), activation="relu", kernel_regularizer=l2(weight_decay),
-                   use_bias=False, atrous_rate=(2, 2), kernel_initializer='he_uniform')(ip)
     else:
         x = Conv2DTranspose(nb_filters, (3, 3), output_shape, activation='relu', padding='same',
                             subsample=(2, 2), kernel_initializer='he_uniform')(ip)
@@ -579,7 +570,7 @@ def __create_fcn_dense_net(nb_classes, img_input, include_top, nb_dense_block=5,
             If list, nb_layer is used as provided. Note that list size must
             be (nb_dense_block + 1)
         nb_upsampling_conv: number of convolutional layers in upsampling via subpixel convolution
-        upsampling_type: Can be one of 'upsampling', 'deconv', 'atrous' and
+        upsampling_type: Can be one of 'upsampling', 'deconv', and
             'subpixel'. Defines type of upsampling algorithm used.
         batchsize: Fixed batch size. This is a temporary requirement for
             computation of output shape in the case of Deconvolution2D layers.
