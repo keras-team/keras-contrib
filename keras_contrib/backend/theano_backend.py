@@ -190,13 +190,10 @@ def depth_to_space(input, scale, data_format=None):
     input = _preprocess_conv2d_input(input, data_format)
 
     b, k, row, col = input.shape
-    output_shape = (b, k // (scale ** 2), row * scale, col * scale)
-
-    out = T.zeros(output_shape)
-    r = scale
-
-    for y, x in itertools.product(range(scale), repeat=2):
-        out = T.inc_subtensor(out[:, :, y::r, x::r], input[:, r * y + x:: r * r, :, :])
+    out_channels = k // (scale**2)
+    x = T.reshape(input, (b, scale, scale, out_channels, row, col))
+    x = T.transpose(x, (0, 3, 4, 1, 5, 2))
+    out = T.reshape(x, (b, out_channels, row*scale, col*scale))
 
     out = _postprocess_conv2d_output(out, input, None, None, None, data_format)
     return out
