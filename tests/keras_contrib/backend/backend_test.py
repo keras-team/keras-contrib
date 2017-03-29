@@ -134,10 +134,6 @@ class TestBackend(object):
                             assert_allclose(expected, tf_ans, atol=1e-05)
                             assert_allclose(expected, th_ans, atol=1e-05)
 
-
-
-
-
     def test_moments(self):
         input_shape = (10, 10, 10, 10)
         x_0 = np.zeros(input_shape)
