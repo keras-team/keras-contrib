@@ -32,16 +32,17 @@ import keras.backend as K
 
 from keras_contrib.layers.convolutional import SubPixelUpscaling
 
-TH_WEIGHTS_PATH = 'https://github.com/titu1994/DenseNet/releases/download' \
-                  '/v2.0/DenseNet-40-12-Theano-Backend-TH-dim-ordering.h5'
-TF_WEIGHTS_PATH = 'https://github.com/titu1994/DenseNet/releases/download' \
-                  '/v2.0/DenseNet-40-12-Tensorflow-Backend-TF-dim-ordering.h5'
-TH_WEIGHTS_PATH_NO_TOP = 'https://github.com/titu1994/DenseNet/releases' \
-                          '/download/v2.0/DenseNet-40-12-Theano-Backend-TH' \
-                          '-dim-ordering-no-top.h5'
-TF_WEIGHTS_PATH_NO_TOP = 'https://github.com/titu1994/DenseNet/releases/' \
-                         'download/v2.0/DenseNet-40-12-Tensorflow-Backend-' \
-                         'TF-dim-ordering-no-top.h5'
+TH_WEIGHTS_PATH = ('https://github.com/titu1994/DenseNet/releases/download'
+                   '/v2.0/DenseNet-40-12-Theano-Backend-TH-dim-ordering.h5')
+TF_WEIGHTS_PATH = ('https://github.com/titu1994/DenseNet/releases/download'
+                   '/v2.0/DenseNet-40-12-Tensorflow'
+                   '-Backend-TF-dim-ordering.h5')
+TH_WEIGHTS_PATH_NO_TOP = ('https://github.com/titu1994/DenseNet/releases'
+                          '/download/v2.0/DenseNet-40-12-Theano-Backend-TH'
+                          '-dim-ordering-no-top.h5')
+TF_WEIGHTS_PATH_NO_TOP = ('https://github.com/titu1994/DenseNet/releases/'
+                          'download/v2.0/DenseNet-40-12-Tensorflow-Backend-'
+                          'TF-dim-ordering-no-top.h5')
 
 
 def DenseNet(input_shape=None, depth=40, nb_dense_block=3,
