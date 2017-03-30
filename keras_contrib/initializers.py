@@ -37,26 +37,36 @@ class ConvolutionAware(Initializer):
 
             transpose_dimensions = (2, 1, 0)
             kernel_shape = (row,)
-            correct_fft = lambda shape, s=[None]: np.fft.irfft(shape, s[0])
+            correct_ifft = lambda shape, s=[None]: np.fft.irfft(shape, s[0])
+            correct_fft = np.fft.rfft
 
         elif rank == 4:
             row, column, stack_size, filters_size = shape
 
-            transpose_dimensions = (2, 3, 1, 0)
+            transpose_dimensions = (2, 3, 0, 1)
             kernel_shape = (row, column)
-            correct_fft = np.fft.irfft2
+            correct_ifft = np.fft.irfft2
+            correct_fft = np.fft.rfft2
 
+        elif rank == 5:
+            x, y, z, stack_size, filters_size = shape
+
+            transpose_dimensions = (3, 4, 0, 1, 2)
+            kernel_shape = (x, y, z)
+            correct_fft = np.fft.rfftn
+            correct_ifft = np.fft.irfftn
         else:
             return self.orthogonal(shape)
 
         kernel_fourier_shape = correct_fft(np.zeros(kernel_shape)).shape
+
         init = []
         for i in range(filters_size):
             basis = self._create_basis(
                 stack_size, np.prod(kernel_fourier_shape))
             basis = basis.reshape((stack_size,) + kernel_fourier_shape)
 
-            filters = [correct_fft(x, kernel_shape) +
+            filters = [correct_ifft(x, kernel_shape) +
                        np.random.normal(0, self.eps_std, kernel_shape) for
                        x in basis]
 
