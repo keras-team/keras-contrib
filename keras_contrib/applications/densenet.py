@@ -367,7 +367,8 @@ def DenseNetFCN(input_shape, nb_dense_block=5, growth_rate=16,
         else:
             img_input = input_tensor
 
-    x = __create_fcn_dense_net(classes, img_input, include_top, nb_dense_block,
+    x = __create_fcn_dense_net(classes, img_input, include_top, top,
+                               nb_dense_block,
                                growth_rate, reduction, dropout_rate,
                                weight_decay, nb_layers_per_block,
                                upsampling_conv, upsampling_type,
