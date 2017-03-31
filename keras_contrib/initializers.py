@@ -56,7 +56,7 @@ class ConvolutionAware(Initializer):
             correct_fft = np.fft.rfftn
             correct_ifft = np.fft.irfftn
         else:
-            return self.orthogonal(shape)
+            return K.variable(self.orthogonal(shape), dtype=K.floatx())
 
         kernel_fourier_shape = correct_fft(np.zeros(kernel_shape)).shape
 
@@ -73,7 +73,7 @@ class ConvolutionAware(Initializer):
             init.append(filters)
 
         # Format of array is now: filters, stack, row, column
-        init = np.array(init, dtype=K.floatx())
+        init = np.array(init)
         init = self._scale_filters(init, variance)
         return init.transpose(transpose_dimensions)
 
