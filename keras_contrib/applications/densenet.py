@@ -405,8 +405,6 @@ def __transition_up_block(ip, nb_filters, type='upsampling', output_shape=None, 
     elif type == 'subpixel':
         x = Conv2D(nb_filters, (3, 3), padding="same", kernel_regularizer=l2(weight_decay), activation='relu',
                    use_bias=False, kernel_initializer='he_uniform')(ip)
-        # x = Convolution2D(nb_filters, 3, 3, activation="relu", border_mode='same', W_regularizer=l2(weight_decay),
-        #                  bias=False, init='he_uniform')(ip)
         x = SubPixelUpscaling(scale_factor=2)(x)
         x = Conv2D(nb_filters, (3, 3), activation="relu", padding='same', kernel_regularizer=l2(weight_decay),
                    use_bias=False, kernel_initializer='he_uniform')(x)

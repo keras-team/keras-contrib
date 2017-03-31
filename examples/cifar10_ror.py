@@ -36,19 +36,19 @@ generator = ImageDataGenerator(rotation_range=15,
 
 generator.fit(trainX, seed=0)
 
-model = ResidualOfResidual(depth=40, width=2, dropout_rate=0.0, weights='None')
+model = ResidualOfResidual(depth=40, width=2, dropout_rate=0.0, weights=None)
 
 optimizer = Adam(lr=1e-3)
 
 model.compile(loss="categorical_crossentropy", optimizer=optimizer, metrics=["acc"])
 print("Finished compiling")
 
-model.fit_generator(generator.flow(trainX, trainY, batch_size=batch_size), samples_per_epoch=len(trainX),
-                    nb_epoch=nb_epoch,
+model.fit_generator(generator.flow(trainX, trainY, batch_size=batch_size), steps_per_epoch=len(trainX) // batch_size,
+                    epochs=nb_epoch,
                     callbacks=[callbacks.ModelCheckpoint("weights/RoR-WRN-40-2-Weights.h5", monitor="val_acc",
                                                          save_best_only=True, save_weights_only=True)],
                     validation_data=(testX, testY),
-                    nb_val_samples=testX.shape[0], verbose=2)
+                    verbose=2)
 
 scores = model.evaluate(testX, testY, batch_size)
 print("Test loss : ", scores[0])
