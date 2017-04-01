@@ -423,7 +423,7 @@ def __conv_block(ip, nb_filter, bottleneck=False,
         if dropout_rate:
             x = Dropout(dropout_rate)(x)
 
-        x = BatchNormalization(mode=0, axis=concat_axis,
+        x = BatchNormalization(axis=concat_axis,
                                gamma_regularizer=l2(weight_decay),
                                beta_regularizer=l2(weight_decay))(x)
         x = Activation('relu')(x)
