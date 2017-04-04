@@ -314,6 +314,7 @@ def DenseNetFCN(input_shape, nb_dense_block=5, growth_rate=16,
                 transition_dilation_rate.
 
         # Returns
+
             A Keras model instance.
     """
 
@@ -873,7 +874,7 @@ def __create_fcn_dense_net(nb_classes, img_input, include_top,
                           weight_decay=weight_decay,
                           return_concat_list=True, grow_nb_filters=False)
 
-    if include_top and top is 'classification':
+    if include_top and top is 'segmentation':
         x = Conv2D(nb_classes, (1, 1), activation='linear',
                    padding='same', kernel_regularizer=l2(weight_decay),
                    use_bias=False)(x)
