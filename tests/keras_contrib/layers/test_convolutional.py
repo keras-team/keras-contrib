@@ -19,14 +19,14 @@ else:
 
 @keras_test
 def test_deconvolution_3d():
-    nbias_samples = 6
-    nbias_filter = 4
+    num_samples = 6
+    num_filter = 4
     stack_size = 2
     kernel_dim1 = 12
     kernel_dim2 = 10
     kernel_dim3 = 8
 
-    for batch_size in [None, nbias_samples]:
+    for batch_size in [None, num_samples]:
         for border_mode in _convolution_border_modes:
             for subsample in [(1, 1, 1), (2, 2, 2)]:
                 if border_mode == 'same' and subsample != (1, 1, 1):
@@ -42,56 +42,49 @@ def test_deconvolution_3d():
                                          border_mode,
                                          subsample[2])
                 layer_test(convolutional.Deconvolution3D,
-                           kwargs={'filters': nbias_filter,
+                           kwargs={'filters': num_filter,
                                    'kernel_size': (7, 5, 3),
-                                   'output_shape': (batch_size, nbias_filter,
-                                                    dim1, dim2, dim3),
+                                   'output_shape': (batch_size, num_filter, dim1, dim2, dim3),
                                    'padding': border_mode,
                                    'strides': subsample,
                                    'data_format': 'channels_first'},
-                           input_shape=(nbias_samples, stack_size,
-                                        kernel_dim1, kernel_dim2, kernel_dim3),
+                           input_shape=(num_samples, stack_size, kernel_dim1, kernel_dim2, kernel_dim3),
+
                            fixed_batch_size=True, tolerance=None)
 
                 layer_test(convolutional.Deconvolution3D,
-                           kwargs={'filters': nbias_filter,
+                           kwargs={'filters': num_filter,
                                    'kernel_size': (7, 5, 3),
-                                   'output_shape': (batch_size, nbias_filter,
-                                                    dim1, dim2, dim3),
+                                   'output_shape': (batch_size, num_filter, dim1, dim2, dim3),
                                    'padding': border_mode,
                                    'strides': subsample,
                                    'data_format': 'channels_first',
                                    'kernel_regularizer': 'l2',
                                    'bias_regularizer': 'l2',
                                    'activity_regularizer': 'l2'},
-                           input_shape=(nbias_samples, stack_size,
-                                        kernel_dim1, kernel_dim2, kernel_dim3),
+                           input_shape=(num_samples, stack_size, kernel_dim1, kernel_dim2, kernel_dim3),
                            fixed_batch_size=True, tolerance=None)
 
                 layer_test(convolutional.Deconvolution3D,
-                           kwargs={'filters': nbias_filter,
+                           kwargs={'filters': num_filter,
                                    'kernel_size': (7, 5, 3),
-                                   'output_shape': (nbias_filter, dim1,
-                                                    dim2, dim3),
+                                   'output_shape': (num_filter, dim1, dim2, dim3),
                                    'padding': border_mode,
                                    'strides': subsample,
                                    'data_format': 'channels_first',
                                    'kernel_regularizer': 'l2',
                                    'bias_regularizer': 'l2',
                                    'activity_regularizer': 'l2'},
-                           input_shape=(nbias_samples, stack_size,
-                                        kernel_dim1,
-                                        kernel_dim2, kernel_dim3),
-                           tolerance=None)
+                           input_shape=(num_samples, stack_size, kernel_dim1, kernel_dim2, kernel_dim3), tolerance=None)
 
 
 @keras_test
 def test_cosineconvolution_2d():
-    nbias_samples = 2
-    nbias_filter = 2
+    num_samples = 2
+    num_filter = 2
     stack_size = 3
-    nbias_row = 10
-    nbias_col = 6
+    num_row = 10
+    num_col = 6
 
     if K.backend() == 'theano':
         data_format = 'channels_first'
@@ -105,17 +98,16 @@ def test_cosineconvolution_2d():
                     continue
 
                 layer_test(convolutional.CosineConvolution2D,
-                           kwargs={'filters': nbias_filter,
+                           kwargs={'filters': num_filter,
                                    'kernel_size': (3, 3),
                                    'padding': border_mode,
                                    'strides': subsample,
                                    'use_bias': use_bias_mode,
                                    'data_format': data_format},
-                           input_shape=(nbias_samples, nbias_row,
-                                        nbias_col, stack_size))
+                           input_shape=(num_samples, num_row, num_col, stack_size))
 
                 layer_test(convolutional.CosineConvolution2D,
-                           kwargs={'filters': nbias_filter,
+                           kwargs={'filters': num_filter,
                                    'kernel_size': (3, 3),
                                    'padding': border_mode,
                                    'strides': subsample,
@@ -124,8 +116,7 @@ def test_cosineconvolution_2d():
                                    'kernel_regularizer': 'l2',
                                    'bias_regularizer': 'l2',
                                    'activity_regularizer': 'l2'},
-                           input_shape=(nbias_samples, nbias_row,
-                                        nbias_col, stack_size))
+                           input_shape=(num_samples, num_row, num_col, stack_size))
 
     if data_format == 'channels_first':
         X = np.random.randn(1, 3, 5, 5)
@@ -161,15 +152,13 @@ def test_cosineconvolution_2d():
 
 
 @keras_test
-def test_subias_pixel_upscaling():
-    nbias_samples = 2
-    nbias_row = 16
-    nbias_col = 16
+def test_sub_pixel_upscaling():
+    num_samples = 2
+    num_row = 16
+    num_col = 16
 
     for scale_factor in [2, 3, 4]:
-        input_data = np.random.random((nbias_samples,
-                                       4 * (scale_factor ** 2),
-                                       nbias_row, nbias_col))
+        input_data = np.random.random((num_samples, 4 * (scale_factor ** 2), num_row, num_col))
 
         if K.image_data_format() == 'channels_last':
             input_data = input_data.transpose((0, 2, 3, 1))
