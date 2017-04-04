@@ -100,6 +100,40 @@ class TestBackend(object):
                 assert zth.shape == ztf.shape
                 assert_allclose(zth, ztf, atol=1e-02)
 
+    def test_depth_to_space(self):
+
+        for batch_size in [1, 2, 3]:
+            for scale in [2, 3]:
+                for channels in [1, 2, 3]:
+                    for rows in [1, 2, 3]:
+                        for cols in [1, 2, 3]:
+                            if K.image_data_format() == 'channels_first':
+                                arr = np.arange(batch_size*channels*scale*scale*rows*cols)\
+                                    .reshape((batch_size, channels * scale * scale, rows, cols))
+                            elif K.image_data_format() == 'channels_last':
+                                arr = np.arange(batch_size * rows * cols * scale * scale * channels) \
+                                    .reshape((batch_size, rows, cols, channels * scale * scale))
+
+                            arr_tf = KTF.variable(arr)
+                            arr_th = KTH.variable(arr)
+
+                            if K.image_data_format() == 'channels_first':
+                                expected = arr.reshape((batch_size, scale, scale, channels, rows, cols))\
+                                    .transpose((0, 3, 4, 1, 5, 2))\
+                                    .reshape((batch_size, channels, rows*scale, cols*scale))
+                            elif K.image_data_format() == 'channels_last':
+                                expected = arr.reshape((batch_size, rows, cols, scale, scale, channels)) \
+                                    .transpose((0, 1, 3, 2, 4, 5))\
+                                    .reshape((batch_size, rows * scale, cols * scale, channels))
+
+                            tf_ans = KTF.eval(KCTF.depth_to_space(arr_tf, scale))
+                            th_ans = KTH.eval(KCTH.depth_to_space(arr_th, scale))
+
+                            assert tf_ans.shape == expected.shape
+                            assert th_ans.shape == expected.shape
+                            assert_allclose(expected, tf_ans, atol=1e-05)
+                            assert_allclose(expected, th_ans, atol=1e-05)
+
     def test_moments(self):
         input_shape = (10, 10, 10, 10)
         x_0 = np.zeros(input_shape)
