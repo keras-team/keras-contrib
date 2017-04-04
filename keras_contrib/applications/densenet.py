@@ -12,10 +12,11 @@ import warnings
 
 from keras.models import Model
 from keras.layers.core import Dense, Dropout, Activation, Reshape
-from keras.layers.convolutional import Convolution2D, Deconvolution2D, AtrousConvolution2D, UpSampling2D
+from keras.layers.convolutional import Conv2D, Conv2DTranspose, UpSampling2D
 from keras.layers.pooling import AveragePooling2D
 from keras.layers.pooling import GlobalAveragePooling2D
-from keras.layers import Input, merge
+from keras.layers import Input
+from keras.layers.merge import concatenate
 from keras.layers.normalization import BatchNormalization
 from keras.regularizers import l2
 from keras.utils.layer_utils import convert_all_kernels_in_model
@@ -61,7 +62,7 @@ def DenseNet(input_shape=None, depth=40, nb_dense_block=3, growth_rate=12, nb_fi
                 number of filters is 2 * growth_rate
             nb_layers_per_block: number of layers in each dense block.
                 Can be a -1, positive integer or a list.
-                If -1, calculates nb_layer_per_block from the depth of the network.
+                If -1, calculates nb_layer_per_block from the network depth.
                 If positive integer, a set number of layers per dense block.
                 If list, nb_layer is used as provided. Note that list size must
                 be (nb_dense_block + 1)
@@ -104,7 +105,7 @@ def DenseNet(input_shape=None, depth=40, nb_dense_block=3, growth_rate=12, nb_fi
     input_shape = _obtain_input_shape(input_shape,
                                       default_size=32,
                                       min_size=8,
-                                      dim_ordering=K.image_dim_ordering(),
+                                      data_format=K.image_data_format(),
                                       include_top=include_top)
 
     if input_tensor is None:
@@ -177,7 +178,7 @@ def DenseNet(input_shape=None, depth=40, nb_dense_block=3, growth_rate=12, nb_fi
 def DenseNetFCN(input_shape, nb_dense_block=5, growth_rate=16, nb_layers_per_block=4,
                 reduction=0.0, dropout_rate=0.0, weight_decay=1E-4, init_conv_filters=48,
                 include_top=True, weights=None, input_tensor=None, classes=1, activation='softmax',
-                upsampling_conv=128, upsampling_type='upsampling', batchsize=None):
+                upsampling_conv=128, upsampling_type='upsampling'):
     """Instantiate the DenseNet FCN architecture.
         Note that when using TensorFlow,
         for best performance you should set
@@ -215,7 +216,7 @@ def DenseNetFCN(input_shape, nb_dense_block=5, growth_rate=16, nb_layers_per_blo
             activation: Type of activation at the top layer. Can be one of 'softmax' or 'sigmoid'.
                 Note that if sigmoid is used, classes must be 1.
             upsampling_conv: number of convolutional layers in upsampling via subpixel convolution
-            upsampling_type: Can be one of 'upsampling', 'deconv', 'atrous' and
+            upsampling_type: Can be one of 'upsampling', 'deconv' and 
                 'subpixel'. Defines type of upsampling algorithm used.
             batchsize: Fixed batch size. This is a temporary requirement for
                 computation of output shape in the case of Deconvolution2D layers.
@@ -232,13 +233,9 @@ def DenseNetFCN(input_shape, nb_dense_block=5, growth_rate=16, nb_layers_per_blo
 
     upsampling_type = upsampling_type.lower()
 
-    if upsampling_type not in ['upsampling', 'deconv', 'atrous', 'subpixel']:
+    if upsampling_type not in ['upsampling', 'deconv', 'subpixel']:
         raise ValueError('Parameter "upsampling_type" must be one of "upsampling", '
-                         '"deconv", "atrous" or "subpixel".')
-
-    if upsampling_type == 'deconv' and batchsize is None:
-        raise ValueError('If "upsampling_type" is deconvoloution, then a fixed '
-                         'batch size must be provided in batchsize parameter.')
+                         '"deconv" or "subpixel".')
 
     if input_shape is None:
         raise ValueError('For fully convolutional models, input shape must be supplied.')
@@ -286,7 +283,7 @@ def DenseNetFCN(input_shape, nb_dense_block=5, growth_rate=16, nb_layers_per_blo
     x = __create_fcn_dense_net(classes, img_input, include_top, nb_dense_block,
                                growth_rate, reduction, dropout_rate, weight_decay,
                                nb_layers_per_block, upsampling_conv, upsampling_type,
-                               batchsize, init_conv_filters, input_shape, activation)
+                               init_conv_filters, input_shape, activation)
 
     # Ensure that the model takes into account
     # any potential predecessors of `input_tensor`.
@@ -313,25 +310,25 @@ def __conv_block(ip, nb_filter, bottleneck=False, dropout_rate=None, weight_deca
 
     concat_axis = 1 if K.image_dim_ordering() == "th" else -1
 
-    x = BatchNormalization(mode=0, axis=concat_axis, gamma_regularizer=l2(weight_decay),
+    x = BatchNormalization(axis=concat_axis, gamma_regularizer=l2(weight_decay),
                            beta_regularizer=l2(weight_decay))(ip)
     x = Activation('relu')(x)
 
     if bottleneck:
         inter_channel = nb_filter * 4  # Obtained from https://github.com/liuzhuang13/DenseNet/blob/master/densenet.lua
 
-        x = Convolution2D(inter_channel, 1, 1, init='he_uniform', border_mode='same', bias=False,
-                          W_regularizer=l2(weight_decay))(x)
+        x = Conv2D(inter_channel, (1, 1), kernel_initializer='he_uniform', padding='same', use_bias=False,
+                   kernel_regularizer=l2(weight_decay))(x)
 
         if dropout_rate:
             x = Dropout(dropout_rate)(x)
 
-        x = BatchNormalization(mode=0, axis=concat_axis, gamma_regularizer=l2(weight_decay),
+        x = BatchNormalization(axis=concat_axis, gamma_regularizer=l2(weight_decay),
                                beta_regularizer=l2(weight_decay))(x)
         x = Activation('relu')(x)
 
-    x = Convolution2D(nb_filter, 3, 3, init="he_uniform", border_mode="same", bias=False,
-                      W_regularizer=l2(weight_decay))(x)
+    x = Conv2D(nb_filter, (3, 3), kernel_initializer="he_uniform", padding="same", use_bias=False,
+               kenel_regularizer=l2(weight_decay))(x)
     if dropout_rate:
         x = Dropout(dropout_rate)(x)
 
@@ -352,11 +349,11 @@ def __transition_block(ip, nb_filter, compression=1.0, dropout_rate=None, weight
 
     concat_axis = 1 if K.image_dim_ordering() == "th" else -1
 
-    x = BatchNormalization(mode=0, axis=concat_axis, gamma_regularizer=l2(weight_decay),
+    x = BatchNormalization(axis=concat_axis, gamma_regularizer=l2(weight_decay),
                            beta_regularizer=l2(weight_decay))(ip)
     x = Activation('relu')(x)
-    x = Convolution2D(int(nb_filter * compression), 1, 1, init="he_uniform", border_mode="same", bias=False,
-                      W_regularizer=l2(weight_decay))(x)
+    x = Conv2D(int(nb_filter * compression), (1, 1), kernel_initializer="he_uniform", padding="same", use_bias=False,
+               kernel_regularizer=l2(weight_decay))(x)
     if dropout_rate:
         x = Dropout(dropout_rate)(x)
     x = AveragePooling2D((2, 2), strides=(2, 2))(x)
@@ -388,7 +385,7 @@ def __dense_block(x, nb_layers, nb_filter, growth_rate, bottleneck=False, dropou
         x = __conv_block(x, growth_rate, bottleneck, dropout_rate, weight_decay)
         x_list.append(x)
 
-        x = merge(x_list, mode='concat', concat_axis=concat_axis)
+        x = concatenate(x_list, axis=concat_axis)
 
         if grow_nb_filters:
             nb_filter += growth_rate
@@ -399,13 +396,12 @@ def __dense_block(x, nb_layers, nb_filter, growth_rate, bottleneck=False, dropou
         return x, nb_filter
 
 
-def __transition_up_block(ip, nb_filters, type='upsampling', output_shape=None, weight_decay=1E-4):
+def __transition_up_block(ip, nb_filters, type='upsampling', weight_decay=1E-4):
     ''' SubpixelConvolutional Upscaling (factor = 2)
     Args:
         ip: keras tensor
         nb_filters: number of layers
-        type: can be 'upsampling', 'subpixel', 'deconv', or 'atrous'. Determines type of upsampling performed
-        output_shape: required if type = 'deconv'. Output shape of tensor
+        type: can be 'upsampling', 'subpixel', 'deconv'. Determines type of upsampling performed
         weight_decay: weight decay factor
     Returns: keras tensor, after applying upsampling operation.
     '''
@@ -413,18 +409,14 @@ def __transition_up_block(ip, nb_filters, type='upsampling', output_shape=None, 
     if type == 'upsampling':
         x = UpSampling2D()(ip)
     elif type == 'subpixel':
-        x = Convolution2D(nb_filters, 3, 3, activation="relu", border_mode='same', W_regularizer=l2(weight_decay),
-                          bias=False, init='he_uniform')(ip)
+        x = Conv2D(nb_filters, (3, 3), activation="relu", padding='same', W_regularizer=l2(weight_decay),
+                   use_bias=False, kernel_initializer='he_uniform')(ip)
         x = SubPixelUpscaling(scale_factor=2)(x)
-        x = Convolution2D(nb_filters, 3, 3, activation="relu", border_mode='same', W_regularizer=l2(weight_decay),
-                          bias=False, init='he_uniform')(x)
-    elif type == 'atrous':
-        # waiting on https://github.com/fchollet/keras/issues/4018
-        x = AtrousConvolution2D(nb_filters, 3, 3, activation="relu", W_regularizer=l2(weight_decay),
-                                bias=False, atrous_rate=(2, 2), init='he_uniform')(ip)
+        x = Conv2D(nb_filters, (3, 3), activation="relu", padding='same', W_regularizer=l2(weight_decay),
+                   use_bias=False, kernel_initializer='he_uniform')(x)
     else:
-        x = Deconvolution2D(nb_filters, 3, 3, output_shape, activation='relu', border_mode='same',
-                            subsample=(2, 2), init='he_uniform')(ip)
+        x = Conv2DTranspose(nb_filters, (3, 3), activation='relu', padding='same', strides=(2, 2),
+                            kernel_initializer='he_uniform')(ip)
 
     return x
 
@@ -490,8 +482,8 @@ def __create_dense_net(nb_classes, img_input, include_top, depth=40, nb_dense_bl
     compression = 1.0 - reduction
 
     # Initial convolution
-    x = Convolution2D(nb_filter, 3, 3, init="he_uniform", border_mode="same", name="initial_conv2D", bias=False,
-                      W_regularizer=l2(weight_decay))(img_input)
+    x = Conv2D(nb_filter, (3, 3), kernel_initializer="he_uniform", padding="same", name="initial_conv2D",
+               use_bias=False, kernel_regularizer=l2(weight_decay))(img_input)
 
     # Add dense blocks
     for block_idx in range(nb_dense_block - 1):
@@ -506,7 +498,7 @@ def __create_dense_net(nb_classes, img_input, include_top, depth=40, nb_dense_bl
     x, nb_filter = __dense_block(x, final_nb_layer, nb_filter, growth_rate, bottleneck=bottleneck,
                                  dropout_rate=dropout_rate, weight_decay=weight_decay)
 
-    x = BatchNormalization(mode=0, axis=concat_axis, gamma_regularizer=l2(weight_decay),
+    x = BatchNormalization(axis=concat_axis, gamma_regularizer=l2(weight_decay),
                            beta_regularizer=l2(weight_decay))(x)
     x = Activation('relu')(x)
     x = GlobalAveragePooling2D()(x)
@@ -520,7 +512,7 @@ def __create_dense_net(nb_classes, img_input, include_top, depth=40, nb_dense_bl
 def __create_fcn_dense_net(nb_classes, img_input, include_top, nb_dense_block=5, growth_rate=12,
                            reduction=0.0, dropout_rate=None, weight_decay=1E-4,
                            nb_layers_per_block=4, nb_upsampling_conv=128, upsampling_type='upsampling',
-                           batchsize=None, init_conv_filters=48, input_shape=None, activation='softmax'):
+                           init_conv_filters=48, input_shape=None, activation='softmax'):
     ''' Build the DenseNet model
     Args:
         nb_classes: number of classes
@@ -537,12 +529,8 @@ def __create_fcn_dense_net(nb_classes, img_input, include_top, nb_dense_block=5,
             If list, nb_layer is used as provided. Note that list size must
             be (nb_dense_block + 1)
         nb_upsampling_conv: number of convolutional layers in upsampling via subpixel convolution
-        upsampling_type: Can be one of 'upsampling', 'deconv', 'atrous' and
-            'subpixel'. Defines type of upsampling algorithm used.
-        batchsize: Fixed batch size. This is a temporary requirement for
-            computation of output shape in the case of Deconvolution2D layers.
-            Parameter will be removed in next iteration of Keras, which infers
-            output shape of deconvolution layers automatically.
+        upsampling_type: Can be one of 'upsampling', 'deconv' and 'subpixel'. Defines 
+            type of upsampling algorithm used.
         input_shape: Only used for shape inference in fully convolutional networks.
         activation: Type of activation at the top layer. Can be one of 'softmax' or 'sigmoid'.
                     Note that if sigmoid is used, classes must be 1.
@@ -583,8 +571,8 @@ def __create_fcn_dense_net(nb_classes, img_input, include_top, nb_dense_block=5,
     compression = 1.0 - reduction
 
     # Initial convolution
-    x = Convolution2D(init_conv_filters, 3, 3, init="he_uniform", border_mode="same", name="initial_conv2D", bias=False,
-                      W_regularizer=l2(weight_decay))(img_input)
+    x = Conv2D(init_conv_filters, (3, 3), kernel_initializer="he_uniform", padding="same", name="initial_conv2D",
+               use_bias=False, kernel_regularizer=l2(weight_decay))(img_input)
 
     nb_filter = init_conv_filters
 
@@ -612,35 +600,18 @@ def __create_fcn_dense_net(nb_classes, img_input, include_top, nb_dense_block=5,
 
     skip_list = skip_list[::-1]  # reverse the skip list
 
-    if K.image_dim_ordering() == 'th':
-        out_shape = [batchsize, nb_filter, rows // 16, cols // 16]
-    else:
-        out_shape = [batchsize, rows // 16, cols // 16, nb_filter]
-
     # Add dense blocks and transition up block
     for block_idx in range(nb_dense_block):
         n_filters_keep = growth_rate * nb_layers[nb_dense_block + block_idx]
 
-        if K.image_dim_ordering() == 'th':
-            out_shape[1] = n_filters_keep
-        else:
-            out_shape[3] = n_filters_keep
-
         # upsampling block must upsample only the feature maps (concat_list[1:]),
         # not the concatenation of the input with the feature maps (concat_list[0].
-        l = merge(concat_list[1:], mode='concat', concat_axis=concat_axis)
+        l = concatenate(concat_list[1:], axis=concat_axis)
 
-        t = __transition_up_block(l, nb_filters=n_filters_keep, type=upsampling_type, output_shape=out_shape)
+        t = __transition_up_block(l, nb_filters=n_filters_keep, type=upsampling_type)
 
         # concatenate the skip connection with the transition block
-        x = merge([t, skip_list[block_idx]], mode='concat', concat_axis=concat_axis)
-
-        if K.image_dim_ordering() == 'th':
-            out_shape[2] *= 2
-            out_shape[3] *= 2
-        else:
-            out_shape[1] *= 2
-            out_shape[2] *= 2
+        x = concatenate([t, skip_list[block_idx]], axis=concat_axis)
 
         # Dont allow the feature map size to grow in upsampling dense blocks
         _, nb_filter, concat_list = __dense_block(x, nb_layers[nb_dense_block + block_idx + 1], nb_filter=growth_rate,
@@ -649,8 +620,8 @@ def __create_fcn_dense_net(nb_classes, img_input, include_top, nb_dense_block=5,
                                                   return_concat_list=True, grow_nb_filters=False)
 
     if include_top:
-        x = Convolution2D(nb_classes, 1, 1, activation='linear', border_mode='same', W_regularizer=l2(weight_decay),
-                          bias=False)(x)
+        x = Conv2D(nb_classes, (1, 1), activation='linear', padding='same', kernel_regularizer=l2(weight_decay),
+                   use_bias=False)(x)
 
         if K.image_dim_ordering() == 'th':
             channel, row, col = input_shape
