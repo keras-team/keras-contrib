@@ -41,7 +41,7 @@ def DenseNet(input_shape=None, depth=40, nb_dense_block=3, growth_rate=12, nb_fi
         optionally loading weights pre-trained
         on CIFAR-10. Note that when using TensorFlow,
         for best performance you should set
-        `image_data_format="tf"` in your Keras config
+        `image_data_format="channels_last"` in your Keras config
         at ~/.keras/keras.json.
         The model and the weights are compatible with both
         TensorFlow and Theano. The dimension ordering
@@ -50,8 +50,8 @@ def DenseNet(input_shape=None, depth=40, nb_dense_block=3, growth_rate=12, nb_fi
         # Arguments
             input_shape: optional shape tuple, only to be specified
                 if `include_top` is False (otherwise the input shape
-                has to be `(32, 32, 3)` (with `tf` dim ordering)
-                or `(3, 32, 32)` (with `th` dim ordering).
+                has to be `(32, 32, 3)` (with `channels_last` dim ordering)
+                or `(3, 32, 32)` (with `channels_first` dim ordering).
                 It should have exactly 3 inputs channels,
                 and width and height should be no smaller than 8.
                 E.g. `(200, 200, 3)` would be one valid value.
@@ -135,7 +135,7 @@ def DenseNet(input_shape=None, depth=40, nb_dense_block=3, growth_rate=12, nb_fi
                 (bottleneck is False) and (reduction == 0.0) and (dropout_rate == 0.0) and (weight_decay == 1E-4):
             # Default parameters match. Weights for this model exist:
 
-            if K.image_data_format() == 'th':
+            if K.image_data_format() == 'channels_first':
                 if include_top:
                     weights_path = get_file('densenet_40_12_th_dim_ordering_th_kernels.h5',
                                             TH_WEIGHTS_PATH,
@@ -151,9 +151,9 @@ def DenseNet(input_shape=None, depth=40, nb_dense_block=3, growth_rate=12, nb_fi
                     warnings.warn('You are using the TensorFlow backend, yet you '
                                   'are using the Theano '
                                   'image dimension ordering convention '
-                                  '(`image_data_format="th"`). '
+                                  '(`image_data_format="channels_first"`). '
                                   'For best performance, set '
-                                  '`image_data_format="tf"` in '
+                                  '`image_data_format="channels_last"` in '
                                   'your Keras config '
                                   'at ~/.keras/keras.json.')
                     convert_all_kernels_in_model(model)
@@ -182,7 +182,7 @@ def DenseNetFCN(input_shape, nb_dense_block=5, growth_rate=16, nb_layers_per_blo
     """Instantiate the DenseNet FCN architecture.
         Note that when using TensorFlow,
         for best performance you should set
-        `image_data_format="tf"` in your Keras config
+        `image_data_format="channels_last"` in your Keras config
         at ~/.keras/keras.json.
         # Arguments
             nb_dense_block: number of dense blocks to add to end (generally = 3)
@@ -205,8 +205,8 @@ def DenseNetFCN(input_shape, nb_dense_block=5, growth_rate=16, nb_layers_per_blo
                 to use as image input for the model.
             input_shape: optional shape tuple, only to be specified
                 if `include_top` is False (otherwise the input shape
-                has to be `(32, 32, 3)` (with `tf` dim ordering)
-                or `(3, 32, 32)` (with `th` dim ordering).
+                has to be `(32, 32, 3)` (with `channels_last` dim ordering)
+                or `(3, 32, 32)` (with `channels_first` dim ordering).
                 It should have exactly 3 inputs channels,
                 and width and height should be no smaller than 8.
                 E.g. `(200, 200, 3)` would be one valid value.
@@ -253,7 +253,7 @@ def DenseNetFCN(input_shape, nb_dense_block=5, growth_rate=16, nb_layers_per_blo
     # Determine proper input shape
     min_size = 2 ** nb_dense_block
 
-    if K.image_data_format() == 'th':
+    if K.image_data_format() == 'channels_first':
         if input_shape is not None:
             if ((input_shape[1] is not None and input_shape[1] < min_size) or
                     (input_shape[2] is not None and input_shape[2] < min_size)):
@@ -308,7 +308,7 @@ def __conv_block(ip, nb_filter, bottleneck=False, dropout_rate=None, weight_deca
     Returns: keras tensor with batch_norm, relu and convolution2d added (optional bottleneck)
     '''
 
-    concat_axis = 1 if K.image_data_format() == "th" else -1
+    concat_axis = 1 if K.image_data_format() == "channels_first" else -1
 
     x = BatchNormalization(axis=concat_axis, gamma_regularizer=l2(weight_decay),
                            beta_regularizer=l2(weight_decay))(ip)
@@ -347,7 +347,7 @@ def __transition_block(ip, nb_filter, compression=1.0, dropout_rate=None, weight
     Returns: keras tensor, after applying batch_norm, relu-conv, dropout, maxpool
     '''
 
-    concat_axis = 1 if K.image_data_format() == "th" else -1
+    concat_axis = 1 if K.image_data_format() == "channels_first" else -1
 
     x = BatchNormalization(axis=concat_axis, gamma_regularizer=l2(weight_decay),
                            beta_regularizer=l2(weight_decay))(ip)
@@ -377,7 +377,7 @@ def __dense_block(x, nb_layers, nb_filter, growth_rate, bottleneck=False, dropou
     Returns: keras tensor with nb_layers of conv_block appended
     '''
 
-    concat_axis = 1 if K.image_data_format() == "th" else -1
+    concat_axis = 1 if K.image_data_format() == "channels_first" else -1
 
     x_list = [x]
 
@@ -448,7 +448,7 @@ def __create_dense_net(nb_classes, img_input, include_top, depth=40, nb_dense_bl
     Returns: keras tensor with nb_layers of conv_block appended
     '''
 
-    concat_axis = 1 if K.image_data_format() == "th" else -1
+    concat_axis = 1 if K.image_data_format() == "channels_first" else -1
 
     assert (depth - 4) % 3 == 0, "Depth must be 3 N + 4"
     if reduction != 0.0:
@@ -537,9 +537,9 @@ def __create_fcn_dense_net(nb_classes, img_input, include_top, nb_dense_block=5,
     Returns: keras tensor with nb_layers of conv_block appended
     '''
 
-    concat_axis = 1 if K.image_data_format() == "th" else -1
+    concat_axis = 1 if K.image_data_format() == "channels_first" else -1
 
-    if concat_axis == 1:  # th dim ordering
+    if concat_axis == 1:  # channels_first dim ordering
         _, rows, cols = input_shape
     else:
         rows, cols, _ = input_shape
@@ -623,7 +623,7 @@ def __create_fcn_dense_net(nb_classes, img_input, include_top, nb_dense_block=5,
         x = Conv2D(nb_classes, (1, 1), activation='linear', padding='same', kernel_regularizer=l2(weight_decay),
                    use_bias=False)(x)
 
-        if K.image_data_format() == 'th':
+        if K.image_data_format() == 'channels_first':
             channel, row, col = input_shape
         else:
             row, col, channel = input_shape
