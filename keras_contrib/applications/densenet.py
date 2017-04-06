@@ -305,7 +305,7 @@ def __conv_block(ip, nb_filter, bottleneck=False, dropout_rate=None, weight_deca
         inter_channel = nb_filter * 4  # Obtained from https://github.com/liuzhuang13/DenseNet/blob/master/densenet.lua
 
         x = Conv2D(inter_channel, (1, 1), kernel_initializer='he_uniform', padding='same', use_bias=False,
-                          kernel_regularizer=l2(weight_decay))(x)
+                   kernel_regularizer=l2(weight_decay))(x)
 
         if dropout_rate:
             x = Dropout(dropout_rate)(x)
@@ -315,7 +315,7 @@ def __conv_block(ip, nb_filter, bottleneck=False, dropout_rate=None, weight_deca
         x = Activation('relu')(x)
 
     x = Conv2D(nb_filter, (3, 3), kernel_initializer="he_uniform", padding="same", use_bias=False,
-                      kernel_regularizer=l2(weight_decay))(x)
+               kernel_regularizer=l2(weight_decay))(x)
     if dropout_rate:
         x = Dropout(dropout_rate)(x)
 
@@ -377,7 +377,6 @@ def __dense_block(x, nb_layers, nb_filter, growth_rate, bottleneck=False, dropou
         x_list.append(x)
 
         x1 = concatenate(x_list, axis=concat_axis)
-        #x = merge(x_list, mode='concat', concat_axis=concat_axis)
 
         if grow_nb_filters:
             nb_filter += growth_rate
@@ -406,11 +405,11 @@ def __transition_up_block(ip, nb_filters, type='upsampling', output_shape=None, 
     elif type == 'subpixel':
         x = Conv2D(nb_filters, (3, 3), padding="same", kernel_regularizer=l2(weight_decay), activation='relu',
                    use_bias=False, kernel_initializer='he_uniform')(ip)
-        #x = Convolution2D(nb_filters, 3, 3, activation="relu", border_mode='same', W_regularizer=l2(weight_decay),
+        # x = Convolution2D(nb_filters, 3, 3, activation="relu", border_mode='same', W_regularizer=l2(weight_decay),
         #                  bias=False, init='he_uniform')(ip)
         x = SubPixelUpscaling(scale_factor=2)(x)
         x = Conv2D(nb_filters, (3, 3), activation="relu", padding='same', kernel_regularizer=l2(weight_decay),
-                          use_bias=False, kernel_initializer='he_uniform')(x)
+                   use_bias=False, kernel_initializer='he_uniform')(x)
     elif type == 'atrous':
         # waiting on https://github.com/fchollet/keras/issues/4018
         x = AtrousConvolution2D(nb_filters, 3, 3, activation="relu", W_regularizer=l2(weight_decay),
@@ -642,7 +641,7 @@ def __create_fcn_dense_net(nb_classes, img_input, include_top, nb_dense_block=5,
 
     if include_top:
         x = Conv2D(nb_classes, (1, 1), activation='linear', padding='same', kernel_regularizer=l2(weight_decay),
-                          use_bias=False)(x)
+                   use_bias=False)(x)
 
         if K.image_dim_ordering() == 'th':
             channel, row, col = input_shape
