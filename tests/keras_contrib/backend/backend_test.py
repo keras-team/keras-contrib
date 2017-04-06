@@ -108,7 +108,7 @@ class TestBackend(object):
                     for rows in [1, 2, 3]:
                         for cols in [1, 2, 3]:
                             if K.image_data_format() == 'channels_first':
-                                arr = np.arange(batch_size*channels*scale*scale*rows*cols)\
+                                arr = np.arange(batch_size * channels * scale * scale * rows * cols)\
                                     .reshape((batch_size, channels * scale * scale, rows, cols))
                             elif K.image_data_format() == 'channels_last':
                                 arr = np.arange(batch_size * rows * cols * scale * scale * channels) \
@@ -120,7 +120,7 @@ class TestBackend(object):
                             if K.image_data_format() == 'channels_first':
                                 expected = arr.reshape((batch_size, scale, scale, channels, rows, cols))\
                                     .transpose((0, 3, 4, 1, 5, 2))\
-                                    .reshape((batch_size, channels, rows*scale, cols*scale))
+                                    .reshape((batch_size, channels, rows * scale, cols * scale))
                             elif K.image_data_format() == 'channels_last':
                                 expected = arr.reshape((batch_size, rows, cols, scale, scale, channels)) \
                                     .transpose((0, 1, 3, 2, 4, 5))\
