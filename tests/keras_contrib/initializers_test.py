@@ -50,7 +50,7 @@ def test_uniform(tensor_shape):
 '''
 
 
-@pytest.mark.parametrize('tensor_shape', [FC_SHAPE, CONV_SHAPE], ids=['FC', "CONV"])
+@pytest.mark.parametrize('tensor_shape', [FC_SHAPE, CONV_SHAPE], ids=['FC', 'CONV'])
 def test_cai(tensor_shape):
     # upper and lower bounds are proved in original paper
     _runner(initializers.ConvolutionAware(), tensor_shape,

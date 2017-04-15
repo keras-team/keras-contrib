@@ -1,10 +1,5 @@
-import theano
 from theano import tensor as T
-from theano.sandbox.rng_mrg import MRG_RandomStreams as RandomStreams
 from theano.sandbox.neighbours import images2neibs
-from theano.tensor.signal import pool
-from theano.tensor.nnet import conv3d2d
-from theano.printing import Print
 
 try:
     import theano.sparse as th_sparse_module
@@ -14,11 +9,8 @@ try:
     from theano.tensor.nnet.nnet import softsign as T_softsign
 except ImportError:
     from theano.sandbox.softsign import softsign as T_softsign
-from keras import backend as K
 from keras.backend import theano_backend as KTH
-import inspect
-import numpy as np
-from keras.backend.common import _FLOATX, floatx, _EPSILON, image_data_format
+from keras.backend.common import image_data_format
 from keras.backend.theano_backend import _preprocess_conv3d_input
 from keras.backend.theano_backend import _preprocess_conv3d_kernel
 from keras.backend.theano_backend import _preprocess_conv3d_filter_shape
@@ -27,7 +19,6 @@ from keras.backend.theano_backend import _postprocess_conv3d_output
 from keras.backend.theano_backend import _preprocess_conv2d_input
 from keras.backend.theano_backend import _postprocess_conv2d_output
 
-import itertools
 
 py_all = all
 
@@ -144,7 +135,7 @@ def deconv3d(x, kernel, output_shape, strides=(1, 1, 1),
     return conv_out
 
 
-def extract_image_patches(X, ksizes, strides, padding="valid", data_format="channels_first"):
+def extract_image_patches(X, ksizes, strides, padding='valid', data_format='channels_first'):
     '''
     Extract the patches from an image
     Parameters
@@ -161,9 +152,9 @@ def extract_image_patches(X, ksizes, strides, padding="valid", data_format="chan
     TH ==> (batch_size,w,h,c,k_w,k_h)
     '''
     patch_size = ksizes[1]
-    if padding == "same":
-        padding = "ignore_borders"
-    if data_format == "channels_last":
+    if padding == 'same':
+        padding = 'ignore_borders'
+    if data_format == 'channels_last':
         X = KTH.permute_dimensions(X, [0, 3, 1, 2])
     # Thanks to https://github.com/awentzonline for the help!
     batch, c, w, h = KTH.shape(X)
@@ -177,7 +168,7 @@ def extract_image_patches(X, ksizes, strides, padding="valid", data_format="chan
     patches = KTH.permute_dimensions(patches, (0, 2, 1, 3, 4))
     # arrange in a 2d-grid (rows, cols, channels, px, py)
     patches = KTH.reshape(patches, (batch, num_rows, num_cols, num_channels, patch_size, patch_size))
-    if data_format == "channels_last":
+    if data_format == 'channels_last':
         patches = KTH.permute_dimensions(patches, [0, 1, 2, 4, 5, 3])
     return patches
 

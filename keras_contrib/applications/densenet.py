@@ -14,11 +14,11 @@ import warnings
 
 from keras.models import Model
 from keras.layers.core import Dense, Dropout, Activation, Reshape
-from keras.layers import Convolution2D, Deconvolution2D, AtrousConvolution2D, UpSampling2D
+from keras.layers import Deconvolution2D, AtrousConvolution2D, UpSampling2D
 from keras.layers.merge import concatenate
 from keras.layers.pooling import AveragePooling2D
 from keras.layers.pooling import GlobalAveragePooling2D
-from keras.layers import Input, merge, Conv2D
+from keras.layers import Input, Conv2D
 from keras.layers.normalization import BatchNormalization
 from keras.regularizers import l2
 from keras.utils.layer_utils import convert_all_kernels_in_model
@@ -295,7 +295,7 @@ def __conv_block(ip, nb_filter, bottleneck=False, dropout_rate=None, weight_deca
     Returns: keras tensor with batch_norm, relu and convolution2d added (optional bottleneck)
     '''
 
-    concat_axis = 1 if K.image_dim_ordering() == "th" else -1
+    concat_axis = 1 if K.image_dim_ordering() == 'th' else -1
 
     x = BatchNormalization(axis=concat_axis, gamma_regularizer=l2(weight_decay),
                            beta_regularizer=l2(weight_decay))(ip)
@@ -314,7 +314,7 @@ def __conv_block(ip, nb_filter, bottleneck=False, dropout_rate=None, weight_deca
                                beta_regularizer=l2(weight_decay))(x)
         x = Activation('relu')(x)
 
-    x = Conv2D(nb_filter, (3, 3), kernel_initializer="he_uniform", padding="same", use_bias=False,
+    x = Conv2D(nb_filter, (3, 3), kernel_initializer='he_uniform', padding='same', use_bias=False,
                kernel_regularizer=l2(weight_decay))(x)
     if dropout_rate:
         x = Dropout(dropout_rate)(x)
@@ -336,12 +336,12 @@ def __transition_block(ip, nb_filter, compression=1.0, dropout_rate=None, weight
     Returns: keras tensor, after applying batch_norm, relu-conv, dropout, maxpool
     '''
 
-    concat_axis = 1 if K.image_dim_ordering() == "th" else -1
+    concat_axis = 1 if K.image_dim_ordering() == 'th' else -1
 
     x = BatchNormalization(axis=concat_axis, gamma_regularizer=l2(weight_decay),
                            beta_regularizer=l2(weight_decay))(ip)
     x = Activation('relu')(x)
-    x = Conv2D(nb_filter, (3, 3), kernel_initializer="he_uniform", padding="same", use_bias=False,
+    x = Conv2D(nb_filter, (3, 3), kernel_initializer='he_uniform', padding='same', use_bias=False,
                kernel_regularizer=l2(weight_decay))(x)
     if dropout_rate:
         x = Dropout(dropout_rate)(x)
@@ -368,7 +368,7 @@ def __dense_block(x, nb_layers, nb_filter, growth_rate, bottleneck=False, dropou
     Returns: keras tensor with nb_layers of conv_block appended
     '''
 
-    concat_axis = 1 if K.image_dim_ordering() == "th" else -1
+    concat_axis = 1 if K.image_dim_ordering() == 'th' else -1
 
     x_list = [x]
 
@@ -403,14 +403,14 @@ def __transition_up_block(ip, nb_filters, type='upsampling', output_shape=None, 
     if type == 'upsampling':
         x = UpSampling2D()(ip)
     elif type == 'subpixel':
-        x = Conv2D(nb_filters, (3, 3), padding="same", kernel_regularizer=l2(weight_decay), activation='relu',
+        x = Conv2D(nb_filters, (3, 3), padding='same', kernel_regularizer=l2(weight_decay), activation='relu',
                    use_bias=False, kernel_initializer='he_uniform')(ip)
         x = SubPixelUpscaling(scale_factor=2)(x)
-        x = Conv2D(nb_filters, (3, 3), activation="relu", padding='same', kernel_regularizer=l2(weight_decay),
+        x = Conv2D(nb_filters, (3, 3), activation='relu', padding='same', kernel_regularizer=l2(weight_decay),
                    use_bias=False, kernel_initializer='he_uniform')(x)
     elif type == 'atrous':
         # waiting on https://github.com/fchollet/keras/issues/4018
-        x = AtrousConvolution2D(nb_filters, 3, 3, activation="relu", W_regularizer=l2(weight_decay),
+        x = AtrousConvolution2D(nb_filters, 3, 3, activation='relu', W_regularizer=l2(weight_decay),
                                 bias=False, atrous_rate=(2, 2), init='he_uniform')(ip)
     else:
         x = Deconvolution2D(nb_filters, 3, 3, output_shape, activation='relu', border_mode='same',
@@ -445,18 +445,18 @@ def __create_dense_net(nb_classes, img_input, include_top, depth=40, nb_dense_bl
     Returns: keras tensor with nb_layers of conv_block appended
     '''
 
-    concat_axis = 1 if K.image_dim_ordering() == "th" else -1
+    concat_axis = 1 if K.image_dim_ordering() == 'th' else -1
 
-    assert (depth - 4) % 3 == 0, "Depth must be 3 N + 4"
+    assert (depth - 4) % 3 == 0, 'Depth must be 3 N + 4'
     if reduction != 0.0:
-        assert reduction <= 1.0 and reduction > 0.0, "reduction value must lie between 0.0 and 1.0"
+        assert reduction <= 1.0 and reduction > 0.0, 'reduction value must lie between 0.0 and 1.0'
 
     # layers in each dense block
     if type(nb_layers_per_block) is list or type(nb_layers_per_block) is tuple:
         nb_layers = list(nb_layers_per_block)  # Convert tuple to list
 
-        assert len(nb_layers) == (nb_dense_block + 1), "If list, nb_layer is used as provided. " \
-                                                       "Note that list size must be (nb_dense_block + 1)"
+        assert len(nb_layers) == (nb_dense_block + 1), 'If list, nb_layer is used as provided. ' \
+                                                       'Note that list size must be (nb_dense_block + 1)'
         final_nb_layer = nb_layers[-1]
         nb_layers = nb_layers[:-1]
     else:
@@ -479,7 +479,7 @@ def __create_dense_net(nb_classes, img_input, include_top, depth=40, nb_dense_bl
     compression = 1.0 - reduction
 
     # Initial convolution
-    x = Conv2D(nb_filter, (3, 3), kernel_initializer="he_uniform", padding="same", name="initial_conv2D", use_bias=False,
+    x = Conv2D(nb_filter, (3, 3), kernel_initializer='he_uniform', padding='same', name='initial_conv2D', use_bias=False,
                kernel_regularizer=l2(weight_decay))(img_input)
 
     # Add dense blocks
@@ -538,7 +538,7 @@ def __create_fcn_dense_net(nb_classes, img_input, include_top, nb_dense_block=5,
     Returns: keras tensor with nb_layers of conv_block appended
     '''
 
-    concat_axis = 1 if K.image_dim_ordering() == "th" else -1
+    concat_axis = 1 if K.image_dim_ordering() == 'th' else -1
 
     if concat_axis == 1:  # th dim ordering
         _, rows, cols = input_shape
@@ -546,20 +546,20 @@ def __create_fcn_dense_net(nb_classes, img_input, include_top, nb_dense_block=5,
         rows, cols, _ = input_shape
 
     if reduction != 0.0:
-        assert reduction <= 1.0 and reduction > 0.0, "reduction value must lie between 0.0 and 1.0"
+        assert reduction <= 1.0 and reduction > 0.0, 'reduction value must lie between 0.0 and 1.0'
 
     # check if upsampling_conv has minimum number of filters
     # minimum is set to 12, as at least 3 color channels are needed for correct upsampling
-    assert nb_upsampling_conv > 12 and nb_upsampling_conv % 4 == 0, "Parameter `upsampling_conv` number of channels must " \
-                                                                    "be a positive number divisible by 4 and greater " \
-                                                                    "than 12"
+    assert nb_upsampling_conv > 12 and nb_upsampling_conv % 4 == 0, 'Parameter `upsampling_conv` number of channels must ' \
+                                                                    'be a positive number divisible by 4 and greater ' \
+                                                                    'than 12'
 
     # layers in each dense block
     if type(nb_layers_per_block) is list or type(nb_layers_per_block) is tuple:
         nb_layers = list(nb_layers_per_block)  # Convert tuple to list
 
-        assert len(nb_layers) == (nb_dense_block + 1), "If list, nb_layer is used as provided. " \
-                                                       "Note that list size must be (nb_dense_block + 1)"
+        assert len(nb_layers) == (nb_dense_block + 1), 'If list, nb_layer is used as provided. ' \
+                                                       'Note that list size must be (nb_dense_block + 1)'
 
         bottleneck_nb_layers = nb_layers[-1]
         rev_layers = nb_layers[::-1]
@@ -572,7 +572,7 @@ def __create_fcn_dense_net(nb_classes, img_input, include_top, nb_dense_block=5,
     compression = 1.0 - reduction
 
     # Initial convolution
-    x = Conv2D(init_conv_filters, (3, 3), kernel_initializer="he_uniform", padding="same", name="initial_conv2D",
+    x = Conv2D(init_conv_filters, (3, 3), kernel_initializer='he_uniform', padding='same', name='initial_conv2D',
                use_bias=False, kernel_regularizer=l2(weight_decay))(img_input)
 
     nb_filter = init_conv_filters

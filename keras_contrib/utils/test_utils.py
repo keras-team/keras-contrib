@@ -6,7 +6,6 @@ import six
 
 from keras.engine import Model, Input
 from keras.models import Sequential
-from keras.models import model_from_json
 from keras import backend as K
 
 

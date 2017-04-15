@@ -6,7 +6,6 @@ from keras.utils.test_utils import layer_test
 from keras_contrib.layers import recurrent
 from keras.layers import embeddings
 from keras.models import Sequential
-from keras.layers.core import Masking
 from keras import regularizers
 from keras.utils.test_utils import keras_test
 
@@ -24,7 +23,7 @@ def rnn_test(f):
     """
     f = keras_test(f)
     # Example : return pytest.mark.parametrize("layer_class", [recurrent.JZ1, recurrent.NTM])(f)
-    return pytest.mark.parametrize("layer_class", [])(f)
+    return pytest.mark.parametrize('layer_class', [])(f)
 
 
 @rnn_test
