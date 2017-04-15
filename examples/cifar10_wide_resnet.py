@@ -47,13 +47,12 @@ model.summary()
 model.compile(loss="categorical_crossentropy", optimizer="adam", metrics=["accuracy"])
 print("Finished compiling")
 
-model.fit_generator(generator.flow(trainX, trainY, batch_size=batch_size), samples_per_epoch=len(trainX),
-                    nb_epoch=nb_epoch,
+model.fit_generator(generator.flow(trainX, trainY, batch_size=batch_size), steps_per_epoch=len(trainX) // batch_size,
+                    epochs=nb_epoch,
                     callbacks=[
                         callbacks.ModelCheckpoint("WRN-28-8 Weights.h5", monitor="val_acc", save_best_only=True,
                                                   save_weights_only=True)],
-                    validation_data=(testX, testY),
-                    nb_val_samples=testX.shape[0], )
+                    validation_data=(testX, testY))
 
 scores = model.evaluate(testX, testY, batch_size)
 print("Test loss : %0.5f" % (scores[0]))

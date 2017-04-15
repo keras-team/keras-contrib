@@ -204,7 +204,7 @@ class Deconvolution3D(Convolution3D):
             raise ValueError('Invalid data format: ', self.data_format)
 
     def call(self, x, mask=None):
-        kernel_shape = self.kernel.get_value().shape
+        kernel_shape = K.get_value(self.kernel).shape
         output = K.deconv3d(x, self.kernel, self.output_shape_,
                             strides=self.strides,
                             padding=self.padding,
