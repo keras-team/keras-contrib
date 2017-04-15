@@ -80,20 +80,6 @@ def test_batchrenorm_mode_0_convnet():
 
 
 @keras_test
-def test_batchrenorm_mode_1():
-    norm_m1 = normalization.BatchRenormalization(input_shape=(10,))
-    norm_m1.build(input_shape=(None, 10))
-
-    for inp in [input_1, input_2, input_3]:
-        out = (norm_m1.call(K.variable(inp)) - norm_m1.beta) / norm_m1.gamma
-        assert_allclose(K.eval(K.mean(out)), 0.0, atol=1e-1)
-        if inp.std() > 0.:
-            assert_allclose(K.eval(K.std(out)), 1.0, atol=1e-1)
-        else:
-            assert_allclose(K.eval(K.std(out)), 0.0, atol=1e-1)
-
-
-@keras_test
 def test_shared_batchrenorm():
     '''Test that a BN layer can be shared
     across different data streams.
