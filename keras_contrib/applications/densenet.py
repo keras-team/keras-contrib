@@ -529,7 +529,7 @@ def __create_fcn_dense_net(nb_classes, img_input, include_top, nb_dense_block=5,
             If list, nb_layer is used as provided. Note that list size must
             be (nb_dense_block + 1)
         nb_upsampling_conv: number of convolutional layers in upsampling via subpixel convolution
-        upsampling_type: Can be one of 'upsampling', 'deconv' and 'subpixel'. Defines 
+        upsampling_type: Can be one of 'upsampling', 'deconv' and 'subpixel'. Defines
             type of upsampling algorithm used.
         input_shape: Only used for shape inference in fully convolutional networks.
         activation: Type of activation at the top layer. Can be one of 'softmax' or 'sigmoid'.
