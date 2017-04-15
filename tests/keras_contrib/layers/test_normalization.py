@@ -18,21 +18,21 @@ input_shapes = [np.ones((10, 10)), np.ones((10, 10, 10))]
 @keras_test
 def basic_batchrenorm_test():
     from keras import regularizers
+
     layer_test(normalization.BatchRenormalization,
-               kwargs={'mode': 1,
-                       'gamma_regularizer': regularizers.l2(0.01),
-                       'beta_regularizer': regularizers.l2(0.01)},
                input_shape=(3, 4, 2))
+
     layer_test(normalization.BatchRenormalization,
-               kwargs={'mode': 0},
+               kwargs={'gamma_regularizer': regularizers.l2(0.01),
+                       'beta_regularizer': regularizers.l2(0.01)},
                input_shape=(3, 4, 2))
 
 
 @keras_test
 def test_batchrenorm_mode_0_or_2():
-    for mode in [0, 2]:
+    for training in [1, 0]:
         model = Sequential()
-        norm_m0 = normalization.BatchRenormalization(mode=mode, input_shape=(10,), momentum=0.8)
+        norm_m0 = normalization.BatchRenormalization(input_shape=(10,), momentum=0.8)
         model.add(norm_m0)
         model.compile(loss='mse', optimizer='sgd')
 
@@ -52,8 +52,8 @@ def test_batchrenorm_mode_0_or_2_twice():
     # This is a regression test for issue #4881 with the old
     # batch normalization functions in the Theano backend.
     model = Sequential()
-    model.add(normalization.BatchRenormalization(mode=0, input_shape=(10, 5, 5), axis=1))
-    model.add(normalization.BatchRenormalization(mode=0, input_shape=(10, 5, 5), axis=1))
+    model.add(normalization.BatchRenormalization(input_shape=(10, 5, 5), axis=1))
+    model.add(normalization.BatchRenormalization(input_shape=(10, 5, 5), axis=1))
     model.compile(loss='mse', optimizer='sgd')
 
     X = np.random.normal(loc=5.0, scale=10.0, size=(20, 10, 5, 5))
@@ -64,7 +64,7 @@ def test_batchrenorm_mode_0_or_2_twice():
 @keras_test
 def test_batchrenorm_mode_0_convnet():
     model = Sequential()
-    norm_m0 = normalization.BatchRenormalization(mode=0, axis=1, input_shape=(3, 4, 4), momentum=0.8)
+    norm_m0 = normalization.BatchRenormalization(axis=1, input_shape=(3, 4, 4), momentum=0.8)
     model.add(norm_m0)
     model.compile(loss='mse', optimizer='sgd')
 
@@ -80,26 +80,12 @@ def test_batchrenorm_mode_0_convnet():
 
 
 @keras_test
-def test_batchrenorm_mode_1():
-    norm_m1 = normalization.BatchRenormalization(input_shape=(10,), mode=1)
-    norm_m1.build(input_shape=(None, 10))
-
-    for inp in [input_1, input_2, input_3]:
-        out = (norm_m1.call(K.variable(inp)) - norm_m1.beta) / norm_m1.gamma
-        assert_allclose(K.eval(K.mean(out)), 0.0, atol=1e-1)
-        if inp.std() > 0.:
-            assert_allclose(K.eval(K.std(out)), 1.0, atol=1e-1)
-        else:
-            assert_allclose(K.eval(K.std(out)), 0.0, atol=1e-1)
-
-
-@keras_test
 def test_shared_batchrenorm():
     '''Test that a BN layer can be shared
     across different data streams.
     '''
     # Test single layer reuse
-    bn = normalization.BatchRenormalization(input_shape=(10,), mode=0)
+    bn = normalization.BatchRenormalization(input_shape=(10,))
     x1 = Input(shape=(10,))
     bn(x1)
 
