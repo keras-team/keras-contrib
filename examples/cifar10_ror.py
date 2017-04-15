@@ -3,8 +3,6 @@ Trains a Residual-of-Residual Network (WRN-40-2) model on the CIFAR-10 Dataset.
 
 Gets a 94.53% accuracy score after 150 epochs.
 '''
-import numpy as np
-import sklearn.metrics as metrics
 
 import keras.callbacks as callbacks
 import keras.utils.np_utils as kutils
@@ -15,7 +13,7 @@ from keras.optimizers import Adam
 from keras_contrib.applications import ResidualOfResidual
 
 batch_size = 64
-nb_epoch = 150
+epochs = 150
 img_rows, img_cols = 32, 32
 
 (trainX, trainY), (testX, testY) = cifar10.load_data()
@@ -40,16 +38,16 @@ model = ResidualOfResidual(depth=40, width=2, dropout_rate=0.0, weights=None)
 
 optimizer = Adam(lr=1e-3)
 
-model.compile(loss="categorical_crossentropy", optimizer=optimizer, metrics=["acc"])
-print("Finished compiling")
+model.compile(loss='categorical_crossentropy', optimizer=optimizer, metrics=['acc'])
+print('Finished compiling')
 
 model.fit_generator(generator.flow(trainX, trainY, batch_size=batch_size), steps_per_epoch=len(trainX) // batch_size,
-                    epochs=nb_epoch,
-                    callbacks=[callbacks.ModelCheckpoint("weights/RoR-WRN-40-2-Weights.h5", monitor="val_acc",
+                    epochs=epochs,
+                    callbacks=[callbacks.ModelCheckpoint('weights/RoR-WRN-40-2-Weights.h5', monitor='val_acc',
                                                          save_best_only=True, save_weights_only=True)],
                     validation_data=(testX, testY),
                     verbose=2)
 
 scores = model.evaluate(testX, testY, batch_size)
-print("Test loss : ", scores[0])
-print("Test accuracy : ", scores[1])
+print('Test loss : ', scores[0])
+print('Test accuracy : ', scores[1])

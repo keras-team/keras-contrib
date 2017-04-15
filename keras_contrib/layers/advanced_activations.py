@@ -5,7 +5,6 @@ from keras.engine import Layer
 from keras.engine import InputSpec
 from .. import backend as K
 from keras.utils.generic_utils import get_custom_objects
-import numpy as np
 
 
 class PELU(Layer):

@@ -2,19 +2,8 @@ from __future__ import absolute_import
 from __future__ import print_function
 
 import os
-import csv
 
 import numpy as np
-import time
-import json
-import warnings
-
-from collections import deque
-from collections import OrderedDict
-from collections import Iterable
-from keras.utils.generic_utils import Progbar
-from keras import backend as K
-from pkg_resources import parse_version
 
 from keras.callbacks import Callback, ModelCheckpoint, LearningRateScheduler
 
@@ -47,7 +36,7 @@ class SnapshotModelCheckpoint(Callback):
 
     def on_epoch_end(self, epoch, logs={}):
         if epoch != 0 and (epoch + 1) % self.check == 0:
-            filepath = self.fn_prefix + "-%d.h5" % ((epoch + 1) // self.check)
+            filepath = self.fn_prefix + '-%d.h5' % ((epoch + 1) // self.check)
             self.model.save_weights(filepath, overwrite=True)
             # print("Saved snapshot at weights/%s_%d.h5" % (self.fn_prefix, epoch))
 
@@ -88,7 +77,7 @@ class SnapshotCallbackBuilder:
         if not os.path.exists('weights/'):
             os.makedirs('weights/')
 
-        callback_list = [ModelCheckpoint("weights/%s-Best.h5" % model_prefix, monitor="val_acc",
+        callback_list = [ModelCheckpoint('weights/%s-Best.h5' % model_prefix, monitor='val_acc',
                                          save_best_only=True, save_weights_only=True),
                          LearningRateScheduler(schedule=self._cosine_anneal_schedule),
                          SnapshotModelCheckpoint(self.T, self.M, fn_prefix='weights/%s' % model_prefix)]

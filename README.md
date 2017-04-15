@@ -46,7 +46,7 @@ model.add(PELU())
 
 # Compile and fit on random data
 model.compile(loss='mse', optimizer='adam')
-model.fit(x=np.random.random((100, 10)), y=np.random.random((100, 100)), nb_epoch=5, verbose=0)
+model.fit(x=np.random.random((100, 10)), y=np.random.random((100, 100)), epochs=5, verbose=0)
 
 # Save our model
 model.save('example.h5')

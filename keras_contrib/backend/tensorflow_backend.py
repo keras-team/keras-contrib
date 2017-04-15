@@ -1,21 +1,12 @@
 import tensorflow as tf
-from tensorflow.python.training import moving_averages
-from tensorflow.python.ops import tensor_array_ops
-from tensorflow.python.ops import control_flow_ops
 
 try:
     from tensorflow.python.ops import ctc_ops as ctc
 except ImportError:
     import tensorflow.contrib.ctc as ctc
-from keras import backend as K
 from keras.backend import tensorflow_backend as KTF
-import numpy as np
-import os
-import warnings
-from keras.backend.common import floatx, _EPSILON, image_data_format
+from keras.backend.common import floatx, image_data_format
 from keras.backend.tensorflow_backend import _preprocess_conv3d_input
-from keras.backend.tensorflow_backend import _preprocess_conv3d_kernel
-from keras.backend.tensorflow_backend import _preprocess_padding
 from keras.backend.tensorflow_backend import _postprocess_conv3d_output
 from keras.backend.tensorflow_backend import _preprocess_padding
 from keras.backend.tensorflow_backend import _preprocess_conv2d_input
@@ -118,8 +109,8 @@ def deconv3d(x, kernel, output_shape, strides=(1, 1, 1),
     return _postprocess_conv3d_output(x, data_format)
 
 
-def extract_image_patches(x, ksizes, ssizes, padding="same",
-                          data_format="tf"):
+def extract_image_patches(x, ksizes, ssizes, padding='same',
+                          data_format='tf'):
     '''
     Extract the patches from an image
     # Parameters
@@ -138,7 +129,7 @@ def extract_image_patches(x, ksizes, ssizes, padding="same",
     kernel = [1, ksizes[0], ksizes[1], 1]
     strides = [1, ssizes[0], ssizes[1], 1]
     padding = _preprocess_padding(padding)
-    if data_format == "channels_first":
+    if data_format == 'channels_first':
         x = KTF.permute_dimensions(x, (0, 2, 3, 1))
     bs_i, w_i, h_i, ch_i = KTF.int_shape(x)
     patches = tf.extract_image_patches(x, kernel, strides, [1, 1, 1, 1],
@@ -147,7 +138,7 @@ def extract_image_patches(x, ksizes, ssizes, padding="same",
     bs, w, h, ch = KTF.int_shape(patches)
     patches = tf.reshape(tf.transpose(tf.reshape(patches, [-1, w, h, tf.floordiv(ch, ch_i), ch_i]), [0, 1, 2, 4, 3]),
                          [-1, w, h, ch_i, ksizes[0], ksizes[1]])
-    if data_format == "channels_last":
+    if data_format == 'channels_last':
         patches = KTF.permute_dimensions(patches, [0, 1, 2, 4, 5, 3])
     return patches
 

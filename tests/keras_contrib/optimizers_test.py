@@ -32,7 +32,7 @@ def _test_optimizer(optimizer, target=0.89):
     model.compile(loss='categorical_crossentropy',
                   optimizer=optimizer,
                   metrics=['accuracy'])
-    history = model.fit(X_train, y_train, nb_epoch=12, batch_size=16,
+    history = model.fit(X_train, y_train, epochs=12, batch_size=16,
                         validation_data=(X_test, y_test), verbose=2)
     config = optimizer.get_config()
     assert type(config) == dict

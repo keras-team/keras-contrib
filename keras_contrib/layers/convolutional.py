@@ -12,7 +12,6 @@ from keras.engine import InputSpec
 from keras.layers.convolutional import Convolution3D
 from keras.utils.generic_utils import get_custom_objects
 from keras.utils.conv_utils import conv_output_length
-from keras.utils.conv_utils import conv_input_length
 from keras.utils.conv_utils import normalize_data_format
 import numpy as np
 
@@ -227,8 +226,8 @@ class Deconvolution3D(Convolution3D):
 
 
 Deconv3D = Deconvolution3D
-get_custom_objects().update({"Deconvolution3D": Deconvolution3D})
-get_custom_objects().update({"Deconv3D": Deconv3D})
+get_custom_objects().update({'Deconvolution3D': Deconvolution3D})
+get_custom_objects().update({'Deconv3D': Deconv3D})
 
 
 class CosineConvolution2D(Layer):
@@ -454,8 +453,8 @@ class CosineConvolution2D(Layer):
 
 
 CosineConv2D = CosineConvolution2D
-get_custom_objects().update({"CosineConvolution2D": CosineConvolution2D})
-get_custom_objects().update({"CosineConv2D": CosineConv2D})
+get_custom_objects().update({'CosineConvolution2D': CosineConvolution2D})
+get_custom_objects().update({'CosineConv2D': CosineConv2D})
 
 
 class SubPixelUpscaling(Layer):
