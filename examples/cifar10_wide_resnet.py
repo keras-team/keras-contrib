@@ -18,7 +18,7 @@ from keras.preprocessing.image import ImageDataGenerator
 from keras_contrib.applications.wide_resnet import WideResidualNetwork
 
 batch_size = 64
-nb_epoch = 300
+epochs = 300
 img_rows, img_cols = 32, 32
 
 (trainX, trainY), (testX, testY) = cifar10.load_data()
@@ -44,16 +44,16 @@ model = WideResidualNetwork(depth=28, width=8, dropout_rate=0.0, weights=None)
 
 model.summary()
 
-model.compile(loss="categorical_crossentropy", optimizer="adam", metrics=["accuracy"])
-print("Finished compiling")
+model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['acc'])
+print('Finished compiling')
 
 model.fit_generator(generator.flow(trainX, trainY, batch_size=batch_size), steps_per_epoch=len(trainX) // batch_size,
-                    epochs=nb_epoch,
+                    epochs=epochs,
                     callbacks=[
-                        callbacks.ModelCheckpoint("WRN-28-8 Weights.h5", monitor="val_acc", save_best_only=True,
+                        callbacks.ModelCheckpoint('WRN-28-8 Weights.h5', monitor='val_acc', save_best_only=True,
                                                   save_weights_only=True)],
                     validation_data=(testX, testY))
 
 scores = model.evaluate(testX, testY, batch_size)
-print("Test loss : %0.5f" % (scores[0]))
-print("Test accuracy = %0.5f" % (scores[1]))
+print('Test loss : %0.5f' % (scores[0]))
+print('Test accuracy = %0.5f' % (scores[1]))

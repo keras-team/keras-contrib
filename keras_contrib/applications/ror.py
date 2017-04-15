@@ -158,11 +158,11 @@ def ResidualOfResidual(depth=40, width=2, dropout_rate=0.0,
 def __initial_conv_block(input, k=1, dropout=0.0, initial=False):
     init = input
 
-    channel_axis = 1 if K.image_dim_ordering() == "th" else -1
+    channel_axis = 1 if K.image_dim_ordering() == 'th' else -1
 
     # Check if input number of filters is same as 16 * k, else create convolution2d for this input
     if initial:
-        if K.image_dim_ordering() == "th":
+        if K.image_dim_ordering() == 'th':
             init = Conv2D(16 * k, (1, 1), kernel_initializer='he_normal', padding='same')(init)
         else:
             init = Conv2D(16 * k, (1, 1), kernel_initializer='he_normal', padding='same')(init)
@@ -185,10 +185,10 @@ def __initial_conv_block(input, k=1, dropout=0.0, initial=False):
 def __conv_block(input, nb_filters=32, k=1, dropout=0.0):
     init = input
 
-    channel_axis = 1 if K.image_dim_ordering() == "th" else -1
+    channel_axis = 1 if K.image_dim_ordering() == 'th' else -1
 
     # Check if input number of filters is same as 32 * k, else create convolution2d for this input
-    if K.image_dim_ordering() == "th":
+    if K.image_dim_ordering() == 'th':
         if init._keras_shape[1] != nb_filters * k:
             init = Conv2D(nb_filters * k, (1, 1), kernel_initializer='he_normal', padding='same')(init)
     else:
@@ -234,7 +234,7 @@ def __create_pre_residual_of_residual(nb_classes, img_input, include_top, depth=
 
     N = (depth - 4) // 6
 
-    channel_axis = 1 if K.image_dim_ordering() == "th" else -1
+    channel_axis = 1 if K.image_dim_ordering() == 'th' else -1
 
     # Initial convolution layer
     x = Conv2D(16, (3, 3), padding='same', kernel_initializer='he_normal')(img_input)
