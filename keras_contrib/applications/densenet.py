@@ -216,7 +216,7 @@ def DenseNetFCN(input_shape, nb_dense_block=5, growth_rate=16, nb_layers_per_blo
             activation: Type of activation at the top layer. Can be one of 'softmax' or 'sigmoid'.
                 Note that if sigmoid is used, classes must be 1.
             upsampling_conv: number of convolutional layers in upsampling via subpixel convolution
-            upsampling_type: Can be one of 'upsampling', 'deconv' and 
+            upsampling_type: Can be one of 'upsampling', 'deconv' and
                 'subpixel'. Defines type of upsampling algorithm used.
             batchsize: Fixed batch size. This is a temporary requirement for
                 computation of output shape in the case of Deconvolution2D layers.
