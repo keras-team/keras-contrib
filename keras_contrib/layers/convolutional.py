@@ -213,7 +213,7 @@ class Deconvolution3D(Convolution3D):
             if self.data_format == 'channels_first':
                 output += K.reshape(self.bias, (1, self.filters, 1, 1, 1))
             elif self.data_format == 'channels_last':
-                output += K.reshape(self.use_bias, (1, 1, 1, 1, self.filters))
+                output += K.reshape(self.bias, (1, 1, 1, 1, self.filters))
             else:
                 raise ValueError('Invalid data_format: ', self.data_format)
         output = self.activation(output)
