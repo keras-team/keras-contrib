@@ -109,7 +109,9 @@ def make_discriminator():
     """Creates a discriminator model that takes an image as input and outputs a single value, representing whether
     the input is real or generated. Unlike normal GANs, the output is not sigmoid and does not represent a probability!
     Instead, the output should be as large and negative as possible for generated inputs and as large and positive
-    as possible for real inputs."""
+    as possible for real inputs.
+
+    Note that the improved WGAN paper suggests that BatchNormalization should not be used in the discriminator."""
     model = Sequential()
     model.add(Convolution2D(64, (5, 5), padding='same', input_shape=(28, 28, 1)))
     model.add(LeakyReLU())
