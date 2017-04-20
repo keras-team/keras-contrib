@@ -49,7 +49,7 @@ def wasserstein_loss(y_true, y_pred):
     the discriminator wants to make the distance between its output for real and generated samples as large as possible.
 
     The most natural way to achieve this is to label generated samples -1 and real samples 1, instead of the
-    0 and 1 used in normal GANs. Then multiplying the weights by the labels will give you the loss immediately.
+    0 and 1 used in normal GANs, so that multiplying the outputs by the labels will give you the loss immediately.
 
     Note that the nature of this loss means that it can be (and frequently will be) less than 0."""
     return K.mean(y_true * y_pred)
