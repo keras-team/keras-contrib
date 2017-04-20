@@ -2,13 +2,13 @@
 
 The improved WGAN has a term in the loss function which penalizes the network if its gradient
 norm moves away from 1. This is included because the Earth Mover (EM) distance used in WGANs is only easy
-to calculate for 1-Lipschitz functions (i.e. functions where the gradient norm has a constant upper bound of 1). 
+to calculate for 1-Lipschitz functions (i.e. functions where the gradient norm has a constant upper bound of 1).
 
-The original WGAN paper enforced this by clipping weights to very small values [-0.01, 0.01]. However, this 
+The original WGAN paper enforced this by clipping weights to very small values [-0.01, 0.01]. However, this
 drastically reduced network capacity. Penalizing the gradient norm is more natural, but this requires
-second-order gradients. These are not supported for some tensorflow ops (particularly MaxPool and AveragePool) 
+second-order gradients. These are not supported for some tensorflow ops (particularly MaxPool and AveragePool)
 in the current release (1.0.x), but they are supported in the current nightly builds (1.1.0-rc1 and higher).
- 
+
 To avoid this, this model uses strided convolutions instead of Average/Maxpooling for downsampling. If you wish to use
 pooling operations in your discriminator, please ensure you update Tensorflow to 1.1.0-rc1 or higher. I haven't
 tested this with Theano at all.
@@ -29,7 +29,6 @@ from keras.datasets import mnist
 from keras import backend as K
 from functools import partial
 
-
 try:
     from PIL import Image
 except ImportError:
@@ -43,33 +42,33 @@ GRADIENT_PENALTY_WEIGHT = 10  # As per the paper
 
 def wasserstein_loss(y_true, y_pred):
     """Calculates the Wasserstein loss for a sample batch.
-    
+
     The Wasserstein loss function is very simple to calculate. In a standard GAN, the discriminator
     has a sigmoid output, representing the probability that samples are real or generated. In Wasserstein
-    GANs, however, the output is linear with no activation function! Instead of being constrained to [0, 1], 
+    GANs, however, the output is linear with no activation function! Instead of being constrained to [0, 1],
     the discriminator wants to make the distance between its output for real and generated samples as large as possible.
-    
+
     The most natural way to achieve this is to label generated samples -1 and real samples 1, instead of the
     0 and 1 used in normal GANs. Then multiplying the weights by the labels will give you the loss immediately.
-    
+
     Note that the nature of this loss means that it can be (and frequently will be) less than 0."""
     return K.mean(y_true * y_pred)
 
 
 def gradient_penalty_loss(y_true, y_pred, trainable_weights):
     """Calculates the gradient penalty loss for a batch of "averaged" samples.
-    
+
     In Improved WGANs, the 1-Lipschitz constraint is enforced by adding a term to the loss function
     that penalizes the network if the gradient norm moves away from 1. However, it is impossible to evaluate
     this function at all points in the input space. The compromise used in the paper is to choose random points
-    on the lines between real and generated samples, and check the gradients at these points. 
-    
-    In order to evaluate the gradients, we must first run samples through the generator and evaluate the loss.
-    Then we get the gradients of the trainable discriminator weights, flatten the gradient tensors 
+    on the lines between real and generated samples, and check the gradients at these points.
+
+    In order to evaluate the gradients, we must first run samples through the discriminator and evaluate the loss.
+    Then we get the gradients of the trainable discriminator weights, flatten the gradient tensors
     and concatenate them into one 1D gradient tensor. The l2 norm and penalty can then be calculated from it.
-    
+
     Note that this loss function requires the model's trainable weights as input, but Keras only supports passing
-    y_true and y_pred to loss functions. To get around this, we make a partial() of the function with the 
+    y_true and y_pred to loss functions. To get around this, we make a partial() of the function with the
     trainable_weights argument, and use that for model training."""
     averaged_samples_loss = K.mean(y_pred)
     gradients = K.gradients(averaged_samples_loss, trainable_weights)
@@ -109,8 +108,8 @@ def make_generator():
 def make_discriminator():
     """Creates a discriminator model that takes an image as input and outputs a single value, representing whether
     the input is real or generated. Unlike normal GANs, the output is not sigmoid and does not represent a probability!
-    Instead, the output should be as large and negative as possible for generated inputs and as large and positive 
-    as possible for real inputs. """
+    Instead, the output should be as large and negative as possible for generated inputs and as large and positive
+    as possible for real inputs."""
     model = Sequential()
     model.add(Convolution2D(64, (5, 5), padding='same', input_shape=(28, 28, 1)))
     model.add(LeakyReLU())
@@ -132,12 +131,13 @@ def tile_images(image_stack):
     return tiled_images
 
 
-class Random_Weighted_Average(_Merge):
-    """Takes a randomly-weighted average of two tensors. In geometric terms, this outputs a random point on the line 
-    between each pair of input points. 
-    
-    Inheriting from _Merge is a little messy but it was the quickest solution I could think of. 
+class RandomWeightedAverage(_Merge):
+    """Takes a randomly-weighted average of two tensors. In geometric terms, this outputs a random point on the line
+    between each pair of input points.
+
+    Inheriting from _Merge is a little messy but it was the quickest solution I could think of.
     Improvements appreciated."""
+
     def _merge_function(self, inputs):
         weights = K.random_uniform((BATCH_SIZE, 1, 1, 1))
         return (weights * inputs[0]) + ((1 - weights) * inputs[1])
@@ -203,7 +203,7 @@ def main():
     discriminator_output_from_real_samples = discriminator(real_samples)
 
     # We also need to generate weighted-averages of real and generated samples, to use for the gradient norm penalty.
-    averaged_samples = Random_Weighted_Average()([real_samples, generated_samples_for_discriminator])
+    averaged_samples = RandomWeightedAverage()([real_samples, generated_samples_for_discriminator])
     # We then run these samples through the discriminator as well. Note that we never really use the discriminator
     # output for these samples - we're only running them to get the gradient norm for the gradient penalty loss.
     averaged_samples_out = discriminator(averaged_samples)
@@ -247,7 +247,7 @@ def main():
         discriminator_loss = []
         generator_loss = []
         minibatches_size = BATCH_SIZE * TRAINING_RATIO
-        for i in range(int(X_train.shape[0]//(BATCH_SIZE * TRAINING_RATIO))):
+        for i in range(int(X_train.shape[0] // (BATCH_SIZE * TRAINING_RATIO))):
             discriminator_minibatches = X_train[i * minibatches_size:(i + 1) * minibatches_size]
             for j in range(TRAINING_RATIO):
                 image_batch = discriminator_minibatches[j * BATCH_SIZE:(j + 1) * BATCH_SIZE]
@@ -257,5 +257,6 @@ def main():
             generator_loss.append(generator_model.train_on_batch(np.random.rand(BATCH_SIZE, 100), positive_y))
         # Still needs some code to display losses from the generator and discriminator, progress bars, etc.
         generate_images(generator, args.output_dir, epoch)
+
 
 main()
