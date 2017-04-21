@@ -66,6 +66,7 @@ class PELU(Layer):
                 param_shape[i - 1] = 1
                 self.param_broadcast[i - 1] = True
 
+        param_shape = tuple(param_shape)
         # Initialised as ones to emulate the default ELU
         self.alpha = self.add_weight(param_shape,
                                      name='alpha',
@@ -174,6 +175,8 @@ class SReLU(Layer):
             for i in self.shared_axes:
                 param_shape[i - 1] = 1
                 self.param_broadcast[i - 1] = True
+
+        param_shape = tuple(param_shape)
 
         self.t_left = self.add_weight(param_shape,
                                       name='t_left',
