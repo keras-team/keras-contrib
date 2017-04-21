@@ -154,16 +154,18 @@ class SReLU(Layer):
                  a_right_initializer='ones',
                  shared_axes=None,
                  **kwargs):
+        super(SReLU, self).__init__(**kwargs)
         self.supports_masking = True
         self.t_left_initializer = initializers.get(t_left_initializer)
         self.a_left_initializer = initializers.get(a_left_initializer)
         self.t_right_initializer = initializers.get(t_right_initializer)
         self.a_right_initializer = initializers.get(a_right_initializer)
-        if not isinstance(shared_axes, (list, tuple)):
+        if shared_axes is None:
+            self.shared_axes = None
+        elif not isinstance(shared_axes, (list, tuple)):
             self.shared_axes = [shared_axes]
         else:
             self.shared_axes = list(shared_axes)
-        super(SReLU, self).__init__(**kwargs)
 
     def build(self, input_shape):
         param_shape = list(input_shape[1:])
