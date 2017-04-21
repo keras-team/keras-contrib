@@ -118,6 +118,7 @@ def make_discriminator():
     model.add(Convolution2D(128, (5, 5), kernel_initializer='he_normal', strides=[2, 2]))
     model.add(LeakyReLU())
     model.add(Convolution2D(128, (5, 5), kernel_initializer='he_normal', padding='same', strides=[2, 2]))
+    model.add(LeakyReLU())
     model.add(Flatten())
     model.add(Dense(1024, kernel_initializer='he_normal'))
     model.add(LeakyReLU())
