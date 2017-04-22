@@ -150,8 +150,8 @@ class SReLU(Layer):
     """
 
     def __init__(self, t_left_initializer='zeros',
-                 a_left_initializer='glorot_uniform',
-                 t_right_initializer='glorot_uniform',
+                 a_left_initializer=initializers.RandomUniform(minval=0, maxval=1),
+                 t_right_initializer=initializers.RandomUniform(minval=0, maxval=5),
                  a_right_initializer='ones',
                  shared_axes=None,
                  **kwargs):
