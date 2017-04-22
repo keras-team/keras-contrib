@@ -237,9 +237,9 @@ def main():
     # We make three label vectors for training. positive_y is the label vector for real samples, with value 1.
     # negative_y is the label vector for generated samples, with value -1. The dummy_y vector is passed to the
     # gradient_penalty loss function and is not used.
-    positive_y = np.ones((BATCH_SIZE,), dtype=np.float32)
+    positive_y = np.ones((BATCH_SIZE, 1), dtype=np.float32)
     negative_y = -positive_y
-    dummy_y = np.zeros((BATCH_SIZE,), dtype=np.float32)
+    dummy_y = np.zeros((BATCH_SIZE, 1), dtype=np.float32)
 
     for epoch in range(100):
         np.random.shuffle(X_train)
