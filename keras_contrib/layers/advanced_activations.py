@@ -229,7 +229,8 @@ class SReLU(Layer):
             't_left_initializer': self.t_left_initializer,
             'a_left_initializer': self.a_left_initializer,
             't_right_initializer': self.t_right_initializer,
-            'a_right_initializer': self.a_right_initializer
+            'a_right_initializer': self.a_right_initializer,
+            'shared_axes': self.shared_axes
         }
         base_config = super(SReLU, self).get_config()
         return dict(list(base_config.items()) + list(config.items()))
