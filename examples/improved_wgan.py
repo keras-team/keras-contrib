@@ -17,19 +17,17 @@ The model saves images using pillow. If you don't have pillow, either install it
 """
 import argparse
 import os
-import pdb
 import numpy as np
 from keras.models import Model, Sequential
 from keras.layers import Input, Dense, Reshape, Flatten
 from keras.layers.merge import _Merge
-from keras.layers.convolutional import Convolution2D, AveragePooling2D, MaxPooling2D, Conv2DTranspose
+from keras.layers.convolutional import Convolution2D, Conv2DTranspose
 from keras.layers.normalization import BatchNormalization
 from keras.layers.advanced_activations import LeakyReLU
 from keras.optimizers import Adam
 from keras.datasets import mnist
 from keras import backend as K
 from functools import partial
-import tensorflow as tf
 
 try:
     from PIL import Image
@@ -63,17 +61,17 @@ def gradient_penalty_loss(y_true, y_pred, averaged_samples):
     In Improved WGANs, the 1-Lipschitz constraint is enforced by adding a term to the loss function
     that penalizes the network if the gradient norm moves away from 1. However, it is impossible to evaluate
     this function at all points in the input space. The compromise used in the paper is to choose random points
-    on the lines between real and generated samples, and check the gradients at these points.
+    on the lines between real and generated samples, and check the gradients at these points. Note that it is the
+    gradient w.r.t. the input averaged samples, not the weights of the discriminator, that we're penalizing!
 
-    In order to evaluate the gradients, we must first run samples through the discriminator and evaluate the loss.
-    Then we get the gradients of the trainable discriminator weights, flatten the gradient tensors
-    and concatenate them into one 1D gradient tensor. The l2 norm and penalty can then be calculated from it.
+    In order to evaluate the gradients, we must first run samples through the generator and evaluate the loss.
+    Then we get the gradients of the discriminator w.r.t. the input averaged samples.
+    The l2 norm and penalty can then be calculated for this gradient.
 
-    Note that this loss function requires the model's trainable weights as input, but Keras only supports passing
+    Note that this loss function requires the original averaged samples as input, but Keras only supports passing
     y_true and y_pred to loss functions. To get around this, we make a partial() of the function with the
-    trainable_weights argument, and use that for model training."""
-    averaged_samples_loss = K.mean(y_pred)
-    gradients = K.gradients(averaged_samples_loss, averaged_samples)
+    averaged_samples argument, and use that for model training."""
+    gradients = K.gradients(y_pred, averaged_samples)
     gradients = K.concatenate([K.flatten(tensor) for tensor in gradients])
     gradient_l2_norm = K.sqrt(K.sum(K.square(gradients)))
     gradient_penalty = 2 * GRADIENT_PENALTY_WEIGHT * K.square(1 - gradient_l2_norm)
