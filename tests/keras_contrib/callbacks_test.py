@@ -12,7 +12,6 @@ import multiprocessing
 
 import numpy as np
 import pytest
-from csv import Sniffer
 
 
 np.random.seed(1337)
