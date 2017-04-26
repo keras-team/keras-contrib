@@ -15,7 +15,7 @@ class DSSIMObjective():
             kernel_size: Size of the sliding window (default 3)
             max_value: Max value of the output (default 1.0)
         """
-        self.__name__ = "DSSIMObjective"
+        self.__name__ = 'DSSIMObjective'
         self.kernel_size = kernel_size
         self.k1 = k1
         self.k2 = k2
@@ -26,7 +26,7 @@ class DSSIMObjective():
         self.backend = KC.backend()
 
     def __int_shape(self, x):
-        return KC.int_shape(x) if self.backend == "tensorflow" else KC.shape(x)
+        return KC.int_shape(x) if self.backend == 'tensorflow' else KC.shape(x)
 
     def __call__(self, y_true, y_pred):
         # There are additional parameters for this function
@@ -36,8 +36,8 @@ class DSSIMObjective():
         kernel = [self.kernel_size, self.kernel_size]
         y_true = KC.reshape(y_true, [-1] + list(self.__int_shape(y_pred)[1:]))
         y_pred = KC.reshape(y_pred, [-1] + list(self.__int_shape(y_pred)[1:]))
-        patches_pred = KC.extract_image_patches(y_pred, kernel, kernel, "valid", self.dim_ordering)
-        patches_true = KC.extract_image_patches(y_true, kernel, kernel, "valid", self.dim_ordering)
+        patches_pred = KC.extract_image_patches(y_pred, kernel, kernel, 'valid', self.dim_ordering)
+        patches_true = KC.extract_image_patches(y_true, kernel, kernel, 'valid', self.dim_ordering)
 
         # Reshape to get the var in the cells
         bs, w, h, c1, c2, c3 = self.__int_shape(patches_pred)

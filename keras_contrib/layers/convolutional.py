@@ -12,7 +12,6 @@ from keras.engine import InputSpec
 from keras.layers.convolutional import Convolution3D
 from keras.utils.generic_utils import get_custom_objects
 from keras.utils.conv_utils import conv_output_length
-from keras.utils.conv_utils import conv_input_length
 from keras.utils.conv_utils import normalize_data_format
 import numpy as np
 
@@ -204,7 +203,7 @@ class Deconvolution3D(Convolution3D):
             raise ValueError('Invalid data format: ', self.data_format)
 
     def call(self, x, mask=None):
-        kernel_shape = self.kernel.get_value().shape
+        kernel_shape = K.get_value(self.kernel).shape
         output = K.deconv3d(x, self.kernel, self.output_shape_,
                             strides=self.strides,
                             padding=self.padding,
@@ -214,7 +213,7 @@ class Deconvolution3D(Convolution3D):
             if self.data_format == 'channels_first':
                 output += K.reshape(self.bias, (1, self.filters, 1, 1, 1))
             elif self.data_format == 'channels_last':
-                output += K.reshape(self.use_bias, (1, 1, 1, 1, self.filters))
+                output += K.reshape(self.bias, (1, 1, 1, 1, self.filters))
             else:
                 raise ValueError('Invalid data_format: ', self.data_format)
         output = self.activation(output)
@@ -227,8 +226,8 @@ class Deconvolution3D(Convolution3D):
 
 
 Deconv3D = Deconvolution3D
-get_custom_objects().update({"Deconvolution3D": Deconvolution3D})
-get_custom_objects().update({"Deconv3D": Deconv3D})
+get_custom_objects().update({'Deconvolution3D': Deconvolution3D})
+get_custom_objects().update({'Deconv3D': Deconv3D})
 
 
 class CosineConvolution2D(Layer):
@@ -454,8 +453,8 @@ class CosineConvolution2D(Layer):
 
 
 CosineConv2D = CosineConvolution2D
-get_custom_objects().update({"CosineConvolution2D": CosineConvolution2D})
-get_custom_objects().update({"CosineConv2D": CosineConv2D})
+get_custom_objects().update({'CosineConvolution2D': CosineConvolution2D})
+get_custom_objects().update({'CosineConv2D': CosineConv2D})
 
 
 class SubPixelUpscaling(Layer):
