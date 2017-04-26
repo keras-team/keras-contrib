@@ -1,10 +1,5 @@
-import theano
 from theano import tensor as T
-from theano.sandbox.rng_mrg import MRG_RandomStreams as RandomStreams
 from theano.sandbox.neighbours import images2neibs
-from theano.tensor.signal import pool
-from theano.tensor.nnet import conv3d2d
-from theano.printing import Print
 
 try:
     import theano.sparse as th_sparse_module
@@ -14,11 +9,8 @@ try:
     from theano.tensor.nnet.nnet import softsign as T_softsign
 except ImportError:
     from theano.sandbox.softsign import softsign as T_softsign
-from keras import backend as K
 from keras.backend import theano_backend as KTH
-import inspect
-import numpy as np
-from keras.backend.common import _FLOATX, floatx, _EPSILON, image_data_format
+from keras.backend.common import image_data_format
 from keras.backend.theano_backend import _preprocess_conv3d_input
 from keras.backend.theano_backend import _preprocess_conv3d_kernel
 from keras.backend.theano_backend import _preprocess_conv3d_filter_shape
@@ -27,16 +19,15 @@ from keras.backend.theano_backend import _postprocess_conv3d_output
 from keras.backend.theano_backend import _preprocess_conv2d_input
 from keras.backend.theano_backend import _postprocess_conv2d_output
 
-import itertools
 
 py_all = all
 
 
 def conv2d(x, kernel, strides=(1, 1), padding='valid', data_format='channels_first',
            image_shape=None, filter_shape=None):
-    '''
+    """
     padding: string, "same" or "valid".
-    '''
+    """
     if data_format not in {'channels_first', 'channels_last'}:
         raise Exception('Unknown data_format ' + str(data_format))
 
@@ -97,7 +88,7 @@ def conv2d(x, kernel, strides=(1, 1), padding='valid', data_format='channels_fir
 def deconv3d(x, kernel, output_shape, strides=(1, 1, 1),
              padding='valid',
              data_format=None, filter_shape=None):
-    '''3D deconvolution (transposed convolution).
+    """3D deconvolution (transposed convolution).
 
     # Arguments
         kernel: kernel tensor.
@@ -107,7 +98,7 @@ def deconv3d(x, kernel, output_shape, strides=(1, 1, 1),
         data_format: "channels_last" or "channels_first".
             Whether to use Theano or TensorFlow dimension ordering
         in inputs/kernels/ouputs.
-    '''
+    """
     flip_filters = False
     if data_format is None:
         data_format = image_data_format()
@@ -144,8 +135,8 @@ def deconv3d(x, kernel, output_shape, strides=(1, 1, 1),
     return conv_out
 
 
-def extract_image_patches(X, ksizes, strides, padding="valid", data_format="channels_first"):
-    '''
+def extract_image_patches(X, ksizes, strides, padding='valid', data_format='channels_first'):
+    """
     Extract the patches from an image
     Parameters
     ----------
@@ -159,11 +150,11 @@ def extract_image_patches(X, ksizes, strides, padding="valid", data_format="chan
     The (k_w,k_h) patches extracted
     TF ==> (batch_size,w,h,k_w,k_h,c)
     TH ==> (batch_size,w,h,c,k_w,k_h)
-    '''
+    """
     patch_size = ksizes[1]
-    if padding == "same":
-        padding = "ignore_borders"
-    if data_format == "channels_last":
+    if padding == 'same':
+        padding = 'ignore_borders'
+    if data_format == 'channels_last':
         X = KTH.permute_dimensions(X, [0, 3, 1, 2])
     # Thanks to https://github.com/awentzonline for the help!
     batch, c, w, h = KTH.shape(X)
@@ -177,33 +168,30 @@ def extract_image_patches(X, ksizes, strides, padding="valid", data_format="chan
     patches = KTH.permute_dimensions(patches, (0, 2, 1, 3, 4))
     # arrange in a 2d-grid (rows, cols, channels, px, py)
     patches = KTH.reshape(patches, (batch, num_rows, num_cols, num_channels, patch_size, patch_size))
-    if data_format == "channels_last":
+    if data_format == 'channels_last':
         patches = KTH.permute_dimensions(patches, [0, 1, 2, 4, 5, 3])
     return patches
 
 
 def depth_to_space(input, scale, data_format=None):
-    ''' Uses phase shift algorithm to convert channels/depth for spatial resolution '''
+    """ Uses phase shift algorithm to convert channels/depth for spatial resolution """
     if data_format is None:
         data_format = image_data_format()
     data_format = data_format.lower()
     input = _preprocess_conv2d_input(input, data_format)
 
     b, k, row, col = input.shape
-    output_shape = (b, k // (scale ** 2), row * scale, col * scale)
-
-    out = T.zeros(output_shape)
-    r = scale
-
-    for y, x in itertools.product(range(scale), repeat=2):
-        out = T.inc_subtensor(out[:, :, y::r, x::r], input[:, r * y + x:: r * r, :, :])
+    out_channels = k // (scale ** 2)
+    x = T.reshape(input, (b, scale, scale, out_channels, row, col))
+    x = T.transpose(x, (0, 3, 4, 1, 5, 2))
+    out = T.reshape(x, (b, out_channels, row * scale, col * scale))
 
     out = _postprocess_conv2d_output(out, input, None, None, None, data_format)
     return out
 
 
 def moments(x, axes, shift=None, keep_dims=False):
-    ''' Calculates and returns the mean and variance of the input '''
+    """ Calculates and returns the mean and variance of the input """
 
     mean_batch = KTH.mean(x, axis=axes, keepdims=keep_dims)
     var_batch = KTH.var(x, axis=axes, keepdims=keep_dims)

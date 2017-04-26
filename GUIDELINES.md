@@ -2,14 +2,14 @@
 
 ## Maintainers:
 Following are the users with write-access to this repository (maintainers) :
-* @bstriner
-* @farizrahman4u
-* @fchollet
-* @kemaswill
-* @lukedeo
-* @patyork
-* @tboquet
-* @the-moliver
+* [bstriner](https://www.github.com/bstriner)
+* [farizrahman4u](https://www.github.com/farizrahman4u)
+* [fchollet](https://www.github.com/fchollet)
+* [kemaswill](https://www.github.com/kemaswill)
+* [lukedeo](https://www.github.com/lukedeo)
+* [patyork](https://www.github.com/patyork)
+* [tboquet](https://www.github.com/tboquet)
+* [the-moliver](https://www.github.com/the-moliver)
 
 ## Addition of new features
 * Addition of new features require submitting a pull request, even for those who have write access to this repository.

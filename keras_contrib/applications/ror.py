@@ -14,9 +14,9 @@ import warnings
 
 from keras.models import Model
 from keras.layers.core import Dense, Dropout, Activation, Flatten
-from keras.layers.convolutional import Convolution2D
 from keras.layers.pooling import AveragePooling2D, MaxPooling2D
-from keras.layers import Input, merge
+from keras.layers.merge import add
+from keras.layers import Input, Conv2D
 from keras.layers.normalization import BatchNormalization
 from keras.utils.layer_utils import convert_all_kernels_in_model
 from keras.utils.data_utils import get_file
@@ -70,7 +70,6 @@ def ResidualOfResidual(depth=40, width=2, dropout_rate=0.0,
         # Returns
             A Keras model instance.
     """
-
     if weights not in {'cifar10', None}:
         raise ValueError('The `weights` argument should be either '
                          '`None` (random initialization) or `cifar10` '
@@ -88,7 +87,7 @@ def ResidualOfResidual(depth=40, width=2, dropout_rate=0.0,
     input_shape = _obtain_input_shape(input_shape,
                                       default_size=32,
                                       min_size=8,
-                                      dim_ordering=K.image_dim_ordering(),
+                                      data_format=K.image_dim_ordering(),
                                       include_top=include_top)
 
     if input_tensor is None:
@@ -159,60 +158,60 @@ def ResidualOfResidual(depth=40, width=2, dropout_rate=0.0,
 def __initial_conv_block(input, k=1, dropout=0.0, initial=False):
     init = input
 
-    channel_axis = 1 if K.image_dim_ordering() == "th" else -1
+    channel_axis = 1 if K.image_dim_ordering() == 'th' else -1
 
     # Check if input number of filters is same as 16 * k, else create convolution2d for this input
     if initial:
-        if K.image_dim_ordering() == "th":
-            init = Convolution2D(16 * k, 1, 1, init='he_normal', border_mode='same')(init)
+        if K.image_dim_ordering() == 'th':
+            init = Conv2D(16 * k, (1, 1), kernel_initializer='he_normal', padding='same')(init)
         else:
-            init = Convolution2D(16 * k, 1, 1, init='he_normal', border_mode='same')(init)
+            init = Conv2D(16 * k, (1, 1), kernel_initializer='he_normal', padding='same')(init)
 
     x = BatchNormalization(axis=channel_axis)(input)
     x = Activation('relu')(x)
-    x = Convolution2D(16 * k, 3, 3, border_mode='same', init='he_normal')(x)
+    x = Conv2D(16 * k, (3, 3), padding='same', kernel_initializer='he_normal')(x)
 
     if dropout > 0.0:
         x = Dropout(dropout)(x)
 
     x = BatchNormalization(axis=channel_axis)(x)
     x = Activation('relu')(x)
-    x = Convolution2D(16 * k, 3, 3, border_mode='same', init='he_normal')(x)
+    x = Conv2D(16 * k, (3, 3), padding='same', kernel_initializer='he_normal')(x)
 
-    m = merge([init, x], mode='sum')
+    m = add([init, x])
     return m
 
 
 def __conv_block(input, nb_filters=32, k=1, dropout=0.0):
     init = input
 
-    channel_axis = 1 if K.image_dim_ordering() == "th" else -1
+    channel_axis = 1 if K.image_dim_ordering() == 'th' else -1
 
     # Check if input number of filters is same as 32 * k, else create convolution2d for this input
-    if K.image_dim_ordering() == "th":
+    if K.image_dim_ordering() == 'th':
         if init._keras_shape[1] != nb_filters * k:
-            init = Convolution2D(nb_filters * k, 1, 1, init='he_normal', border_mode='same')(init)
+            init = Conv2D(nb_filters * k, (1, 1), kernel_initializer='he_normal', padding='same')(init)
     else:
         if init._keras_shape[-1] != nb_filters * k:
-            init = Convolution2D(nb_filters * k, 1, 1, init='he_normal', border_mode='same')(init)
+            init = Conv2D(nb_filters * k, (1, 1), kernel_initializer='he_normal', padding='same')(init)
 
     x = BatchNormalization(axis=channel_axis)(input)
     x = Activation('relu')(x)
-    x = Convolution2D(nb_filters * k, 3, 3, border_mode='same', init='he_normal')(x)
+    x = Conv2D(nb_filters * k, (3, 3), padding='same', kernel_initializer='he_normal')(x)
 
     if dropout > 0.0:
         x = Dropout(dropout)(x)
 
     x = BatchNormalization(axis=channel_axis)(x)
     x = Activation('relu')(x)
-    x = Convolution2D(nb_filters * k, 3, 3, border_mode='same', init='he_normal')(x)
+    x = Conv2D(nb_filters * k, (3, 3), padding='same', kernel_initializer='he_normal')(x)
 
-    m = merge([init, x], mode='sum')
+    m = add([init, x])
     return m
 
 
 def __create_pre_residual_of_residual(nb_classes, img_input, include_top, depth=28, width=1, dropout=0.0):
-    '''
+    """
     Creates a Residual Network of Residual Network with specified parameters
 
     Example : To create a Pre-RoR model, use k = 1
@@ -231,53 +230,53 @@ def __create_pre_residual_of_residual(nb_classes, img_input, include_top, depth=
                  Note : Generally not used in RoR
 
     Returns: a Keras Model
-    '''
+    """
 
     N = (depth - 4) // 6
 
-    channel_axis = 1 if K.image_dim_ordering() == "th" else -1
+    channel_axis = 1 if K.image_dim_ordering() == 'th' else -1
 
     # Initial convolution layer
-    x = Convolution2D(16, 3, 3, border_mode='same', init='he_normal')(img_input)
+    x = Conv2D(16, (3, 3), padding='same', kernel_initializer='he_normal')(img_input)
     nb_conv = 4  # Dont count 4 long residual connections in WRN models
 
-    conv0_level1_shortcut = Convolution2D(64 * width, 1, 1, border_mode='same', subsample=(4, 4),
-                                          name='conv0_level1_shortcut')(x)
+    conv0_level1_shortcut = Conv2D(64 * width, (1, 1), padding='same', strides=(4, 4),
+                                   name='conv0_level1_shortcut')(x)
 
-    conv1_level2_shortcut = Convolution2D(16 * width, 1, 1, border_mode='same',
-                                          name='conv1_level2_shortcut')(x)
+    conv1_level2_shortcut = Conv2D(16 * width, (1, 1), padding='same',
+                                   name='conv1_level2_shortcut')(x)
     for i in range(N):
         initial = (i == 0)
         x = __initial_conv_block(x, k=width, dropout=dropout, initial=initial)
         nb_conv += 2
 
     # Add Level 2 shortcut
-    x = merge([x, conv1_level2_shortcut], mode='sum')
+    x = add([x, conv1_level2_shortcut])
 
     x = MaxPooling2D((2, 2))(x)
 
-    conv2_level2_shortcut = Convolution2D(32 * width, 1, 1, border_mode='same',
-                                          name='conv2_level2_shortcut')(x)
+    conv2_level2_shortcut = Conv2D(32 * width, (1, 1), padding='same',
+                                   name='conv2_level2_shortcut')(x)
     for i in range(N):
         x = __conv_block(x, k=width, dropout=dropout)
         nb_conv += 2
 
     # Add Level 2 shortcut
-    x = merge([x, conv2_level2_shortcut], mode='sum')
+    x = add([x, conv2_level2_shortcut])
 
     x = MaxPooling2D((2, 2))(x)
 
-    conv3_level2_shortcut = Convolution2D(64 * width, 1, 1, border_mode='same',
-                                          name='conv3_level2_shortcut')(x)
+    conv3_level2_shortcut = Conv2D(64 * width, (1, 1), padding='same',
+                                   name='conv3_level2_shortcut')(x)
     for i in range(N):
         x = __conv_block(x, nb_filters=64, k=width, dropout=dropout)
         nb_conv += 2
 
     # Add Level 2 shortcut
-    x = merge([x, conv3_level2_shortcut], mode='sum')
+    x = add([x, conv3_level2_shortcut])
 
     # Add Level 1 shortcut
-    x = merge([x, conv0_level1_shortcut], mode='sum')
+    x = add([x, conv0_level1_shortcut])
     x = BatchNormalization(axis=channel_axis)(x)
     x = Activation('relu')(x)
 

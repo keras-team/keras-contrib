@@ -2,14 +2,6 @@
 from __future__ import absolute_import
 from __future__ import division
 
-import numpy as np
-import keras
-
-import copy
-import inspect
-import types as python_types
-import warnings
-
 from .. import backend as K
 from .. import activations
 from .. import initializers
@@ -17,8 +9,6 @@ from .. import regularizers
 from .. import constraints
 from keras.engine import InputSpec
 from keras.engine import Layer
-from keras.utils.generic_utils import func_dump
-from keras.utils.generic_utils import func_load
 from keras.utils.generic_utils import get_custom_objects
 
 
@@ -178,4 +168,4 @@ class CosineDense(Layer):
         return dict(list(base_config.items()) + list(config.items()))
 
 
-get_custom_objects().update({"CosineDense": CosineDense})
+get_custom_objects().update({'CosineDense': CosineDense})

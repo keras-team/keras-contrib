@@ -27,8 +27,8 @@ def get_data():
     (X_train, y_train), (X_test, y_test) = mnist.load_data()
     X_train = X_train.reshape(60000, 784)[:max_train_samples]
     X_test = X_test.reshape(10000, 784)[:max_test_samples]
-    X_train = X_train.astype("float32") / 255
-    X_test = X_test.astype("float32") / 255
+    X_train = X_train.astype('float32') / 255
+    X_test = X_test.astype('float32') / 255
 
     # convert class vectors to binary class matrices
     y_train = y_train[:max_train_samples]
