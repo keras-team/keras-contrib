@@ -71,8 +71,7 @@ def gradient_penalty_loss(y_true, y_pred, averaged_samples, gradient_penalty_wei
     Note that this loss function requires the original averaged samples as input, but Keras only supports passing
     y_true and y_pred to loss functions. To get around this, we make a partial() of the function with the
     averaged_samples argument, and use that for model training."""
-    gradients = K.gradients(y_pred, averaged_samples)
-    gradients = K.concatenate([K.flatten(tensor) for tensor in gradients])
+    gradients = K.gradients(K.sum(y_pred), averaged_samples)
     gradient_l2_norm = K.sqrt(K.sum(K.square(gradients)))
     gradient_penalty = gradient_penalty_weight * K.square(1 - gradient_l2_norm)
     return gradient_penalty
@@ -155,7 +154,7 @@ def generate_images(generator_model, output_dir, epoch):
     """Feeds random seeds into the generator and tiles and saves the output to a PNG file."""
     test_image_stack = generator_model.predict(np.random.rand(10, 100))
     test_image_stack = (test_image_stack * 127.5) + 127.5
-    test_image_stack = np.round(test_image_stack).astype(np.uint8).reshape(test_image_stack.shape[:-1])
+    test_image_stack = np.squeeze(np.round(test_image_stack).astype(np.uint8))
     tiled_output = tile_images(test_image_stack)
     tiled_output = Image.fromarray(tiled_output, mode='L')  # L specifies greyscale
     outfile = os.path.join(output_dir, 'epoch_{}.png'.format(epoch))
@@ -169,7 +168,10 @@ args = parser.parse_args()
 # First we load the image data, reshape it and normalize it to the range [-1, 1]
 (X_train, y_train), (X_test, y_test) = mnist.load_data()
 X_train = np.concatenate((X_train, X_test), axis=0)
-X_train = X_train.reshape((X_train.shape[0], X_train.shape[1], X_train.shape[2], 1))
+if K.image_data_format() == 'channels_first':
+    X_train = X_train.reshape((X_train.shape[0], 1, X_train.shape[1], X_train.shape[2]))
+else:
+    X_train = X_train.reshape((X_train.shape[0], X_train.shape[1], X_train.shape[2], 1))
 X_train = (X_train.astype(np.float32) - 127.5) / 127.5
 
 # Now we initialize the generator and discriminator.
