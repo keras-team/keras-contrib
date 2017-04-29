@@ -5,8 +5,9 @@ from os.path import join
 
 import subprocess
 import urllib2
+from ..utils.data_utils import get_file
 
-def download(out_dir, category, set_name, tag):
+def download(out_dir='lsun', category, set_name, tag):
     url = 'http://lsun.cs.princeton.edu/htbin/download.cgi?tag={tag}' \
           '&category={category}&set={set_name}'.format(**locals())
     if set_name == 'test':
@@ -14,6 +15,4 @@ def download(out_dir, category, set_name, tag):
     else:
         out_name = '{category}_{set_name}_lmdb.zip'.format(**locals())
     out_path = join(out_dir, out_name)
-    cmd = ['curl', url, '-o', out_path]
-    print('Downloading', category, set_name, 'set')
-    subprocess.call(cmd)
+    get_file(path = get_file(path, origin=url)
