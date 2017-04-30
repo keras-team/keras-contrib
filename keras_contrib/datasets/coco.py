@@ -70,7 +70,7 @@ def mask_to_palette_map(cid):
 
 
 def categories():  # 80 classes
-    return ['background', # class zero
+    return ['background',  # class zero
             'person', 'bicycle', 'car', 'motorcycle', 'airplane', 'bus', 'train', 'truck', 'boat', 'traffic light',
             'fire hydrant', 'stop sign', 'parking meter', 'bench', 'bird', 'cat', 'dog', 'horse', 'sheep', 'cow',
             'elephant', 'bear', 'zebra', 'giraffe', 'backpack', 'umbrella', 'handbag', 'tie', 'suitcase', 'frisbee',
@@ -363,7 +363,7 @@ def coco_image_segmentation_stats(seg_mask_output_paths, annotation_paths, seg_m
             # print('zeros_to_add TYPE:', type(zeros_to_add))
             # this is a workaround because for some strange reason the
             # output type of bincount couldn't interact with other numpy arrays
-            bincount_result_long = bincount_result.tolist()+z.tolist()
+            bincount_result_long = bincount_result.tolist() + z.tolist()
             # bincount_result = bincount_result.resize(max_bin_count)
             # print('bincount_result2:', bincount_result_long)
             # print('bincount_result2_shape',bincount_result_long)
