@@ -341,13 +341,6 @@ class CRF(Layer):
         return acc
 
     @staticmethod
-    def log_sum_exp(x, axis=-1):
-        """log(sum(exp(x)) = m + log(sum(exp(x-m))), where m = max(x, axis)."""
-        m = K.max(x, axis=axis, keepdims=True)
-        m_ = K.max(x, axis=axis)
-        return m_ + K.log(K.sum(K.exp(x - m), axis=axis))
-
-    @staticmethod
     def softmaxNd(x, axis=-1):
         m = K.max(x, axis=axis, keepdims=True)
         exp_x = K.exp(x - m)
@@ -432,7 +425,7 @@ class CRF(Layer):
             chain_energy = chain_energy * K.expand_dims(K.expand_dims(m[:, 0] * m[:, 1]))  # (1, F, F)*(B, 1, 1) -> (B, F, F)
         if return_logZ:
             energy = chain_energy + K.expand_dims(input_energy_t - prev_target_val, 2)  # shapes: (1, B, F) + (B, F, 1) -> (B, F, F)
-            new_target_val = self.log_sum_exp(-energy, 1)  # shapes: (B, F)
+            new_target_val = K.logsumexp(-energy, 1)  # shapes: (B, F)
             return new_target_val, [new_target_val, i + 1]
         else:
             energy = chain_energy + K.expand_dims(input_energy_t + prev_target_val, 2)
