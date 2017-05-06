@@ -95,3 +95,5 @@ ENV/
 
 # developer environments
 .idea
+
+*.DS_Store
