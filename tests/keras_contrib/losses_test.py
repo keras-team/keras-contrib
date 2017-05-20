@@ -1,5 +1,6 @@
 import pytest
 import numpy as np
+from numpy.testing import assert_allclose
 from keras.layers import Conv2D
 from keras.models import Sequential
 from keras.optimizers import Adam
@@ -53,6 +54,19 @@ def test_DSSIM_channels_last():
         adam = Adam(lr=0.001, beta_1=0.9, beta_2=0.999, epsilon=1e-8)
         model.compile(loss=DSSIMObjective(kernel_size=kernel_size), metrics=['mse'], optimizer=adam)
         model.fit(X, y, batch_size=2, epochs=1, shuffle='batch')
+
+        # Test same
+        x1 = K.constant(X, 'float32')
+        x2 = K.constant(X, 'float32')
+        dssim = DSSIMObjective(kernel_size=kernel_size)
+        assert_allclose(0.0, K.eval(dssim(x1, x2)), atol=1e-4)
+
+        # Test opposite
+        x1 = K.zeros([4] + input_shape)
+        x2 = K.ones([4] + input_shape)
+        dssim = DSSIMObjective(kernel_size=kernel_size)
+        assert_allclose(0.5, K.eval(dssim(x1, x2)), atol=1e-4)
+
     K.set_image_data_format(prev_data)
 
 
@@ -70,6 +84,19 @@ def test_DSSIM_channels_first():
         adam = Adam(lr=0.001, beta_1=0.9, beta_2=0.999, epsilon=1e-8)
         model.compile(loss=DSSIMObjective(kernel_size=kernel_size), metrics=['mse'], optimizer=adam)
         model.fit(X, y, batch_size=2, epochs=1, shuffle='batch')
+
+        # Test same
+        x1 = K.constant(X, 'float32')
+        x2 = K.constant(X, 'float32')
+        dssim = DSSIMObjective(kernel_size=kernel_size)
+        assert_allclose(0.0, K.eval(dssim(x1, x2)), atol=1e-4)
+
+        # Test opposite
+        x1 = K.zeros([4] + input_shape)
+        x2 = K.ones([4] + input_shape)
+        dssim = DSSIMObjective(kernel_size=kernel_size)
+        assert_allclose(0.5, K.eval(dssim(x1, x2)), atol=1e-4)
+
     K.set_image_data_format(prev_data)
 
 
