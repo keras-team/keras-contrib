@@ -8,6 +8,8 @@ class DSSIMObjective():
         """
         Difference of Structural Similarity (DSSIM loss function). Clipped between 0 and 0.5
         Note : You should add a regularization term like a l2 loss in addition to this one.
+        Note : In theano, the `kernel_size` must be a factor of the output size. So 3 could
+               not be the `kernel_size` for an output of 32.
 
         # Arguments
             k1: Parameter of the SSIM (default 0.01)
@@ -22,7 +24,7 @@ class DSSIMObjective():
         self.max_value = max_value
         self.c1 = (self.k1 * self.max_value) ** 2
         self.c2 = (self.k2 * self.max_value) ** 2
-        self.dim_ordering = K.image_dim_ordering()
+        self.dim_ordering = K.image_data_format()
         self.backend = KC.backend()
 
     def __int_shape(self, x):
@@ -36,6 +38,7 @@ class DSSIMObjective():
         kernel = [self.kernel_size, self.kernel_size]
         y_true = KC.reshape(y_true, [-1] + list(self.__int_shape(y_pred)[1:]))
         y_pred = KC.reshape(y_pred, [-1] + list(self.__int_shape(y_pred)[1:]))
+
         patches_pred = KC.extract_image_patches(y_pred, kernel, kernel, 'valid', self.dim_ordering)
         patches_true = KC.extract_image_patches(y_true, kernel, kernel, 'valid', self.dim_ordering)
 

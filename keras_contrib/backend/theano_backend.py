@@ -164,7 +164,7 @@ def extract_image_patches(X, ksizes, strides, padding='valid', data_format='chan
     num_channels = xs[-3]
     patches = images2neibs(X, ksizes, strides, padding)
     # Theano is sorting by channel
-    patches = KTH.reshape(patches, (batch, num_channels, KTH.shape(patches)[0] // num_channels, patch_size, patch_size))
+    patches = KTH.reshape(patches, (batch, num_channels, num_rows * num_cols, patch_size, patch_size))
     patches = KTH.permute_dimensions(patches, (0, 2, 1, 3, 4))
     # arrange in a 2d-grid (rows, cols, channels, px, py)
     patches = KTH.reshape(patches, (batch, num_rows, num_cols, num_channels, patch_size, patch_size))
