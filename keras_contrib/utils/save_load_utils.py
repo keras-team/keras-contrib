@@ -12,7 +12,7 @@ def save_all_weights(model, filepath, include_optimizer=True):
     Save model weights and optimizer weights but not configuration to a HDF5 file.
     Functionally between `save` and `save_weights`.
 
-    The saved model contains:
+    The HDF5 file contains:
         - the model's weights
         - the model's optimizer's state (if any)
     If you have a complicated model or set of models that do not serialize to JSON correctly, use this method.
@@ -80,7 +80,8 @@ def save_all_weights(model, filepath, include_optimizer=True):
 
 
 def load_all_weights(model, filepath, include_optimizer=True):
-    """Loads a model saved via `save_all_weights`.
+    """Loads the weights of a model saved via `save_all_weights`.
+    If model has been compiled, optionally load its optimizer's weights.
     # Arguments
         model: instantiated model with architecture matching the saved model.
             Compile the model beforehand if you want to load optimizer weights.

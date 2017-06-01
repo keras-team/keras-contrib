@@ -13,21 +13,22 @@ def test_save_and_load_all_weights():
     '''
 
     def make_model():
-        _x = Input(10)
+        _x = Input((10,))
         _y = Dense(10)(_x)
         _m = Model(_x, _y)
         _m.compile('adam', 'mean_squared_error')
+        _m._make_train_function()
         return _m
 
     # make a model
     m1 = make_model()
     # set weights
-    w1 = m1.layers[0].kernel
+    w1 = m1.layers[1].kernel  # dense layer
     w1value = K.get_value(w1)
     w1value[0, 0:4] = [1, 3, 3, 7]
     K.set_value(w1, w1value)
     # set optimizer weights
-    ow1 = m1.optimizer.weights[0]  # momentum
+    ow1 = m1.optimizer.weights[4]  # momentum weights
     ow1value = K.get_value(ow1)
     ow1value[0, 0:3] = [4, 2, 0]
     K.set_value(ow1, ow1value)
@@ -38,9 +39,9 @@ def test_save_and_load_all_weights():
     # load all weights
     load_all_weights(m2, "model.h5")
     # check weights
-    assert_allclose(K.get_value(m2.layers[0].kernel)[0, 0:4], [1, 3, 3, 7])
+    assert_allclose(K.get_value(m2.layers[1].kernel)[0, 0:4], [1, 3, 3, 7])
     # check optimizer weights
-    assert_allclose(K.get_value(m2.optimizer.weights[0])[0, 0:3], [4, 2, 0])
+    assert_allclose(K.get_value(m2.optimizer.weights[4])[0, 0:3], [4, 2, 0])
 
 
 if __name__ == '__main__':
