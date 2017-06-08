@@ -189,9 +189,8 @@ def test_instancenorm_perchannel_correctness():
     for instance in range(10):
         for channel in range(3):
             activations = out[instance, channel]
-            with assert_raises(AssertionError):
-                assert_allclose(activations.mean(), 0.0, atol=1e-1)
-                assert_allclose(activations.std(), 1.0, atol=1e-1)
+            assert abs(activations.mean()) > 1e-2
+            assert abs(activations.std() - 1.0) > 1e-2
 
         # but values are still normalized per-instance
         activations = out[instance]
