@@ -71,8 +71,15 @@ class InstanceNormalization(Layer):
         if self.axis == 0:
             raise ValueError('Axis cannot be zero')
 
+        if (self.axis is not None) and (ndim == 2):
+            raise ValueError('Cannot specify axis for rank 1 tensor')
+
         self.input_spec = InputSpec(ndim=ndim)
-        shape = (input_shape[self.axis],)
+
+        if self.axis is None:
+            shape = (1,)
+        else:
+            shape = (input_shape[self.axis],)
 
         if self.scale:
             self.gamma = self.add_weight(shape=shape,
@@ -96,14 +103,16 @@ class InstanceNormalization(Layer):
         input_shape = K.int_shape(inputs)
         reduction_axes = list(range(1, len(input_shape)))
 
-        del reduction_axes[self.axis]
+        if (self.axis is not None):
+            del reduction_axes[self.axis]
 
         mean = K.mean(inputs, reduction_axes, keepdims=True)
         stddev = K.std(inputs, reduction_axes, keepdims=True) + self.epsilon
         normed = inputs / stddev + (- mean / stddev)
 
         broadcast_shape = [1] * len(input_shape)
-        broadcast_shape[self.axis] = input_shape[self.axis]
+        if self.axis is not None:
+            broadcast_shape[self.axis] = input_shape[self.axis]
 
         if self.scale:
             broadcast_gamma = K.reshape(self.gamma, broadcast_shape)

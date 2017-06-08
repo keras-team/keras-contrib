@@ -53,6 +53,25 @@ def test_instancenorm_correctness():
 
 
 @keras_test
+def test_instancenorm_correctness_rank1():
+    # make sure it works with rank1 input tensor (batched)
+    model = Sequential()
+    norm = normalization.InstanceNormalization(input_shape=(10,), axis=None)
+    model.add(norm)
+    model.compile(loss='mse', optimizer='sgd')
+
+    # centered on 5.0, variance 10.0
+    x = np.random.normal(loc=5.0, scale=10.0, size=(1000, 10))
+    model.fit(x, x, epochs=4, verbose=0)
+    out = model.predict(x)
+    out -= K.eval(norm.beta)
+    out /= K.eval(norm.gamma)
+
+    assert_allclose(out.mean(), 0.0, atol=1e-1)
+    assert_allclose(out.std(), 1.0, atol=1e-1)
+
+
+@keras_test
 def test_instancenorm_training_argument():
     bn1 = normalization.InstanceNormalization(input_shape=(10, 1))
     x1 = Input(shape=(10, 1))
@@ -119,6 +138,7 @@ def test_shared_instancenorm():
     new_model.train_on_batch(x, x)
 
 
+@keras_test
 def test_instancenorm_perinstancecorrectness():
     model = Sequential()
     norm = normalization.InstanceNormalization(input_shape=(10, 1))
