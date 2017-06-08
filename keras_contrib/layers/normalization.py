@@ -17,6 +17,8 @@ class InstanceNormalization(Layer):
             For instance, after a `Conv2D` layer with
             `data_format="channels_first"`,
             set `axis=1` in `InstanceNormalization`.
+            Setting `axis=None` will normalize all values in each instance of the batch.
+            Axis 0 is the batch dimension. `axis` cannot be set to 0 to avoid errors.
         epsilon: Small float added to variance to avoid dividing by zero.
         center: If True, add offset of `beta` to normalized tensor.
             If False, `beta` is ignored.
@@ -101,14 +103,16 @@ class InstanceNormalization(Layer):
 
     def call(self, inputs, training=None):
         input_shape = K.int_shape(inputs)
-        reduction_axes = list(range(1, len(input_shape)))
+        reduction_axes = list(range(0, len(input_shape)))
 
         if (self.axis is not None):
             del reduction_axes[self.axis]
 
+        del reduction_axes[0]
+
         mean = K.mean(inputs, reduction_axes, keepdims=True)
         stddev = K.std(inputs, reduction_axes, keepdims=True) + self.epsilon
-        normed = inputs / stddev + (- mean / stddev)
+        normed = (inputs - mean) / stddev
 
         broadcast_shape = [1] * len(input_shape)
         if self.axis is not None:

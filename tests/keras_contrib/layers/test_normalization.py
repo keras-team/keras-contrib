@@ -1,6 +1,6 @@
 import pytest
 import numpy as np
-from numpy.testing import assert_allclose
+from numpy.testing import assert_allclose, assert_raises
 
 from keras.layers import Dense, Activation, Input
 from keras.utils.test_utils import layer_test, keras_test
@@ -164,6 +164,55 @@ def test_instancenorm_perinstancecorrectness():
     # if each instance is normalized, so should the batch
     assert_allclose(out.mean(), 0.0, atol=1e-1)
     assert_allclose(out.std(), 1.0, atol=1e-1)
+
+
+@keras_test
+def test_instancenorm_perchannel_correctness():
+
+    # have each channel with a different average and std
+    x = np.random.normal(loc=5.0, scale=2.0, size=(10, 1, 4, 4))
+    y = np.random.normal(loc=10.0, scale=3.0, size=(10, 1, 4, 4))
+    z = np.random.normal(loc=-5.0, scale=5.0, size=(10, 1, 4, 4))
+
+    batch = np.append(x, y, axis=1)
+    batch = np.append(batch, z, axis=1)
+
+    # this model does not provide a normalization axis
+    model = Sequential()
+    norm = normalization.InstanceNormalization(axis=None, input_shape=(3, 4, 4), center=False, scale=False)
+    model.add(norm)
+    model.compile(loss='mse', optimizer='sgd')
+    model.fit(batch, batch, epochs=4, verbose=0)
+    out = model.predict(batch)
+
+    # values will not be normalized per-channel
+    for instance in range(10):
+        for channel in range(3):
+            activations = out[instance, channel]
+            with assert_raises(AssertionError):
+                assert_allclose(activations.mean(), 0.0, atol=1e-1)
+                assert_allclose(activations.std(), 1.0, atol=1e-1)
+
+        # but values are still normalized per-instance
+        activations = out[instance]
+        assert_allclose(activations.mean(), 0.0, atol=1e-1)
+        assert_allclose(activations.std(), 1.0, atol=1e-1)
+
+    # this model sets the channel as a normalization axis
+    model = Sequential()
+    norm = normalization.InstanceNormalization(axis=1, input_shape=(3, 4, 4), center=False, scale=False)
+    model.add(norm)
+    model.compile(loss='mse', optimizer='sgd')
+
+    model.fit(batch, batch, epochs=4, verbose=0)
+    out = model.predict(batch)
+
+    # values are now normalized per-channel
+    for instance in range(10):
+        for channel in range(3):
+            activations = out[instance, channel]
+            assert_allclose(activations.mean(), 0.0, atol=1e-1)
+            assert_allclose(activations.std(), 1.0, atol=1e-1)
 
 
 @keras_test
