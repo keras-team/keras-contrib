@@ -42,7 +42,7 @@ class InstanceNormalization(Layer):
         - [Instance Normalization: The Missing Ingredient for Fast Stylization](https://arxiv.org/abs/1607.08022)
     """
     def __init__(self,
-                 axis=None,
+                 axis=-1,
                  epsilon=1e-3,
                  center=True,
                  scale=True,
@@ -71,18 +71,8 @@ class InstanceNormalization(Layer):
         if self.axis == 0:
             raise ValueError('Axis cannot be zero')
 
-        if (self.axis is not None) and (ndim <= 2):
-            raise ValueError('Axis cannot be specified for input with shape ' +
-                             str(input_shape) + '.')
-
         self.input_spec = InputSpec(ndim=ndim)
-        shape = []
-        for axis in range(ndim):
-            if axis == self.axis:
-                shape.append(input_shape[axis])
-            else:
-                shape.append(1)
-        shape = tuple(shape)
+        shape = (input_shape[self.axis],)
 
         if self.scale:
             self.gamma = self.add_weight(shape=shape,
@@ -106,17 +96,21 @@ class InstanceNormalization(Layer):
         input_shape = K.int_shape(inputs)
         reduction_axes = list(range(1, len(input_shape)))
 
-        if (self.axis is not None):
-            del reduction_axes[self.axis]
+        del reduction_axes[self.axis]
 
         mean = K.mean(inputs, reduction_axes, keepdims=True)
         stddev = K.std(inputs, reduction_axes, keepdims=True) + self.epsilon
-
         normed = inputs / stddev + (- mean / stddev)
+
+        broadcast_shape = [1] * len(input_shape)
+        broadcast_shape[self.axis] = input_shape[self.axis]
+
         if self.scale:
-            normed = normed * self.gamma
+            broadcast_gamma = K.reshape(self.gamma, broadcast_shape)
+            normed = normed * broadcast_gamma
         if self.center:
-            normed = normed + self.beta
+            broadcast_beta = K.reshape(self.beta, broadcast_shape)
+            normed = normed + broadcast_beta
         return normed
 
     def get_config(self):
