@@ -44,7 +44,7 @@ class InstanceNormalization(Layer):
         - [Instance Normalization: The Missing Ingredient for Fast Stylization](https://arxiv.org/abs/1607.08022)
     """
     def __init__(self,
-                 axis=-1,
+                 axis=None,
                  epsilon=1e-3,
                  center=True,
                  scale=True,
