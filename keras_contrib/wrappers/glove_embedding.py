@@ -29,24 +29,24 @@ def reporthook(count, block_size, total_size):
     speed = int(progress_size / (1024 * duration))
     percent = int(count * block_size * 100 / total_size)
     sys.stdout.write("\r...%d%%, %d MB, %d KB/s, %d seconds passed" %
-            (percent, progress_size / (1024 * 1024), speed, duration))
+                     (percent, progress_size / (1024 * 1024), speed, duration))
     sys.stdout.flush()
 
 
 # Download embeddings if neccesary
 def download_embeddings():
-    if not path.exists(path.join(appdata,".downloaded")):
+    if not path.exists(path.join(appdata, ".downloaded")):
         print("Downloading pre-trained glove embeddings to %s" % (appdata))
         url = "http://nlp.stanford.edu/data/glove.6B.zip"
         urlretrieve(url, os.path.join(appdata, "glove.6B.zip"), reporthook)
 
         print("Unzipping glove embeddings.")
-        zip_ref = zipfile.ZipFile(path.join(appdata,"glove.6B.zip"))
+        zip_ref = zipfile.ZipFile(path.join(appdata, "glove.6B.zip"))
         zip_ref.extractall(appdata)
         zip_ref.close()
 
-        print("Unzipping Complete: ",os.listdir(appdata),"were downloaded")
-        open(path.join(appdata,".downloaded"),"a").close()
+        print("Unzipping Complete: ", os.listdir(appdata), "were downloaded")
+        open(path.join(appdata, ".downloaded"), "a").close()
     else:
         print("Embedding files not found, but download directory already exists")
 
@@ -73,9 +73,9 @@ if not path.isdir(appdata):
     raise FileNotFoundError
 
 
-
-
 from keras.layers import Embedding
+
+
 class GloveEmbedding(Embedding):
     """Turns positive integers (indexes) into dense vectors of fixed size.
     eg. [[4], [20]] -> [[0.25, 0.1], [0.6, -0.2]]
@@ -99,32 +99,32 @@ class GloveEmbedding(Embedding):
         Allow arbitrary data sources instead of just glove.840B.300d.zip
     """
 
-    def __init__(self,size,input_length,word_index,**kwargs):
-        if not size in [50,100,200,300]:
-            message = "Invalid Value %d passed as \"weights\" parameter.\n\tValid Values are: [50,100,200,300]"%num_weights
+    def __init__(self, size, input_length, word_index, **kwargs):
+        if not size in [50, 100, 200, 300]:
+            message = "Invalid Value %d passed as \"weights\" parameter.\n\tValid Values are: [50,100,200,300]" % num_weights
             raise ValueError(message)
 
         EMBED_SIZE = int(size)
 
-        fname = "glove.6B.%dd.txt"%size
-        fname = os.path.join(appdata,fname)
+        fname = "glove.6B.%dd.txt" % size
+        fname = os.path.join(appdata, fname)
 
         embeddings_index = {}
         for line in open(fname):
             values = line.split()
             word = values[0]
-            coefs = np.asarray(values[1:],dtype='float32')
+            coefs = np.asarray(values[1:], dtype='float32')
             embeddings_index[word] = coefs
 
-        embedding_matrix=np.zeros((len(word_index)+1,EMBED_SIZE))
-        for word,i in word_index.items():
+        embedding_matrix = np.zeros((len(word_index) + 1, EMBED_SIZE))
+        for word, i in word_index.items():
             vec = embeddings_index.get(word)
             if vec is not None:
                 embedding_matrix[i] = vec
 
         super(GloveEmbedding, self).__init__(
-                len(word_index)+1,
-                EMBED_SIZE,
-                weights=[embedding_matrix],
-                input_length=input_length,
-                trainable=False,**kwargs)
+            len(word_index) + 1,
+            EMBED_SIZE,
+            weights=[embedding_matrix],
+            input_length=input_length,
+            trainable=False, **kwargs)
