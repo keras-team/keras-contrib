@@ -16,7 +16,6 @@ APPNAME = "KerasContribGlove"
 GLOVE_DL = "http://nlp.stanford.edu/data/glove.6B.zip"
 FNAMES = ["glove.6B.%dd.txt" % size for size in [50, 100, 200, 300]]
 
-
 # Show download rate, size, percentage, time passed
 # https://blog.shichao.io/2012/10/04/progress_speed_indicator_for_urlretrieve_in_python.html
 def reporthook(count, block_size, total_size):
@@ -100,7 +99,7 @@ class GloveEmbedding(Embedding):
     """
 
     def __init__(self, size, input_length, word_index, **kwargs):
-        if not size in [50, 100, 200, 300]:
+        if size not in [50, 100, 200, 300]:
             message = "Invalid Value %d passed as \"weights\" parameter.\n\tValid Values are: [50,100,200,300]" % num_weights
             raise ValueError(message)
 
