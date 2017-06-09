@@ -1,2 +1,2 @@
 from __future__ import absolute_import
-from .GloveEmbedding import GloveEmbedding
+from .glove_embedding import GloveEmbedding

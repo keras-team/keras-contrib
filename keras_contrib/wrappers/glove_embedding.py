@@ -97,7 +97,7 @@ class GloveEmbedding(Embedding):
             if vec is not None:
                 embedding_matrix[i] = vec
 
-        return Embedding(
+        super(GloveEmbedding, self).__init__(
                 len(word_index)+1,
                 EMBED_SIZE,
                 weights=[embedding_matrix],
