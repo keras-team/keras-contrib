@@ -72,8 +72,33 @@ if not path.isdir(appdata):
     print("Error, keras glove embeddings were not found in %s" % (appdata))
     raise FileNotFoundError
 
+
+
+
 from keras.layers import Embedding
 class GloveEmbedding(Embedding):
+    """Turns positive integers (indexes) into dense vectors of fixed size.
+    eg. [[4], [20]] -> [[0.25, 0.1], [0.6, -0.2]]
+    Note: This behavior is identical to that of an embedding!
+    This serves only as a wrapper to prevent the need for manual pre-trained glove embedding loading.
+
+    Usage:  For usage docs please see Embedding.py at:
+    https://github.com/fchollet/keras/blob/master/keras/layers/embeddings.py
+
+    # Arguments
+        size: int > 0.  The size of the dense embedding for each input word_index
+            i.e. if size is 300 and the input sequence is of length 10, the output will be of dimension (10,300)
+        input_length: int > 0.  The maximum length of the input sequences
+            i.e. if you are analyzing text messages and have with 500 words in it, 500 will be your input length.
+        word_index: dictionary.  This is the dictionary used to map from the integers passed in your sequence to the words they were converted from.
+            i.e. if the word 'Hello' maps to value 0, and we pass in a sequence [0] representing ['Hello'], your word_index should appear as: {'Hello':0}
+    # References
+        - [GloVe: Global Vectors for Word Representation](https://nlp.stanford.edu/projects/glove/)
+
+    # TODO:
+        Allow arbitrary data sources instead of just glove.840B.300d.zip
+    """
+
     def __init__(self,size,input_length,word_index,**kwargs):
         if not size in [50,100,200,300]:
             message = "Invalid Value %d passed as \"weights\" parameter.\n\tValid Values are: [50,100,200,300]"%num_weights
