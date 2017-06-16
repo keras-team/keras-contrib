@@ -3,6 +3,7 @@ from keras.optimizers import Optimizer
 from .. import backend as K
 from keras.utils.generic_utils import get_custom_objects
 
+
 class FTML(Optimizer):
     """FTML optimizer.
 
