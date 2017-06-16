@@ -1,7 +1,7 @@
 from __future__ import absolute_import
 from keras.optimizers import Optimizer
 from .. import backend as K
-
+from keras.utils.generic_utils import get_custom_objects
 
 class FTML(Optimizer):
     """FTML optimizer.
@@ -26,6 +26,7 @@ class FTML(Optimizer):
         self.beta_1 = K.variable(beta_1)
         self.beta_2 = K.variable(beta_2)
         self.decay = K.variable(decay)
+        self.epsilon = epsilon
         self.inital_decay = decay
 
     def get_updates(self, params, constraints, loss):
@@ -76,6 +77,4 @@ class FTML(Optimizer):
         return dict(list(base_config.items()) + list(config.items()))
 
 
-# Aliases.
-
-ftml = FTML
+get_custom_objects().update({'FTML': FTML})
