@@ -19,7 +19,3 @@ class Clip(Constraint):
     def get_config(self):
         return {'name': self.__class__.__name__,
                 'c': self.c}
-
-# Aliases.
-
-clip = Clip
