@@ -1,8 +1,8 @@
-'''
+"""
 Trains a DenseNet-40-12 model on the CIFAR-10 Dataset.
 
 Gets a 94.84% accuracy score after 100 epochs.
-'''
+"""
 from __future__ import absolute_import
 from __future__ import print_function
 from __future__ import division
@@ -33,8 +33,8 @@ nb_filter = 16
 dropout_rate = 0.0  # 0.0 for data augmentation
 
 # Create the model (without loading weights)
-model = DenseNet(depth, nb_dense_block, growth_rate, nb_filter, dropout_rate=dropout_rate,
-                 input_shape=img_dim, weights=None)
+model = DenseNet(img_dim, depth, nb_dense_block, growth_rate, nb_filter,
+                 dropout_rate=dropout_rate, weights=None)
 print('Model created')
 
 model.summary()

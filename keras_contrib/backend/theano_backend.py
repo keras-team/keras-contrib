@@ -25,9 +25,9 @@ py_all = all
 
 def conv2d(x, kernel, strides=(1, 1), padding='valid', data_format='channels_first',
            image_shape=None, filter_shape=None):
-    '''
+    """
     padding: string, "same" or "valid".
-    '''
+    """
     if data_format not in {'channels_first', 'channels_last'}:
         raise Exception('Unknown data_format ' + str(data_format))
 
@@ -88,7 +88,7 @@ def conv2d(x, kernel, strides=(1, 1), padding='valid', data_format='channels_fir
 def deconv3d(x, kernel, output_shape, strides=(1, 1, 1),
              padding='valid',
              data_format=None, filter_shape=None):
-    '''3D deconvolution (transposed convolution).
+    """3D deconvolution (transposed convolution).
 
     # Arguments
         kernel: kernel tensor.
@@ -98,7 +98,7 @@ def deconv3d(x, kernel, output_shape, strides=(1, 1, 1),
         data_format: "channels_last" or "channels_first".
             Whether to use Theano or TensorFlow dimension ordering
         in inputs/kernels/ouputs.
-    '''
+    """
     flip_filters = False
     if data_format is None:
         data_format = image_data_format()
@@ -136,7 +136,7 @@ def deconv3d(x, kernel, output_shape, strides=(1, 1, 1),
 
 
 def extract_image_patches(X, ksizes, strides, padding='valid', data_format='channels_first'):
-    '''
+    """
     Extract the patches from an image
     Parameters
     ----------
@@ -150,7 +150,7 @@ def extract_image_patches(X, ksizes, strides, padding='valid', data_format='chan
     The (k_w,k_h) patches extracted
     TF ==> (batch_size,w,h,k_w,k_h,c)
     TH ==> (batch_size,w,h,c,k_w,k_h)
-    '''
+    """
     patch_size = ksizes[1]
     if padding == 'same':
         padding = 'ignore_borders'
@@ -174,7 +174,7 @@ def extract_image_patches(X, ksizes, strides, padding='valid', data_format='chan
 
 
 def depth_to_space(input, scale, data_format=None):
-    ''' Uses phase shift algorithm to convert channels/depth for spatial resolution '''
+    """ Uses phase shift algorithm to convert channels/depth for spatial resolution """
     if data_format is None:
         data_format = image_data_format()
     data_format = data_format.lower()
@@ -191,7 +191,7 @@ def depth_to_space(input, scale, data_format=None):
 
 
 def moments(x, axes, shift=None, keep_dims=False):
-    ''' Calculates and returns the mean and variance of the input '''
+    """ Calculates and returns the mean and variance of the input """
 
     mean_batch = KTH.mean(x, axis=axes, keepdims=keep_dims)
     var_batch = KTH.var(x, axis=axes, keepdims=keep_dims)

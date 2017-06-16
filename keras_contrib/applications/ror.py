@@ -211,7 +211,7 @@ def __conv_block(input, nb_filters=32, k=1, dropout=0.0):
 
 
 def __create_pre_residual_of_residual(nb_classes, img_input, include_top, depth=28, width=1, dropout=0.0):
-    '''
+    """
     Creates a Residual Network of Residual Network with specified parameters
 
     Example : To create a Pre-RoR model, use k = 1
@@ -230,7 +230,7 @@ def __create_pre_residual_of_residual(nb_classes, img_input, include_top, depth=
                  Note : Generally not used in RoR
 
     Returns: a Keras Model
-    '''
+    """
 
     N = (depth - 4) // 6
 

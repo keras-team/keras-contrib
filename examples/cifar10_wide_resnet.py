@@ -1,11 +1,11 @@
-'''
+"""
 Trains a WRN-28-8 model on the CIFAR-10 Dataset.
 
 Performance is slightly less than the paper, since
 they use WRN-28-10 model (95.83%).
 
 Gets a 95.54% accuracy score after 300 epochs.
-'''
+"""
 from __future__ import absolute_import
 from __future__ import print_function
 from __future__ import division

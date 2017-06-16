@@ -251,7 +251,7 @@ def ___conv4_block(input, k=1, dropout=0.0):
 
 
 def __create_wide_residual_network(nb_classes, img_input, include_top, depth=28, width=8, dropout=0.0):
-    ''' Creates a Wide Residual Network with specified parameters
+    """ Creates a Wide Residual Network with specified parameters
 
     Args:
         nb_classes: Number of output classes
@@ -265,7 +265,7 @@ def __create_wide_residual_network(nb_classes, img_input, include_top, depth=28,
         dropout: Adds dropout if value is greater than 0.0
 
     Returns:a Keras Model
-    '''
+    """
 
     N = (depth - 4) // 6
 

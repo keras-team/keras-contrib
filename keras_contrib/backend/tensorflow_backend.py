@@ -27,14 +27,14 @@ def _preprocess_deconv_output_shape(x, shape, data_format):
 
 def conv2d(x, kernel, strides=(1, 1), padding='valid', data_format='channels_first',
            image_shape=None, filter_shape=None):
-    '''2D convolution.
+    """2D convolution.
     # Arguments
         kernel: kernel tensor.
         strides: strides tuple.
         padding: string, "same" or "valid".
         data_format: "tf" or "th". Whether to use Theano or TensorFlow dimension ordering
         in inputs/kernels/ouputs.
-    '''
+    """
     if padding == 'same':
         padding = 'SAME'
     elif padding == 'valid':
@@ -74,7 +74,7 @@ def deconv3d(x, kernel, output_shape, strides=(1, 1, 1),
              padding='valid',
              data_format='default',
              image_shape=None, filter_shape=None):
-    '''3D deconvolution (i.e. transposed convolution).
+    """3D deconvolution (i.e. transposed convolution).
 
     # Arguments
         x: input tensor.
@@ -91,7 +91,7 @@ def deconv3d(x, kernel, output_shape, strides=(1, 1, 1),
 
     # Raises
         ValueError: if `data_format` is neither `tf` or `th`.
-    '''
+    """
     if data_format == 'default':
         data_format = image_data_format()
     if data_format not in {'channels_first', 'channels_last'}:
@@ -111,7 +111,7 @@ def deconv3d(x, kernel, output_shape, strides=(1, 1, 1),
 
 def extract_image_patches(x, ksizes, ssizes, padding='same',
                           data_format='tf'):
-    '''
+    """
     Extract the patches from an image
     # Parameters
 
@@ -125,7 +125,7 @@ def extract_image_patches(x, ksizes, ssizes, padding='same',
         The (k_w,k_h) patches extracted
         TF ==> (batch_size,w,h,k_w,k_h,c)
         TH ==> (batch_size,w,h,c,k_w,k_h)
-    '''
+    """
     kernel = [1, ksizes[0], ksizes[1], 1]
     strides = [1, ssizes[0], ssizes[1], 1]
     padding = _preprocess_padding(padding)
@@ -144,7 +144,7 @@ def extract_image_patches(x, ksizes, ssizes, padding='same',
 
 
 def depth_to_space(input, scale, data_format=None):
-    ''' Uses phase shift algorithm to convert channels/depth for spatial resolution '''
+    """ Uses phase shift algorithm to convert channels/depth for spatial resolution """
     if data_format is None:
         data_format = image_data_format()
     data_format = data_format.lower()
@@ -155,6 +155,6 @@ def depth_to_space(input, scale, data_format=None):
 
 
 def moments(x, axes, shift=None, keep_dims=False):
-    ''' Wrapper over tensorflow backend call '''
+    """ Wrapper over tensorflow backend call """
 
     return tf.nn.moments(x, axes, shift=shift, keep_dims=keep_dims)
