@@ -1,6 +1,6 @@
 '''ResNeXt models for Keras.
 # Reference
-- [Densely Connected Convolutional Networks](https://arxiv.org/pdf/1608.06993.pdf))
+- [Aggregated Residual Transformations for Deep Neural Networks](https://arxiv.org/pdf/1611.05431.pdf))
 '''
 from __future__ import print_function
 from __future__ import absolute_import
