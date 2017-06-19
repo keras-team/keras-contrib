@@ -1,6 +1,6 @@
 import pytest
 import numpy as np
-from numpy.testing import assert_allclose, assert_raises
+from numpy.testing import assert_allclose
 
 from keras.layers import Dense, Activation, Input
 from keras.utils.test_utils import layer_test, keras_test
@@ -35,9 +35,9 @@ def basic_instancenorm_test():
 
 
 @keras_test
-def test_instancenorm_correctness():
+def test_instancenorm_correctness_rank2():
     model = Sequential()
-    norm = normalization.InstanceNormalization(input_shape=(10, 1))
+    norm = normalization.InstanceNormalization(input_shape=(10, 1), axis=-1)
     model.add(norm)
     model.compile(loss='mse', optimizer='sgd')
 
@@ -73,13 +73,13 @@ def test_instancenorm_correctness_rank1():
 
 @keras_test
 def test_instancenorm_training_argument():
-    bn1 = normalization.InstanceNormalization(input_shape=(10, 1))
-    x1 = Input(shape=(10, 1))
+    bn1 = normalization.InstanceNormalization(input_shape=(10,))
+    x1 = Input(shape=(10,))
     y1 = bn1(x1, training=True)
 
     model1 = Model(x1, y1)
     np.random.seed(123)
-    x = np.random.normal(loc=5.0, scale=10.0, size=(20, 10, 1))
+    x = np.random.normal(loc=5.0, scale=10.0, size=(20, 10))
     output_a = model1.predict(x)
 
     model1.compile(loss='mse', optimizer='rmsprop')
@@ -89,8 +89,8 @@ def test_instancenorm_training_argument():
     assert_allclose(output_b.mean(), 0.0, atol=1e-1)
     assert_allclose(output_b.std(), 1.0, atol=1e-1)
 
-    bn2 = normalization.InstanceNormalization(input_shape=(10, 1))
-    x2 = Input(shape=(10, 1))
+    bn2 = normalization.InstanceNormalization(input_shape=(10,))
+    x2 = Input(shape=(10,))
     bn2(x2, training=False)
 
 
@@ -118,20 +118,20 @@ def test_shared_instancenorm():
     across different data streams.
     '''
     # Test single layer reuse
-    bn = normalization.InstanceNormalization(input_shape=(10, 1))
-    x1 = Input(shape=(10, 1))
+    bn = normalization.InstanceNormalization(input_shape=(10,))
+    x1 = Input(shape=(10,))
     bn(x1)
 
-    x2 = Input(shape=(10, 1))
+    x2 = Input(shape=(10,))
     y2 = bn(x2)
 
-    x = np.random.normal(loc=5.0, scale=10.0, size=(2, 10, 1))
+    x = np.random.normal(loc=5.0, scale=10.0, size=(2, 10))
     model = Model(x2, y2)
     model.compile('sgd', 'mse')
     model.train_on_batch(x, x)
 
     # Test model-level reuse
-    x3 = Input(shape=(10, 1))
+    x3 = Input(shape=(10,))
     y3 = model(x3)
     new_model = Model(x3, y3)
     new_model.compile('sgd', 'mse')
@@ -141,15 +141,15 @@ def test_shared_instancenorm():
 @keras_test
 def test_instancenorm_perinstancecorrectness():
     model = Sequential()
-    norm = normalization.InstanceNormalization(input_shape=(10, 1))
+    norm = normalization.InstanceNormalization(input_shape=(10,))
     model.add(norm)
     model.compile(loss='mse', optimizer='sgd')
 
     # bimodal distribution
-    z = np.random.normal(loc=5.0, scale=10.0, size=(2, 10, 1))
-    y = np.random.normal(loc=-5.0, scale=17.0, size=(2, 10, 1))
+    z = np.random.normal(loc=5.0, scale=10.0, size=(2, 10))
+    y = np.random.normal(loc=-5.0, scale=17.0, size=(2, 10))
     x = np.append(z, y)
-    x = np.reshape(x, (4, 10, 1))
+    x = np.reshape(x, (4, 10))
     model.fit(x, x, epochs=4, batch_size=4, verbose=1)
     out = model.predict(x)
     out -= K.eval(norm.beta)
