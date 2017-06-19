@@ -716,6 +716,7 @@ def pascal_voc_download(dataset_path, filenames, dataset_root, urls, md5s):
         path = get_file(filename, url, md5_hash=md5,
                         extract=True, cache_subdir=dataset_path)
 
+
 @data_pascal_voc.command
 def pascal_voc_berkeley_combined(dataset_path,
                                  pascal_root,
