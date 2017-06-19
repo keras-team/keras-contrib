@@ -31,6 +31,10 @@ import skimage.io as io
 import numpy as np
 
 
+# ============== Ingredient 2: dataset =======================
+data_pascal_voc = Experiment("dataset")
+
+
 def mkdir_p(path):
     # http://stackoverflow.com/questions/600268/mkdir-p-functionality-in-python
     try:
@@ -260,6 +264,7 @@ def get_pascal_segmentation_image_annotation_filenames_pairs(pascal_root):
     return image_annotation_filename_pairs
 
 
+@data_pascal_voc.command
 def convert_pascal_berkeley_augmented_mat_annotations_to_png(pascal_berkeley_augmented_root):
     """ Creates a new folder in the root folder of the dataset with annotations stored in .png.
     The function accepts a full path to the root of Berkeley augmented Pascal VOC segmentation
@@ -634,10 +639,6 @@ def pascal_combine_annotation_files(filename_pairs, output_annotations_path):
         shutil.copy2(gt_path, output_annotations_path)
 
 
-# ============== Ingredient 2: dataset =======================
-data_pascal_voc = Experiment("dataset")
-
-
 @data_pascal_voc.config
 def voc_config():
     # TODO(ahundt) add md5 sums for each file
@@ -717,12 +718,6 @@ def pascal_voc_download(dataset_path, filenames, dataset_root, urls, md5s):
 
 
 @data_pascal_voc.command
-def convert_pascal_berkeley_augmented_mat_annotations_to_png(pascal_berkeley_root):
-    pascal_voc.convert_pascal_berkeley_augmented_mat_annotations_to_png(
-        pascal_berkeley_root)
-
-
-@data_pascal_voc.command
 def pascal_voc_berkeley_combined(dataset_path,
                                  pascal_root,
                                  pascal_berkeley_root,
@@ -734,22 +729,22 @@ def pascal_voc_berkeley_combined(dataset_path,
     # filename pairs (filename.jpg, filename.png)
     overall_train_image_annotation_filename_pairs, \
         overall_val_image_annotation_filename_pairs = \
-        pascal_voc.get_augmented_pascal_image_annotation_filename_pairs(
+        get_augmented_pascal_image_annotation_filename_pairs(
             pascal_root=pascal_root,
             pascal_berkeley_root=pascal_berkeley_root,
             mode=voc_data_subset_mode)
     # combine the annotation files into one folder
-    pascal_voc.pascal_combine_annotation_files(
+    pascal_combine_annotation_files(
         overall_train_image_annotation_filename_pairs +
         overall_val_image_annotation_filename_pairs,
         combined_annotations_path)
     # generate the train imageset txt
-    pascal_voc.pascal_filename_pairs_to_imageset_txt(
+    pascal_filename_pairs_to_imageset_txt(
         combined_imageset_train_txt,
         overall_train_image_annotation_filename_pairs
     )
     # generate the val imageset txt
-    pascal_voc.pascal_filename_pairs_to_imageset_txt(
+    pascal_filename_pairs_to_imageset_txt(
         combined_imageset_val_txt,
         overall_val_image_annotation_filename_pairs
     )
