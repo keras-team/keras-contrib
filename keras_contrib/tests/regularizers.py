@@ -1,16 +1,11 @@
-from keras.models import Sequential
-from keras.layers import Dense
-from keras.layers import Activation
-from keras.layers import Flatten
-from keras.layers import ActivityRegularization
-from keras.layers import Embedding
-from keras.datasets import mnist
-from keras.utils import np_utils
-from keras_contrib import regularizers
-import pytest
 import numpy as np
-np.random.seed(1337)
+from keras.datasets import mnist
+from keras.layers import Activation
+from keras.layers import Dense
+from keras.models import Sequential
+from keras.utils import np_utils
 
+np.random.seed(1337)
 
 nb_classes = 10
 batch_size = 128
@@ -40,7 +35,7 @@ def get_data():
     return (X_train, Y_train), (X_test, Y_test), test_ids
 
 
-def create_model(weight_reg=None, activity_reg=None):
+def validate_regularizer(weight_reg=None, activity_reg=None):
     model = Sequential()
     model.add(Dense(50, input_shape=(784,)))
     model.add(Activation('relu'))
@@ -48,7 +43,3 @@ def create_model(weight_reg=None, activity_reg=None):
                     activity_regularizer=activity_reg))
     model.add(Activation('softmax'))
     return model
-
-
-if __name__ == '__main__':
-    pytest.main([__file__])

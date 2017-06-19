@@ -1,5 +1,5 @@
 from __future__ import absolute_import
-from . import backend as K
+from keras_contrib import backend as K
 from keras.constraints import *
 
 
@@ -19,7 +19,3 @@ class Clip(Constraint):
     def get_config(self):
         return {'name': self.__class__.__name__,
                 'c': self.c}
-
-# Aliases.
-
-clip = Clip

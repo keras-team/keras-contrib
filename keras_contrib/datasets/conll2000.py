@@ -1,3 +1,4 @@
+from __future__ import print_function
 import numpy
 from keras.utils.data_utils import get_file
 from zipfile import ZipFile
@@ -8,7 +9,7 @@ from keras.datasets import cifar10
 
 def load_data(path='conll2000.zip', min_freq=2):
     path = get_file(path, origin='https://raw.githubusercontent.com/nltk/nltk_data/gh-pages/packages/corpora/conll2000.zip')
-    print path
+    print(path)
     archive = ZipFile(path, 'r')
     train = _parse_data(archive.open('conll2000/train.txt'))
     test = _parse_data(archive.open('conll2000/test.txt'))

@@ -1,6 +1,6 @@
 from __future__ import absolute_import
 import numpy as np
-from . import backend as K
+from keras_contrib import backend as K
 from keras.initializers import *
 from keras.initializers import _compute_fans
 
