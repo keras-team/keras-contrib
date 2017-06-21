@@ -617,8 +617,8 @@ def get_augmented_pascal_image_annotation_filename_pairs(pascal_root, pascal_ber
                                                              list(train_from_pascal))
 
     overall_train_image_annotation_filename_pairs = \
-        train_from_berkeley_image_annotation_pairs + \
-        train_from_pascal_image_annotation_pairs
+        list(train_from_berkeley_image_annotation_pairs) + \
+        list(train_from_pascal_image_annotation_pairs)
 
     overall_val_image_annotation_filename_pairs = \
         get_pascal_selected_image_annotation_filenames_pairs(pascal_root,
@@ -735,8 +735,8 @@ def pascal_voc_berkeley_combined(dataset_path,
             mode=voc_data_subset_mode)
     # combine the annotation files into one folder
     pascal_combine_annotation_files(
-        overall_train_image_annotation_filename_pairs +
-        overall_val_image_annotation_filename_pairs,
+        list(overall_train_image_annotation_filename_pairs) +
+        list(overall_val_image_annotation_filename_pairs),
         combined_annotations_path)
     # generate the train imageset txt
     pascal_filename_pairs_to_imageset_txt(
