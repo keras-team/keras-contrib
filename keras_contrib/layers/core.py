@@ -43,7 +43,7 @@ class SeparableFC(Layer):
     # Output shape
         2D tensor with shape: `(samples, output_features)`.
     """
-    def __init__(self, output_dim, symmetric,
+    def __init__(self, output_dim, symmetric = False,
                        smoothness_penalty = None,
                        smoothness_l1 = False,
                        smoothness_second_diff = True,
@@ -65,13 +65,12 @@ class SeparableFC(Layer):
             self.odd_input_length = input_shape[1]%2.0 == 1
             self.length = int(input_shape[1]/2.0 + 0.5)
         self.num_channels = input_shape[2]
-        self.init = (lambda shape, name: initializations.uniform(
-            shape, np.sqrt(
-            np.sqrt(2.0/(self.length*self.num_channels+self.output_dim))),
-            name))
+        limit = np.sqrt(np.sqrt(
+                2.0/(self.length*self.num_channels+self.output_dim)))
         self.W_pos = self.add_weight(
             shape = (self.output_dim, self.length),
-            name='{}_W_pos'.format(self.name), initializer=self.init,
+            name='{}_W_pos'.format(self.name),
+            initializer= initializers.uniform(-1*limit, limit),
             constraint=(None if self.curvature_constraint is None else
                 constraints.CurvatureConstraint(
                     self.curvature_constraint)),
@@ -83,7 +82,8 @@ class SeparableFC(Layer):
             trainable=True)
         self.W_chan = self.add_weight(
             shape = (self.output_dim, self.num_channels),
-            name='{}_W_chan'.format(self.name), initializer=self.init,
+            name='{}_W_chan'.format(self.name),
+            initializer= initializers.uniform(-1*limit, limit),
             trainable=True)
         self.built = True
 
