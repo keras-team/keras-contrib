@@ -61,5 +61,47 @@ def test_cosinedense():
     assert_allclose(out, -np.ones((1, 1), dtype=K.floatx()), atol=1e-5)
 
 
+@keras_test
+def test_separablefc():
+    from keras import regularizers
+    from keras import constraints
+    from keras import layers
+    from keras.models import Sequential
+
+    # Expected usage is after a stack of convolutional layers
+    # and before densely connected layers
+    # Reference: https://doi.org/10.1101/146431
+
+    # Input
+    np.random.seed(123)
+    X = np.random.randn(1, 10, 4)
+    
+    # Model Test 1
+    model1 = Sequential()
+    model1.add(layers.convolutional.Conv1D(input_shape=(10,4),
+                                           nb_filter=3,
+                                           filter_length=2))
+    model1.add(core.SeparableFC(output_dim=2, symmetric=True))
+    model1.add(layers.core.Dense(output_dim=1))
+    model1.compile(loss='mse', optimizer='rmsprop')
+    out1 = model1.predict(X)
+    assert_allclose(out1, np.ones((1, 1), dtype=K.floatx()), atol=1e-5)
+    
+    # Model Test 2
+    model2 = Sequential()
+    model2.add(layers.convolutional.Conv1D(input_shape=(10,4),
+                                           nb_filter=3,
+                                           filter_length=2))
+    model2.add(core.SeparableFC(output_dim=2,
+                                symmetric=True,
+                                smoothness_penalty=10.0,
+                                smoothness_l1=True,
+                                smoothness_second_diff=True))
+    model2.add(layers.core.Dense(output_dim=1))
+    model2.compile(loss='binary_crossentropy', optimizer='Adam')
+    out2 = model2.predict(X)
+    assert_allclose(out2, np.ones((1, 1), dtype=K.floatx()), atol=1e-5)
+
+
 if __name__ == '__main__':
     pytest.main([__file__])

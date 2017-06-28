@@ -12,6 +12,114 @@ from keras.engine import Layer
 from keras.utils.generic_utils import get_custom_objects
 
 
+class SeparableFC(Layer):
+    """A separable fully-connected NN layer
+    Separable Fully Connected Layers Improve Deep Learning Models For Genomics
+    https://doi.org/10.1101/146431
+    
+    # Example
+        Expected usage is after a stack of convolutional layers and before
+        densely connected layers
+        A gist illustrating model setup is at: goo.gl/gYooaa
+       
+    # Arguments
+        output_dim: the number of output neurons
+        symmetric: if weights are to be symmetric along length, set to True
+        smoothness_penalty: penalty to be applied to difference
+            of adjacent weights in the length dimension
+        smoothness_l1: if smoothness penalty is to be computed in terms of the
+            the absolute difference, set to True
+            otherwise, penalty is computed in terms of the squared difference
+        smoothness_second_diff: if smoothness penalty is to be applied to the
+            difference of the difference, set to True
+            otherwise, penalty is applied to the first difference
+        curvature_constraint: maximum allowed curvature which constrains
+            second differences of adjacent weights in the length dimension
+            to be within the specified range
+            
+    # Input shape
+        3D tensor with shape: `(samples, steps, features)`.
+        
+    # Output shape
+        2D tensor with shape: `(samples, output_features)`.
+    """
+    def __init__(self, output_dim, symmetric,
+                       smoothness_penalty = None,
+                       smoothness_l1 = False,
+                       smoothness_second_diff = True,
+                       curvature_constraint = None, **kwargs):
+        super(SeparableFC, self).__init__(**kwargs)
+        self.output_dim = output_dim
+        self.symmetric = symmetric
+        self.smoothness_penalty = smoothness_penalty
+        self.smoothness_l1 = smoothness_l1
+        self.smoothness_second_diff = smoothness_second_diff
+        self.curvature_constraint = curvature_constraint
+
+    def build(self, input_shape):
+        import numpy as np
+        self.original_length = input_shape[1]
+        if (self.symmetric == False):
+            self.length = input_shape[1]
+        else:
+            self.odd_input_length = input_shape[1]%2.0 == 1
+            self.length = int(input_shape[1]/2.0 + 0.5)
+        self.num_channels = input_shape[2]
+        self.init = (lambda shape, name: initializations.uniform(
+            shape, np.sqrt(
+            np.sqrt(2.0/(self.length*self.num_channels+self.output_dim))),
+            name))
+        self.W_pos = self.add_weight(
+            shape = (self.output_dim, self.length),
+            name='{}_W_pos'.format(self.name), initializer=self.init,
+            constraint=(None if self.curvature_constraint is None else
+                constraints.CurvatureConstraint(
+                    self.curvature_constraint)),
+            regularizer=(None if self.smoothness_penalty is None else
+                regularizers.SepFCSmoothnessRegularizer(
+                    self.smoothness_penalty,
+                    self.smoothness_l1,
+                    self.smoothness_second_diff)),
+            trainable=True)
+        self.W_chan = self.add_weight(
+            shape = (self.output_dim, self.num_channels),
+            name='{}_W_chan'.format(self.name), initializer=self.init,
+            trainable=True)
+        self.built = True
+
+    def get_output_shape_for(self, input_shape):
+        return (input_shape[0], self.output_dim)
+    
+    def call(self, x, mask=None):
+        if (self.symmetric == False):
+            W_pos = self.W_pos
+        else:
+            W_pos = K.concatenate(
+                tensors=[self.W_pos,
+                self.W_pos[:,::-1][:,(1 if self.odd_input_length else 0):]],
+                axis=1)
+        W_output = K.expand_dims(W_pos, 2) * K.expand_dims(self.W_chan, 1)
+        W_output = K.reshape(W_output,
+          (self.output_dim, self.original_length*self.num_channels))
+        x = K.reshape(x,
+          (-1, self.original_length*self.num_channels))
+        output = K.dot(x, K.transpose(W_output))
+        return output 
+
+    def get_config(self):
+        config = {'output_dim': self.output_dim,
+                  'symmetric': self.symmetric,
+                  'smoothness_penalty': self.smoothness_penalty,
+                  'smoothness_l1': self.smoothness_l1,
+                  'smoothness_second_diff': self.smoothness_second_diff,
+                  'curvature_constraint': self.curvature_constraint}
+        base_config = super(SeparableFC, self).get_config()
+        return dict(list(base_config.items()) + list(config.items()))
+
+
+get_custom_objects().update({'SeparableFC': SeparableFC})
+
+
 class CosineDense(Layer):
     """A cosine normalized densely-connected NN layer
     Cosine Normalization: Using Cosine Similarity Instead of Dot Product in Neural Networks
