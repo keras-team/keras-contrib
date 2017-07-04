@@ -69,9 +69,9 @@ def test_separablefc():
     from keras.models import Sequential
 
     # Layer Tests
-    #layer_test(core.SeparableFC,
-    #           kwargs={'output_dim': 3},
-    #           input_shape=(3, 3, 3))
+    layer_test(core.SeparableFC,
+               kwargs={'output_dim': 3},
+               input_shape=(3, 3, 3))
 
     #layer_test(core.SeparableFC,
     #           kwargs={'output_dim': 3},
