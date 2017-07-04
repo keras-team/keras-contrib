@@ -13,7 +13,7 @@ class CurvatureConstraint(Constraint):
     """
 
     def __init__(self, m=1.0):
-        self.m = m
+        self.m = float(m)
 
     def __call__(self, p):
         import numpy as np
@@ -22,7 +22,7 @@ class CurvatureConstraint(Constraint):
         diff1 = p[:,1:] - p[:,:-1]
         mean_diff1 = K.mean(diff1, axis=1)
         diff2 = diff1[:,1:] - diff1[:,:-1]
-        desired_diff2 = K.clip(diff2, -1.0 * float(self.m), float(self.m))
+        desired_diff2 = K.clip(diff2, -1.0 * self.m, self.m)
 
         il1 = np.triu_indices(length-2)
         mask1 = np.ones((num_output, length-1, length-2))
