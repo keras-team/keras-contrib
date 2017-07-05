@@ -86,23 +86,22 @@ def test_separablefc():
                kwargs={'output_dim': 6},
                input_shape=(5, 4, 2))
 
-
     layer_test(core.SeparableFC,
                kwargs={'output_dim': 5,
                        'symmetric': False,
                        'smoothness_regularizer':
                        SepFCSmoothnessRegularizer(100.0,
-                                                  l1 = False,
-                                                  second_diff = False)},
+                                                  l1=False,
+                                                  second_diff=False)},
                input_shape=(2, 10, 4))
-    
+
     # Expected usage is after a stack of convolutional
     # layers and before densely connected layers
     # Reference: https://doi.org/10.1101/146431
 
     # Model Test 1 (no symmetry)
     model1 = Sequential()
-    model1.add(layers.convolutional.Conv1D(input_shape=(10,4),
+    model1.add(layers.convolutional.Conv1D(input_shape=(10, 4),
                                            nb_filter=5,
                                            filter_length=2))
     model1.add(core.SeparableFC(output_dim=3))
@@ -113,7 +112,7 @@ def test_separablefc():
 
     # Model Test 2 (symmetry)
     model2 = Sequential()
-    model2.add(layers.convolutional.Conv1D(input_shape=(10,4),
+    model2.add(layers.convolutional.Conv1D(input_shape=(10, 4),
                                            nb_filter=5,
                                            filter_length=2))
     model2.add(core.SeparableFC(output_dim=3, symmetric=True))

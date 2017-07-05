@@ -2,10 +2,11 @@ from __future__ import absolute_import
 from keras_contrib import backend as K
 from keras.regularizers import *
 
+
 class SepFCSmoothnessRegularizer(Regularizer):
     """ Specific to SeparableFC
         Applies penalty to length-wise differences in W_pos.
-        
+
     # Arguments
         smoothness: penalty to be applied to difference
             of adjacent weights in the length dimension
@@ -23,16 +24,16 @@ class SepFCSmoothnessRegularizer(Regularizer):
         self.second_diff = bool(second_diff)
 
     def __call__(self, x):
-        diff1 = x[:,1:] - x[:,:-1]
-        diff2 = diff1[:,1:] - diff1[:,:-1]
-        if self.second_diff == True:
+        diff1 = x[:, 1:] - x[:, :-1]
+        diff2 = diff1[:, 1:] - diff1[:, :-1]
+        if self.second_diff is True:
             diff = diff2
         else:
             diff = diff1
-        if self.l1 == True:
-            return K.mean(K.abs(diff))*self.smoothness
+        if self.l1 is True:
+            return K.mean(K.abs(diff)) * self.smoothness
         else:
-            return K.mean(K.square(diff))*self.smoothness
+            return K.mean(K.square(diff)) * self.smoothness
 
     def get_config(self):
         return {'name': self.__class__.__name__,
