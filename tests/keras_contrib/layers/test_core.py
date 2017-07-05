@@ -63,6 +63,8 @@ def test_cosinedense():
 
 @keras_test
 def test_separablefc():
+    from keras_contrib.regularizers import *
+    from keras_contrib.constraints import *
     from keras import regularizers
     from keras import constraints
     from keras import layers
@@ -70,90 +72,55 @@ def test_separablefc():
 
     # Layer Tests
     layer_test(core.SeparableFC,
-               kwargs={'output_dim': 3},
-               input_shape=(3, 3, 3))
-
-    layer_test(core.SeparableFC,
-               kwargs={'output_dim': 3},
-               input_shape=(4, 3, 4))
+               kwargs={'output_dim': 2},
+               input_shape=(3, 4, 4))
 
     layer_test(core.SeparableFC,
                kwargs={'output_dim': 3,
                        'symmetric': True,
-                       'curvature_constraint': 0.01},
+                       'positional_constraint':
+                       CurvatureConstraint(0.01)},
                input_shape=(5, 5, 5))
 
     layer_test(core.SeparableFC,
-               kwargs={'output_dim': 5},
-               input_shape=(5, 3, 2))
+               kwargs={'output_dim': 6},
+               input_shape=(5, 4, 2))
 
 
     layer_test(core.SeparableFC,
                kwargs={'output_dim': 5,
                        'symmetric': False,
-                       'smoothness_penalty': 100.0,
-                       'smoothness_l1': False,
-                       'smoothness_second_diff': False},
+                       'smoothness_regularizer':
+                       SepFCSmoothnessRegularizer(100.0,
+                                                  l1 = False,
+                                                  second_diff = False)},
                input_shape=(2, 10, 4))
-    
     
     # Expected usage is after a stack of convolutional
     # layers and before densely connected layers
     # Reference: https://doi.org/10.1101/146431
 
-    # Input
-    np.random.seed(123)
-    X = np.random.randn(1, 10, 4)
-    
-    # Model Test 1
+    # Model Test 1 (no symmetry)
     model1 = Sequential()
     model1.add(layers.convolutional.Conv1D(input_shape=(10,4),
                                            nb_filter=5,
                                            filter_length=2))
-    model1.add(core.SeparableFC(output_dim=5, symmetric=True))
+    model1.add(core.SeparableFC(output_dim=3))
     model1.add(layers.core.Dense(output_dim=1))
     model1.compile(loss='mse', optimizer='rmsprop')
-    out1 = model1.predict(X)
-    assert_allclose(out1, np.zeros((1, 1), dtype=K.floatx()), atol=0.1)
-    
-    # Model Test 2
+    W1 = model1.get_weights()
+    assert(W1[2].shape == (3, 9))
+
+    # Model Test 2 (symmetry)
     model2 = Sequential()
     model2.add(layers.convolutional.Conv1D(input_shape=(10,4),
-                                           nb_filter=2,
-                                           filter_length=5))
-    model2.add(core.SeparableFC(output_dim=2,
-                                symmetric=True,
-                                smoothness_penalty=10.0,
-                                smoothness_l1=True,
-                                smoothness_second_diff=True))
-    model2.add(layers.core.Dense(output_dim=1))
-    model2.compile(loss='mse', optimizer='Adam')
-    out2 = model2.predict(X)
-    assert_allclose(out2, np.zeros((1, 1), dtype=K.floatx()), atol=0.5)
-
-    # Model Test 3
-    model3 = Sequential()
-    model3.add(layers.convolutional.Conv1D(input_shape=(10,4),
-                                           nb_filter=10,
-                                           filter_length=1))
-    model3.add(core.SeparableFC(output_dim=10,
-                                symmetric=False,
-                                curvature_constraint=0.1))
-    model3.add(layers.core.Dense(output_dim=1))
-    model3.compile(loss='mse', optimizer='sgd')
-    out3 = model3.predict(X)
-    assert_allclose(out3, np.zeros((1, 1), dtype=K.floatx()), atol=1.0)
-    
-    # Model Test 4
-    model4 = Sequential()
-    model4.add(layers.convolutional.Conv1D(input_shape=(10,4),
                                            nb_filter=5,
                                            filter_length=2))
-    model4.add(core.SeparableFC(output_dim=3, symmetric=True))
-    model4.add(layers.core.Dense(output_dim=1))
-    model4.compile(loss='mse', optimizer='sgd')
-    out4 = model4.predict(X)
-    assert_allclose(out4, np.zeros((1, 1), dtype=K.floatx()), atol=1.0)
+    model2.add(core.SeparableFC(output_dim=3, symmetric=True))
+    model2.add(layers.core.Dense(output_dim=1))
+    model2.compile(loss='mse', optimizer='rmsprop')
+    W2 = model2.get_weights()
+    assert(W2[2].shape == (3, 5))
 
 if __name__ == '__main__':
     pytest.main([__file__])

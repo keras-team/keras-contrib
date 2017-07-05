@@ -11,13 +11,13 @@ class SepFCSmoothnessRegularizer(Regularizer):
             of adjacent weights in the length dimension
         l1: if smoothness penalty is to be computed in terms of the
             the absolute difference, set to True
-            otherwise, penalty is computed in terms of the squared difference
+            if False, penalty is computed in terms of the squared difference
         second_diff: if smoothness penalty is to be applied to the
             difference of the difference, set to True
-            otherwise, penalty is applied to the first differencesmoothness:
+            if False, penalty is applied to the first difference
     """
 
-    def __init__(self, smoothness, l1=True, second_diff=False):
+    def __init__(self, smoothness, l1=True, second_diff=True):
         self.smoothness = float(smoothness)
         self.l1 = bool(l1)
         self.second_diff = bool(second_diff)

@@ -25,17 +25,10 @@ class SeparableFC(Layer):
     # Arguments
         output_dim: the number of output neurons
         symmetric: if weights are to be symmetric along length, set to True
-        smoothness_penalty: penalty to be applied to difference
-            of adjacent weights in the length dimension
-        smoothness_l1: if smoothness penalty is to be computed in terms of the
-            the absolute difference, set to True
-            otherwise, penalty is computed in terms of the squared difference
-        smoothness_second_diff: if smoothness penalty is to be applied to the
-            difference of the difference, set to True
-            otherwise, penalty is applied to the first difference
-        curvature_constraint: maximum allowed curvature which constrains
-            second differences of adjacent weights in the length dimension
-            to be within the specified range
+        smoothness_regularizer: regularization to be applied on adjacent
+            weights in the length dimension of positional weights matrix
+        positional_constraint: constraint to be enforced on adjacent
+            weights in the length dimension of positional weights matrix
             
     # Input shape
         3D tensor with shape: `(samples, steps, features)`.
@@ -44,17 +37,13 @@ class SeparableFC(Layer):
         2D tensor with shape: `(samples, output_features)`.
     """
     def __init__(self, output_dim, symmetric = False,
-                       smoothness_penalty = None,
-                       smoothness_l1 = False,
-                       smoothness_second_diff = True,
-                       curvature_constraint = None, **kwargs):
+                 smoothness_regularizer = None,
+                 positional_constraint = None, **kwargs):
         super(SeparableFC, self).__init__(**kwargs)
         self.output_dim = output_dim
         self.symmetric = symmetric
-        self.smoothness_penalty = smoothness_penalty
-        self.smoothness_l1 = smoothness_l1
-        self.smoothness_second_diff = smoothness_second_diff
-        self.curvature_constraint = curvature_constraint
+        self.smoothness_regularizer = smoothness_regularizer
+        self.positional_constraint = positional_constraint
 
     def build(self, input_shape):
         import numpy as np
@@ -69,22 +58,16 @@ class SeparableFC(Layer):
                 2.0/(self.length*self.num_channels+self.output_dim)))
         self.W_pos = self.add_weight(
             shape = (self.output_dim, self.length),
-            name='{}_W_pos'.format(self.name),
-            initializer= initializers.uniform(-1*limit, limit),
-            constraint=(None if self.curvature_constraint is None else
-                constraints.CurvatureConstraint(
-                    self.curvature_constraint)),
-            regularizer=(None if self.smoothness_penalty is None else
-                regularizers.SepFCSmoothnessRegularizer(
-                    self.smoothness_penalty,
-                    self.smoothness_l1,
-                    self.smoothness_second_diff)),
-            trainable=True)
+            name ='{}_W_pos'.format(self.name),
+            initializer = initializers.uniform(-1*limit, limit),
+            constraint = self.positional_constraint,
+            regularizer = self.smoothness_regularizer,
+            trainable = True)
         self.W_chan = self.add_weight(
             shape = (self.output_dim, self.num_channels),
-            name='{}_W_chan'.format(self.name),
-            initializer= initializers.uniform(-1*limit, limit),
-            trainable=True)
+            name ='{}_W_chan'.format(self.name),
+            initializer = initializers.uniform(-1*limit, limit),
+            trainable = True)
         self.built = True
 
     def compute_output_shape(self, input_shape):
@@ -109,10 +92,8 @@ class SeparableFC(Layer):
     def get_config(self):
         config = {'output_dim': self.output_dim,
                   'symmetric': self.symmetric,
-                  'smoothness_penalty': self.smoothness_penalty,
-                  'smoothness_l1': self.smoothness_l1,
-                  'smoothness_second_diff': self.smoothness_second_diff,
-                  'curvature_constraint': self.curvature_constraint}
+                  'smoothness_regularizer': self.smoothness_regularizer,
+                  'positional_constraint': self.positional_constraint}
         base_config = super(SeparableFC, self).get_config()
         return dict(list(base_config.items()) + list(config.items()))
 
