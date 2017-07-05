@@ -19,8 +19,8 @@ class SepFCSmoothnessRegularizer(Regularizer):
 
     def __init__(self, smoothness, l1=True, second_diff=False):
         self.smoothness = float(smoothness)
-        self.l1 = l1
-        self.second_diff = second_diff
+        self.l1 = bool(l1)
+        self.second_diff = bool(second_diff)
 
     def __call__(self, x):
         diff1 = x[:,1:] - x[:,:-1]

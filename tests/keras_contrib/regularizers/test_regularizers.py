@@ -20,13 +20,11 @@ def test_curvature_regularizer():
     # L1 Norm on first differences 
     regularizer_instance1 = regularizers.smoothness(1.0, l1=True, second_diff=False)
     regularization1 = regularizer_instance1.__call__(W)
-    assert(K.eval(regularization1) >= 2.6)
-    assert(K.eval(regularization1) <= 2.7)
+    assert_allclose(K.eval(regularization1), 2.6667, atol=0.01)
     # L1 Norm on second differences
     regularizer_instance2 = regularizers.smoothness(1.0, l1=True, second_diff=True)
     regularization2 = regularizer_instance2.__call__(W)
-    assert(K.eval(regularization2) >= 2.6)
-    assert(K.eval(regularization2) <= 2.7)
+    assert_allclose(K.eval(regularization1), 2.6667, atol=0.01)
     # L2 Norm on first differences
     regularizer_instance3 = regularizers.smoothness(1.0, l1=False, second_diff=False)
     regularization3 = regularizer_instance3.__call__(W)

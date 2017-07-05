@@ -73,28 +73,28 @@ def test_separablefc():
                kwargs={'output_dim': 3},
                input_shape=(3, 3, 3))
 
-    #layer_test(core.SeparableFC,
-    #           kwargs={'output_dim': 3},
-    #           input_shape=(4, 3, 4))
+    layer_test(core.SeparableFC,
+               kwargs={'output_dim': 3},
+               input_shape=(4, 3, 4))
 
-    #layer_test(core.SeparableFC,
-    #           kwargs={'output_dim': 3,
-    #                   'symmetric': True,
-    #                   'curvature_constraint': 0.01},
-    #           input_shape=(5, 5, 5))
+    layer_test(core.SeparableFC,
+               kwargs={'output_dim': 3,
+                       'symmetric': True,
+                       'curvature_constraint': 0.01},
+               input_shape=(5, 5, 5))
 
-    #layer_test(core.SeparableFC,
-    #           kwargs={'output_dim': 5},
-    #           input_shape=(5, 3, 2))
+    layer_test(core.SeparableFC,
+               kwargs={'output_dim': 5},
+               input_shape=(5, 3, 2))
 
 
-    #layer_test(core.SeparableFC,
-    #           kwargs={'output_dim': 5,
-    #                   'symmetric': False,
-    #                   'smoothness_penalty': 100.0,
-    #                   'smoothness_l1': False,
-    #                   'smoothness_second_diff': False},
-    #           input_shape=(2, 10, 4))
+    layer_test(core.SeparableFC,
+               kwargs={'output_dim': 5,
+                       'symmetric': False,
+                       'smoothness_penalty': 100.0,
+                       'smoothness_l1': False,
+                       'smoothness_second_diff': False},
+               input_shape=(2, 10, 4))
     
     
     # Expected usage is after a stack of convolutional
@@ -114,7 +114,7 @@ def test_separablefc():
     model1.add(layers.core.Dense(output_dim=1))
     model1.compile(loss='mse', optimizer='rmsprop')
     out1 = model1.predict(X)
-    #assert_allclose(out1, np.ones((1, 1), dtype=K.floatx()), atol=1e-5)
+    assert_allclose(out1, np.zeros((1, 1), dtype=K.floatx()), atol=0.1)
     
     # Model Test 2
     model2 = Sequential()
@@ -129,7 +129,7 @@ def test_separablefc():
     model2.add(layers.core.Dense(output_dim=1))
     model2.compile(loss='mse', optimizer='Adam')
     out2 = model2.predict(X)
-    #assert_allclose(out2, np.ones((1, 1), dtype=K.floatx()), atol=1e-5)
+    assert_allclose(out2, np.zeros((1, 1), dtype=K.floatx()), atol=0.5)
 
     # Model Test 3
     model3 = Sequential()
@@ -142,18 +142,18 @@ def test_separablefc():
     model3.add(layers.core.Dense(output_dim=1))
     model3.compile(loss='mse', optimizer='sgd')
     out3 = model3.predict(X)
-    #assert_allclose(out3, np.ones((1, 1), dtype=K.floatx()), atol=1e-5)
+    assert_allclose(out3, np.zeros((1, 1), dtype=K.floatx()), atol=1.0)
     
     # Model Test 4
-    #model4 = Sequential()
-    #model4.add(layers.convolutional.Conv1D(input_shape=(10,4),
-    #                                       nb_filter=5,
-    #                                       filter_length=2))
-    #model4.add(core.SeparableFC(output_dim=3, symmetric=True))
-    #model4.add(layers.core.Dense(output_dim=1))
-    #model4.compile(loss='mse', optimizer='sgd')
-    #out4 = model4.predict(X)
-    #assert_allclose(out4, np.ones((1, 1), dtype=K.floatx()), atol=1e-5)
+    model4 = Sequential()
+    model4.add(layers.convolutional.Conv1D(input_shape=(10,4),
+                                           nb_filter=5,
+                                           filter_length=2))
+    model4.add(core.SeparableFC(output_dim=3, symmetric=True))
+    model4.add(layers.core.Dense(output_dim=1))
+    model4.compile(loss='mse', optimizer='sgd')
+    out4 = model4.predict(X)
+    assert_allclose(out4, np.zeros((1, 1), dtype=K.floatx()), atol=1.0)
 
 if __name__ == '__main__':
     pytest.main([__file__])
