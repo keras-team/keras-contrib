@@ -169,3 +169,57 @@ class CosineDense(Layer):
 
 
 get_custom_objects().update({'CosineDense': CosineDense})
+
+class Dropout(Layer):
+    """Applies Dropout to the input.
+
+    Dropout consists in randomly setting
+    a fraction `rate` of input units to 0 at each update during training time,
+    which helps prevent overfitting.
+
+    # Arguments
+        rate: float between 0 and 1. Fraction of the input units to drop.
+        noise_shape: 1D integer tensor representing the shape of the
+            binary dropout mask that will be multiplied with the input.
+            For instance, if your inputs have shape
+            `(batch_size, timesteps, features)` and
+            you want the dropout mask to be the same for all timesteps,
+            you can use `noise_shape=(batch_size, 1, features)`.
+        seed: A Python integer to use as random seed.
+        mc_dropout: Makes dropout layer to work at prediction time
+
+    # References
+        - [Dropout: A Simple Way to Prevent Neural Networks from Overfitting](http://www.cs.toronto.edu/~rsalakhu/papers/srivastava14a.pdf)
+        - [Dropout as a Bayesian Approximation: Representing Model Uncertainty in Deep Learning](https://arxiv.org/pdf/1506.02142.pdf)
+    """
+    def __init__(self, rate, noise_shape=None, seed=None, mc_dropout=False, **kwargs):
+        super(Dropout, self).__init__(**kwargs)
+        self.rate = min(1., max(0., rate))
+        self.noise_shape = noise_shape
+        self.seed = seed
+        self.mc_dropout = mc_dropout
+        self.supports_masking = True
+
+    def _get_noise_shape(self, _):
+        return self.noise_shape
+
+    def call(self, inputs, training=None):
+        if 0. < self.rate < 1.:
+            noise_shape = self._get_noise_shape(inputs)
+
+            if self.mc_dropout:
+                return K.dropout(inputs, self.rate, noise_shape,
+                                 seed=self.seed)
+            else:
+                def dropped_inputs():
+                    return K.dropout(inputs, self.rate, noise_shape,
+                                     seed=self.seed)
+                return K.in_train_phase(dropped_inputs, inputs,
+                                        training=training)
+        return inputs
+
+    def get_config(self):
+        config = {'rate': self.rate, 'mc_dropout': self.mc_dropout}
+        base_config = super(Dropout, self).get_config()
+        return dict(list(base_config.items()) + list(config.items()))
+
