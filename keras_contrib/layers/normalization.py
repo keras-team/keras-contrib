@@ -319,8 +319,8 @@ class BatchRenormalization(Layer):
 
         # update r_max and d_max
         t_val = K.get_value(self.t)
-        r_val = self.r_max_value / (1 + (self.r_max_value - 1) * np.exp(-t_val))
-        d_val = self.d_max_value / (1 + ((self.d_max_value / 1e-3) - 1) * np.exp(-(2 * t_val)))
+        r_val = self.r_max_value / (1 + (self.r_max_value - 1) * K.exp(-t_val))
+        d_val = self.d_max_value / (1 + ((self.d_max_value / 1e-3) - 1) * K.exp(-(2 * t_val)))
         t_val += float(self.t_delta)
 
         self.add_update([K.update(self.r_max, r_val),
