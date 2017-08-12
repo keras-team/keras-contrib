@@ -110,7 +110,7 @@ def deconv3d(x, kernel, output_shape, strides=(1, 1, 1),
 
 
 def extract_image_patches(x, ksizes, ssizes, padding='same',
-                          data_format='tf'):
+                          data_format='channels_last'):
     '''
     Extract the patches from an image
     # Parameters
