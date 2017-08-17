@@ -323,7 +323,7 @@ class BatchRenormalization(Layer):
 
         self.add_update([K.update(self.r_max, r_val),
                          K.update(self.d_max, d_val),
-                         K.update_add(self.t, self.t_delta], x)
+                         K.update_add(self.t, self.t_delta)], x)
 
         if training in {0, False}:
             return x_normed
