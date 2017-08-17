@@ -204,7 +204,7 @@ class BatchRenormalization(Layer):
     """
 
     def __init__(self, axis=-1, momentum=0.99, center=True, scale=True, epsilon=1e-3,
-                 r_max_value=3., d_max_value=5., t_delta=1., weights=None, beta_initializer='zero',
+                 r_max_value=3., d_max_value=5., t_delta=1e-3, weights=None, beta_initializer='zero',
                  gamma_initializer='one', moving_mean_initializer='zeros',
                  moving_variance_initializer='ones', gamma_regularizer=None, beta_regularizer=None,
                  beta_constraint=None, gamma_constraint=None, **kwargs):
@@ -219,7 +219,7 @@ class BatchRenormalization(Layer):
         self.initial_weights = weights
         self.r_max_value = r_max_value
         self.d_max_value = d_max_value
-        self.t_delta = t_delta
+        self.t_delta = K.variable(np.array(t_delta))
         self.beta_initializer = initializers.get(beta_initializer)
         self.gamma_initializer = initializers.get(gamma_initializer)
         self.moving_mean_initializer = initializers.get(moving_mean_initializer)
@@ -323,7 +323,7 @@ class BatchRenormalization(Layer):
 
         self.add_update([K.update(self.r_max, r_val),
                          K.update(self.d_max, d_val),
-                         K.update_add(self.t, K.variable(np.array([self.t_delta])))], x)
+                         K.update_add(self.t, self.t_delta], x)
 
         if training in {0, False}:
             return x_normed
