@@ -318,14 +318,12 @@ class BatchRenormalization(Layer):
                          K.moving_average_update(self.running_variance, std_batch ** 2, self.momentum)], inputs)
 
         # update r_max and d_max
-        t_val = K.get_value(self.t)
-        r_val = self.r_max_value / (1 + (self.r_max_value - 1) * K.exp(-t_val))
-        d_val = self.d_max_value / (1 + ((self.d_max_value / 1e-3) - 1) * K.exp(-(2 * t_val)))
-        t_val += float(self.t_delta)
+        r_val = self.r_max_value / (1 + (self.r_max_value - 1) * K.exp(-self.t))
+        d_val = self.d_max_value / (1 + ((self.d_max_value / 1e-3) - 1) * K.exp(-(2 * self.t)))
 
         self.add_update([K.update(self.r_max, r_val),
                          K.update(self.d_max, d_val),
-                         K.update(self.t, t_val)], inputs)
+                         K.update_add(self.t, K.variable(np.array([self.t_delta])))], x)
 
         if training in {0, False}:
             return x_normed
