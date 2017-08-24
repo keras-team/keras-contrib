@@ -535,4 +535,94 @@ class SubPixelUpscaling(Layer):
         return dict(list(base_config.items()) + list(config.items()))
 
 
-get_custom_objects().update({'SubPixelUpscaling': SubPixelUpscaling})
+class SpatialActivation2D(Layer):
+    """ Compute the spatial softmax or another activation of a convolutional feature map.
+        Based on the paper "Learning visual feature spaces for robotic manipulation with
+        deep spatial autoencoders." Finn et. al, http://arxiv.org/abs/1509.06113.
+
+        First computes the softmax over the spatial extent of each channel of a
+        convolutional feature map. Then computes the expected 2D position of the
+        points of maximal activation for each channel, resulting in a set of
+        feature keypoints [x1, y1, ... xN, yN] for all N channels.
+
+        Currently TensorFlow only.
+
+    # Arguments
+        features: A `Tensor` of size [batch_size, W, H, num_channels]; the
+            convolutional feature map.
+        activation: Activation function to use, softmax by default.
+            Explicitly set it to `None` to skip it and maintain a linear activation.
+        temperature: Softmax temperature (optional). If None, a learnable
+            temperature is created.
+        name: A name for this operation (optional).
+        variables_collections: Collections for the temperature variable.
+        trainable: If `True` also add variables to the graph collection
+            `GraphKeys.TRAINABLE_VARIABLES` (see `tf.Variable`).
+            data_format: A string. `NHWC` (default) and `NCHW` are supported.
+
+    # Input shape
+        4D tensor with shape:
+        `(samples, k * (scale_factor * scale_factor) channels, rows, cols)` if data_format='channels_first'
+        or 4D tensor with shape:
+        `(samples, rows, cols, k * (scale_factor * scale_factor) channels)` if data_format='channels_last'.
+
+    # Output shape
+        feature_keypoints: A `Tensor` with size [batch_size, num_channels * 2];
+            the expected 2D locations of each channel's feature keypoint (normalized
+            to the range (-1,1)). The inner dimension is arranged as
+            [x1, y1, ... xN, yN].
+
+    """
+
+    def __init__(self, activation='softmax', temperature=None, data_format=None, **kwargs):
+
+        self.activation = activations.get(activation)
+        self.temperature = temperature
+        self.data_format = normalize_data_format(data_format)
+
+    def build(self, input_shape):
+        if len(input_shape) < 4:
+            raise ValueError('Inputs to `SpatialActivation2D` should have rank 4. '
+                             'Received input shape:', str(input_shape))
+        if self.data_format == 'channels_first':
+            channel_axis = 1
+        else:
+            channel_axis = 3
+        if input_shape[channel_axis] is None:
+            raise ValueError('The channel dimension of the inputs to '
+                             '`SpatialActivation2D` '
+                             'should be defined. Found `None`.')
+        # Create a trainable weight variable for this layer.
+        self.kernel = self.add_weight(name='temperature',
+                                      shape=(1,),
+                                      initializer='ones',
+                                      trainable=self.trainable)
+        input_dim = input_shape[channel_axis]
+        # Set input spec.
+        self.input_spec = InputSpec(ndim=4, axes={channel_axis: input_dim})
+
+    def call(self, x, mask=None):
+        y = K.spatial_activation_(x,
+                                  activation=self.activation,
+                                  data_format=self.data_format,
+                                  temperature=self.temperature,
+                                  trainable=self.trainable)
+        return y
+
+    def compute_output_shape(self, input_shape):
+        if self.data_format == 'channels_first':
+            b, k, r, c = input_shape
+            return (b, c * 2)
+        else:
+            b, r, c, k = input_shape
+            return (b, c * 2)
+
+    def get_config(self):
+        config = {'activation': activations.serialize(self.activation),
+                  'temperature': self.temperature,
+                  'data_format': self.data_format}
+        return list(config.items())
+
+
+get_custom_objects().update({'SubPixelUpscaling': SubPixelUpscaling,
+                             'SpatialActivation2D': SpatialActivation2D})

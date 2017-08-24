@@ -9,6 +9,7 @@ from __future__ import absolute_import
 from __future__ import division
 
 import warnings
+import six
 
 from keras.models import Model
 from keras.layers.core import Dense, Dropout, Activation, Reshape
@@ -26,6 +27,7 @@ from keras.applications.imagenet_utils import _obtain_input_shape
 import keras.backend as K
 
 from keras_contrib.layers.convolutional import SubPixelUpscaling
+from keras_contrib.layers.convolutional import SpatialActivation2D
 
 TH_WEIGHTS_PATH = 'https://github.com/titu1994/DenseNet/releases/download/v2.0/DenseNet-40-12-Theano-Backend-TH-dim-ordering.h5'
 TF_WEIGHTS_PATH = 'https://github.com/titu1994/DenseNet/releases/download/v2.0/DenseNet-40-12-Tensorflow-Backend-TF-dim-ordering.h5'
@@ -175,7 +177,7 @@ def DenseNet(input_shape=None, depth=40, nb_dense_block=3, growth_rate=12, nb_fi
     return model
 
 
-def DenseNetFCN(input_shape, nb_dense_block=5, growth_rate=16, nb_layers_per_block=4,
+def DenseNetFCN(input_shape=None, nb_dense_block=5, growth_rate=16, nb_layers_per_block=4,
                 reduction=0.0, dropout_rate=0.0, weight_decay=1E-4, init_conv_filters=48,
                 include_top=True, weights=None, input_tensor=None, classes=1, activation='softmax',
                 upsampling_conv=128, upsampling_type='deconv'):
@@ -628,9 +630,14 @@ def __create_fcn_dense_net(nb_classes, img_input, include_top, nb_dense_block=5,
         else:
             row, col, channel = input_shape
 
-        x = Reshape((row * col, nb_classes))(x)
-        x = Activation(activation)(x)
-        x = Reshape((row, col, nb_classes))(x)
+        if activation is 'spatial_activation':
+            x = SpatialActivation2D()(x)
+        elif isinstance(activation, six.string_types) and 'spatial_' in activation:
+            x = SpatialActivation2D(activation[8:])(x)
+        else:
+            x = Reshape((row * col, nb_classes))(x)
+            x = Activation(activation)(x)
+            x = Reshape((row, col, nb_classes))(x)
     else:
         x = x_up
 

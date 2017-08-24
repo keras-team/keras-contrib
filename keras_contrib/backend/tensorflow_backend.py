@@ -1,4 +1,8 @@
 import tensorflow as tf
+from tensorflow.contrib.framework.python.ops import variables
+from tensorflow.contrib.layers.python.layers import utils
+from tensorflow.contrib.layers.python.layers import initializers
+from tensorflow.contrib.framework.python.ops import variables
 
 try:
     from tensorflow.python.ops import ctc_ops as ctc
@@ -158,3 +162,93 @@ def moments(x, axes, shift=None, keep_dims=False):
     ''' Wrapper over tensorflow backend call '''
 
     return tf.nn.moments(x, axes, shift=shift, keep_dims=keep_dims)
+
+
+def spatial_activation2d(features,
+                         activation=nn.softmax,
+                         temperature=None,
+                         name=None,
+                         variables_collections=None,
+                         trainable=True,
+                         data_format=None):
+    """Compute the spatial softmax or another activation of a convolutional feature map.
+
+    This is from the TensorFlow call `spatial_softmax`, which is not in a
+    release as of TensorFlow 1.3. Please replace this function with the
+    upstream TensorFlow information when it becomes available.
+
+    First computes the softmax over the spatial extent of each channel of a
+    convolutional feature map. Then computes the expected 2D position of the
+    points of maximal activation for each channel, resulting in a set of
+    feature keypoints [x1, y1, ... xN, yN] for all N channels.
+
+    Read more here:
+    "Learning visual feature spaces for robotic manipulation with
+    deep spatial autoencoders." Finn et. al, http://arxiv.org/abs/1509.06113.
+
+    # Arguments
+      features: A `Tensor` of size [batch_size, W, H, num_channels]; the
+        convolutional feature map.
+      activation: Activation function. The default value is a softmax function.
+        Explicitly set it to None to skip it and maintain a linear activation.
+      temperature: Softmax temperature (optional). If None, a learnable
+        temperature is created.
+      name: A name for this operation (optional).
+      variables_collections: Collections for the temperature variable.
+      trainable: If `True` also add variables to the graph collection
+        `GraphKeys.TRAINABLE_VARIABLES` (see `tf.Variable`).
+      data_format: A string. `NHWC` (default) and `NCHW` are supported.
+    Returns:
+      feature_keypoints: A `Tensor` with size [batch_size, num_channels * 2];
+        the expected 2D locations of each channel's feature keypoint (normalized
+        to the range (-1,1)). The inner dimension is arranged as
+        [x1, y1, ... xN, yN].
+    Raises:
+      ValueError: If unexpected data_format specified.
+    """
+    shape = tf.shape(features)
+    if data_format is None:
+        data_format = image_data_format()
+    if data_format == 'channels_last':
+        height, width, num_channels = shape[1], shape[2], shape[3]
+    if data_format == 'channels_first':
+        num_channels, height, width = shape[1], shape[2], shape[3]
+    else:
+        raise ValueError('data_format has to be either NCHW or NHWC.')
+
+    with tf.name_scope(name, 'spatial_softmax', [features]) as name:
+        # Create tensors for x and y coordinate values, scaled to range [-1, 1].
+        pos_x, pos_y = tf.meshgrid(tf.lin_space(-1., 1., num=height),
+                                   tf.lin_space(-1., 1., num=width),
+                                   indexing='ij')
+        pos_x = tf.reshape(pos_x, [height * width])
+        pos_y = tf.reshape(pos_y, [height * width])
+        if temperature is None:
+            temperature_collections = utils.get_variable_collections(
+                variables_collections, 'temperature')
+            temperature = variables.model_variable(
+                'temperature',
+                shape=(),
+                dtype=tf.dtypes.float32,
+                initializer=tf.ones_initializer(),
+                collections=temperature_collections,
+                trainable=trainable)
+        if data_format == 'channels_first':
+            features = tf.reshape(features, [-1, height * width])
+        else:
+            features = tf.reshape(
+                tf.transpose(features, [0, 3, 1, 2]), [-1, height * width])
+
+        if activation is not None:
+            attention = activation(features/temperature)
+        else:
+            attention = features/temperature
+
+        attention = nn.softmax(features/temperature)
+        expected_x = tf.reduce_sum(
+            pos_x * attention, [1], keep_dims=True)
+        expected_y = tf.reduce_sum(
+            pos_y * attention, [1], keep_dims=True)
+        expected_xy = tf.concatenate([expected_x, expected_y], 1)
+        feature_keypoints = KTF.reshape(expected_xy, [-1, num_channels * 2])
+        return feature_keypoints
