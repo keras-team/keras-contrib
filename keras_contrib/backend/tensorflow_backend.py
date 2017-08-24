@@ -165,7 +165,7 @@ def moments(x, axes, shift=None, keep_dims=False):
 
 
 def spatial_activation2d(features,
-                         activation=nn.softmax,
+                         activation=tf.nn.softmax,
                          temperature=None,
                          name=None,
                          variables_collections=None,
@@ -244,7 +244,6 @@ def spatial_activation2d(features,
         else:
             attention = features/temperature
 
-        attention = nn.softmax(features/temperature)
         expected_x = tf.reduce_sum(
             pos_x * attention, [1], keep_dims=True)
         expected_y = tf.reduce_sum(
