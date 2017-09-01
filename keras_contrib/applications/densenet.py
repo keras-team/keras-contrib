@@ -385,7 +385,7 @@ def __dense_block(x, nb_layers, nb_filter, growth_rate, bottleneck=False, dropou
         conv_block = __conv_block(x, growth_rate, bottleneck, dropout_rate, weight_decay)
         x_list.append(conv_block)
 
-        x = concatenate([x, conv_block], axis=concat_axis)
+        x = concatenate(x_list, axis=concat_axis)
 
         if grow_nb_filters:
             nb_filter += growth_rate
