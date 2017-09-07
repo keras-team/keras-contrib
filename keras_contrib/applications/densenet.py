@@ -31,11 +31,16 @@ on the ImageNet dataset (single crop), for which weights are provided:
 DenseNets can be extended to image segmentation tasks as described in the
 paper "The One Hundred Layers Tiramisu: Fully Convolutional DenseNets for
 Semantic Segmentation". Here, the dense blocks are arranged and concatenated
-with long skip connections for state of the art performance on CamVid dataset.
+with long skip connections for state of the art performance on the CamVid dataset.
 
 # Reference
 - [Densely Connected Convolutional Networks](https://arxiv.org/pdf/1608.06993.pdf)
 - [The One Hundred Layers Tiramisu: Fully Convolutional DenseNets for Semantic Segmentation](https://arxiv.org/pdf/1611.09326.pdf)
+
+This implementation is based on the following reference code:
+ - https://github.com/gpleiss/efficient_densenet_pytorch
+ - https://github.com/liuzhuang13/DenseNet
+
 '''
 from __future__ import print_function
 from __future__ import absolute_import
@@ -64,6 +69,7 @@ from keras.utils.data_utils import get_file
 from keras.engine.topology import get_source_inputs
 from keras.applications.imagenet_utils import _obtain_input_shape
 from keras.applications.imagenet_utils import decode_predictions
+from keras.applications.imagenet_utils import preprocess_input as _preprocess_input
 import keras.backend as K
 
 from keras_contrib.layers.convolutional import SubPixelUpscaling
@@ -86,33 +92,8 @@ def preprocess_input(x, data_format=None):
     # Returns
         Preprocessed tensor.
     """
-    if data_format is None:
-        data_format = K.image_data_format()
-    assert data_format in {'channels_last', 'channels_first'}
-
-    if data_format == 'channels_first':
-        if x.ndim == 3:
-            # 'RGB'->'BGR'
-            x = x[::-1, ...]
-            # Zero-center by mean pixel
-            x[0, :, :] -= 103.939
-            x[1, :, :] -= 116.779
-            x[2, :, :] -= 123.68
-        else:
-            x = x[:, ::-1, ...]
-            x[:, 0, :, :] -= 103.939
-            x[:, 1, :, :] -= 116.779
-            x[:, 2, :, :] -= 123.68
-    else:
-        # 'RGB'->'BGR'
-        x = x[..., ::-1]
-        # Zero-center by mean pixel
-        x[..., 0] -= 103.939
-        x[..., 1] -= 116.779
-        x[..., 2] -= 123.68
-
+    x = _preprocess_input(x, data_format=None)
     x *= 0.017  # scale values
-
     return x
 
 
@@ -164,8 +145,10 @@ def DenseNet(input_shape=None,
             Note : reduction value is inverted to compute compression.
         dropout_rate: dropout rate
         weight_decay: weight decay rate
-        subsample_initial_block: Set to True to subsample the initial
-            convolution and add a MaxPool2D before the dense blocks are added.
+        subsample_initial_block: Changes model type to suit different datasets.
+            Should be set to True for ImageNet, and False for CIFAR datasets.
+            When set to True, the initial convolution will be strided and
+            adds a MaxPooling2D before the initial dense block.
         include_top: whether to include the fully-connected
             layer at the top of the network.
         weights: one of `None` (random initialization) or
@@ -248,7 +231,7 @@ def DenseNet(input_shape=None,
         weights_loaded = False
 
         if (depth == 121) and (nb_dense_block == 4) and (growth_rate == 32) and (nb_filter == 64) and \
-                (bottleneck is True) and (reduction == 0.5) and (dropout_rate == 0.0) and (subsample_initial_block):
+                (bottleneck is True) and (reduction == 0.5) and (subsample_initial_block):
             if include_top:
                 weights_path = get_file('DenseNet-BC-121-32.h5',
                                         DENSENET_121_WEIGHTS_PATH,
@@ -263,7 +246,7 @@ def DenseNet(input_shape=None,
             weights_loaded = True
 
         if (depth == 161) and (nb_dense_block == 4) and (growth_rate == 48) and (nb_filter == 96) and \
-                (bottleneck is True) and (reduction == 0.5) and (dropout_rate == 0.0) and (subsample_initial_block):
+                (bottleneck is True) and (reduction == 0.5) and (subsample_initial_block):
             if include_top:
                 weights_path = get_file('DenseNet-BC-161-48.h5',
                                         DENSENET_161_WEIGHTS_PATH,
@@ -278,7 +261,7 @@ def DenseNet(input_shape=None,
             weights_loaded = True
 
         if (depth == 169) and (nb_dense_block == 4) and (growth_rate == 32) and (nb_filter == 64) and \
-                (bottleneck is True) and (reduction == 0.5) and (dropout_rate == 0.0) and (subsample_initial_block):
+                (bottleneck is True) and (reduction == 0.5) and (subsample_initial_block):
             if include_top:
                 weights_path = get_file('DenseNet-BC-169-32.h5',
                                         DENSENET_169_WEIGHTS_PATH,
@@ -726,8 +709,10 @@ def __create_dense_net(nb_classes, img_input, include_top, depth=40, nb_dense_bl
         reduction: reduction factor of transition blocks. Note : reduction value is inverted to compute compression
         dropout_rate: dropout rate
         weight_decay: weight decay rate
-        subsample_initial_block: Set to True to subsample the initial convolution and
-                add a MaxPool2D before the dense blocks are added.
+        subsample_initial_block: Changes model type to suit different datasets.
+            Should be set to True for ImageNet, and False for CIFAR datasets.
+            When set to True, the initial convolution will be strided and
+            adds a MaxPooling2D before the initial dense block.
         pooling: Optional pooling mode for feature extraction
             when `include_top` is `False`.
             - `None` means that the output of the model
