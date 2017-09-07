@@ -92,7 +92,7 @@ def preprocess_input(x, data_format=None):
     # Returns
         Preprocessed tensor.
     """
-    x = _preprocess_input(x, data_format=None)
+    x = _preprocess_input(x, data_format=data_format)
     x *= 0.017  # scale values
     return x
 
