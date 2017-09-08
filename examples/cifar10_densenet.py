@@ -33,8 +33,11 @@ nb_filter = 16
 dropout_rate = 0.0  # 0.0 for data augmentation
 
 # Create the model (without loading weights)
-model = DenseNet(depth, nb_dense_block, growth_rate, nb_filter, dropout_rate=dropout_rate,
-                 input_shape=img_dim, weights=None)
+model = DenseNet(depth=depth, nb_dense_block=nb_dense_block,
+                 growth_rate=growth_rate, nb_filter=nb_filter,
+                 dropout_rate=dropout_rate,
+                 input_shape=img_dim,
+                 weights=None)
 print('Model created')
 
 model.summary()
