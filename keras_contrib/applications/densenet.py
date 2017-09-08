@@ -231,7 +231,7 @@ def DenseNet(input_shape=None,
         weights_loaded = False
 
         if (depth == 121) and (nb_dense_block == 4) and (growth_rate == 32) and (nb_filter == 64) and \
-                (bottleneck is True) and (reduction == 0.5) and (dropout_rate == 0.0) and (subsample_initial_block):
+                (bottleneck is True) and (reduction == 0.5) and (subsample_initial_block):
             if include_top:
                 weights_path = get_file('DenseNet-BC-121-32.h5',
                                         DENSENET_121_WEIGHTS_PATH,
@@ -242,11 +242,11 @@ def DenseNet(input_shape=None,
                                         DENSENET_121_WEIGHTS_PATH_NO_TOP,
                                         cache_subdir='models',
                                         md5_hash='55e62a6358af8a0af0eedf399b5aea99')
-            model.load_weights(weights_path)
+            model.load_weights(weights_path, by_name=True)
             weights_loaded = True
 
         if (depth == 161) and (nb_dense_block == 4) and (growth_rate == 48) and (nb_filter == 96) and \
-                (bottleneck is True) and (reduction == 0.5) and (dropout_rate == 0.0) and (subsample_initial_block):
+                (bottleneck is True) and (reduction == 0.5) and (subsample_initial_block):
             if include_top:
                 weights_path = get_file('DenseNet-BC-161-48.h5',
                                         DENSENET_161_WEIGHTS_PATH,
@@ -257,11 +257,11 @@ def DenseNet(input_shape=None,
                                         DENSENET_161_WEIGHTS_PATH_NO_TOP,
                                         cache_subdir='models',
                                         md5_hash='1a9476b79f6b7673acaa2769e6427b92')
-            model.load_weights(weights_path)
+            model.load_weights(weights_path, by_name=True)
             weights_loaded = True
 
         if (depth == 169) and (nb_dense_block == 4) and (growth_rate == 32) and (nb_filter == 64) and \
-                (bottleneck is True) and (reduction == 0.5) and (dropout_rate == 0.0) and (subsample_initial_block):
+                (bottleneck is True) and (reduction == 0.5) and (subsample_initial_block):
             if include_top:
                 weights_path = get_file('DenseNet-BC-169-32.h5',
                                         DENSENET_169_WEIGHTS_PATH,
@@ -272,7 +272,7 @@ def DenseNet(input_shape=None,
                                         DENSENET_169_WEIGHTS_PATH_NO_TOP,
                                         cache_subdir='models',
                                         md5_hash='89c19e8276cfd10585d5fadc1df6859e')
-            model.load_weights(weights_path)
+            model.load_weights(weights_path, by_name=True)
             weights_loaded = True
 
         if weights_loaded:
