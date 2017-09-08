@@ -535,22 +535,23 @@ def __conv_block(ip, nb_filter, bottleneck=False, dropout_rate=None, weight_deca
     # Returns
         output tensor of block
     '''
-    concat_axis = 1 if K.image_data_format() == 'channels_first' else -1
+    with K.name_scope('ConvBlock'):
+        concat_axis = 1 if K.image_data_format() == 'channels_first' else -1
 
-    x = BatchNormalization(axis=concat_axis, epsilon=1.1e-5)(ip)
-    x = Activation('relu')(x)
-
-    if bottleneck:
-        inter_channel = nb_filter * 4
-
-        x = Conv2D(inter_channel, (1, 1), kernel_initializer='he_normal', padding='same', use_bias=False,
-                   kernel_regularizer=l2(weight_decay))(x)
-        x = BatchNormalization(axis=concat_axis, epsilon=1.1e-5)(x)
+        x = BatchNormalization(axis=concat_axis, epsilon=1.1e-5)(ip)
         x = Activation('relu')(x)
 
-    x = Conv2D(nb_filter, (3, 3), kernel_initializer='he_normal', padding='same', use_bias=False)(x)
-    if dropout_rate:
-        x = Dropout(dropout_rate)(x)
+        if bottleneck:
+            inter_channel = nb_filter * 4
+
+            x = Conv2D(inter_channel, (1, 1), kernel_initializer='he_normal', padding='same', use_bias=False,
+                       kernel_regularizer=l2(weight_decay))(x)
+            x = BatchNormalization(axis=concat_axis, epsilon=1.1e-5)(x)
+            x = Activation('relu')(x)
+
+        x = Conv2D(nb_filter, (3, 3), kernel_initializer='he_normal', padding='same', use_bias=False)(x)
+        if dropout_rate:
+            x = Dropout(dropout_rate)(x)
 
     return x
 
@@ -583,23 +584,24 @@ def __dense_block(x, nb_layers, nb_filter, growth_rate, bottleneck=False, dropou
         If return_concat_list is False, returns a list of the output
         keras tensor and the number of filters
     '''
-    concat_axis = 1 if K.image_data_format() == 'channels_first' else -1
+    with K.name_scope('DenseBlock'):
+        concat_axis = 1 if K.image_data_format() == 'channels_first' else -1
 
-    x_list = [x]
+        x_list = [x]
 
-    for i in range(nb_layers):
-        cb = __conv_block(x, growth_rate, bottleneck, dropout_rate, weight_decay)
-        x_list.append(cb)
+        for i in range(nb_layers):
+            cb = __conv_block(x, growth_rate, bottleneck, dropout_rate, weight_decay)
+            x_list.append(cb)
 
-        x = concatenate([x, cb], axis=concat_axis)
+            x = concatenate([x, cb], axis=concat_axis)
 
-        if grow_nb_filters:
-            nb_filter += growth_rate
+            if grow_nb_filters:
+                nb_filter += growth_rate
 
-    if return_concat_list:
-        return x, nb_filter, x_list
-    else:
-        return x, nb_filter
+        if return_concat_list:
+            return x, nb_filter, x_list
+        else:
+            return x, nb_filter
 
 
 def __transition_block(ip, nb_filter, compression=1.0, weight_decay=1e-4):
@@ -633,15 +635,16 @@ def __transition_block(ip, nb_filter, compression=1.0, weight_decay=1e-4):
     # Returns
         a keras tensor
     '''
-    concat_axis = 1 if K.image_data_format() == 'channels_first' else -1
+    with K.name_scope('Transition'):
+        concat_axis = 1 if K.image_data_format() == 'channels_first' else -1
 
-    x = BatchNormalization(axis=concat_axis, epsilon=1.1e-5)(ip)
-    x = Activation('relu')(x)
-    x = Conv2D(int(nb_filter * compression), (1, 1), kernel_initializer='he_normal', padding='same',
-               use_bias=False, kernel_regularizer=l2(weight_decay))(x)
-    x = AveragePooling2D((2, 2), strides=(2, 2))(x)
+        x = BatchNormalization(axis=concat_axis, epsilon=1.1e-5)(ip)
+        x = Activation('relu')(x)
+        x = Conv2D(int(nb_filter * compression), (1, 1), kernel_initializer='he_normal', padding='same',
+                   use_bias=False, kernel_regularizer=l2(weight_decay))(x)
+        x = AveragePooling2D((2, 2), strides=(2, 2))(x)
 
-    return x
+        return x
 
 
 def __transition_up_block(ip, nb_filters, type='deconv', weight_decay=1E-4):
@@ -670,20 +673,21 @@ def __transition_up_block(ip, nb_filters, type='deconv', weight_decay=1E-4):
     # Returns
         a keras tensor
     '''
+    with K.name_scope('TransitionUp'):
 
-    if type == 'upsampling':
-        x = UpSampling2D()(ip)
-    elif type == 'subpixel':
-        x = Conv2D(nb_filters, (3, 3), activation='relu', padding='same', kernel_regularizer=l2(weight_decay),
-                   use_bias=False, kernel_initializer='he_normal')(ip)
-        x = SubPixelUpscaling(scale_factor=2)(x)
-        x = Conv2D(nb_filters, (3, 3), activation='relu', padding='same', kernel_regularizer=l2(weight_decay),
-                   use_bias=False, kernel_initializer='he_normal')(x)
-    else:
-        x = Conv2DTranspose(nb_filters, (3, 3), activation='relu', padding='same', strides=(2, 2),
-                            kernel_initializer='he_normal', kernel_regularizer=l2(weight_decay))(ip)
+        if type == 'upsampling':
+            x = UpSampling2D()(ip)
+        elif type == 'subpixel':
+            x = Conv2D(nb_filters, (3, 3), activation='relu', padding='same', kernel_regularizer=l2(weight_decay),
+                       use_bias=False, kernel_initializer='he_normal')(ip)
+            x = SubPixelUpscaling(scale_factor=2)(x)
+            x = Conv2D(nb_filters, (3, 3), activation='relu', padding='same', kernel_regularizer=l2(weight_decay),
+                       use_bias=False, kernel_initializer='he_normal')(x)
+        else:
+            x = Conv2DTranspose(nb_filters, (3, 3), activation='relu', padding='same', strides=(2, 2),
+                                kernel_initializer='he_normal', kernel_regularizer=l2(weight_decay))(ip)
 
-    return x
+        return x
 
 
 def __create_dense_net(nb_classes, img_input, include_top, depth=40, nb_dense_block=3, growth_rate=12, nb_filter=-1,
@@ -735,81 +739,81 @@ def __create_dense_net(nb_classes, img_input, include_top, depth=40, nb_dense_bl
         ValueError: in case of invalid argument for `reduction`
             or `nb_dense_block`
     '''
+    with K.name_scope('DenseNet'):
+        concat_axis = 1 if K.image_data_format() == 'channels_first' else -1
 
-    concat_axis = 1 if K.image_data_format() == 'channels_first' else -1
+        if reduction != 0.0:
+            if not (reduction <= 1.0 and reduction > 0.0):
+                raise ValueError('`reduction` value must lie between 0.0 and 1.0')
 
-    if reduction != 0.0:
-        if not (reduction <= 1.0 and reduction > 0.0):
-            raise ValueError('`reduction` value must lie between 0.0 and 1.0')
+        # layers in each dense block
+        if type(nb_layers_per_block) is list or type(nb_layers_per_block) is tuple:
+            nb_layers = list(nb_layers_per_block)  # Convert tuple to list
 
-    # layers in each dense block
-    if type(nb_layers_per_block) is list or type(nb_layers_per_block) is tuple:
-        nb_layers = list(nb_layers_per_block)  # Convert tuple to list
+            if len(nb_layers) != (nb_dense_block):
+                raise ValueError('If `nb_dense_block` is a list, its length must match '
+                                 'the number of layers provided by `nb_layers`.')
 
-        if len(nb_layers) != (nb_dense_block):
-            raise ValueError('If `nb_dense_block` is a list, its length must match '
-                             'the number of layers provided by `nb_layers`.')
-
-        final_nb_layer = nb_layers[-1]
-        nb_layers = nb_layers[:-1]
-    else:
-        if nb_layers_per_block == -1:
-            assert (depth - 4) % 3 == 0, 'Depth must be 3 N + 4 if nb_layers_per_block == -1'
-            count = int((depth - 4) / 3)
-            nb_layers = [count for _ in range(nb_dense_block)]
-            final_nb_layer = count
+            final_nb_layer = nb_layers[-1]
+            nb_layers = nb_layers[:-1]
         else:
-            final_nb_layer = nb_layers_per_block
-            nb_layers = [nb_layers_per_block] * nb_dense_block
+            if nb_layers_per_block == -1:
+                assert (depth - 4) % 3 == 0, 'Depth must be 3 N + 4 if nb_layers_per_block == -1'
+                count = int((depth - 4) / 3)
+                nb_layers = [count for _ in range(nb_dense_block)]
+                final_nb_layer = count
+            else:
+                final_nb_layer = nb_layers_per_block
+                nb_layers = [nb_layers_per_block] * nb_dense_block
 
-    # compute initial nb_filter if -1, else accept users initial nb_filter
-    if nb_filter <= 0:
-        nb_filter = 2 * growth_rate
+        # compute initial nb_filter if -1, else accept users initial nb_filter
+        if nb_filter <= 0:
+            nb_filter = 2 * growth_rate
 
-    # compute compression factor
-    compression = 1.0 - reduction
+        # compute compression factor
+        compression = 1.0 - reduction
 
-    # Initial convolution
-    if subsample_initial_block:
-        initial_kernel = (7, 7)
-        initial_strides = (2, 2)
-    else:
-        initial_kernel = (3, 3)
-        initial_strides = (1, 1)
+        # Initial convolution
+        if subsample_initial_block:
+            initial_kernel = (7, 7)
+            initial_strides = (2, 2)
+        else:
+            initial_kernel = (3, 3)
+            initial_strides = (1, 1)
 
-    x = Conv2D(nb_filter, initial_kernel, kernel_initializer='he_normal', padding='same',
-               strides=initial_strides, use_bias=False, kernel_regularizer=l2(weight_decay))(img_input)
+        x = Conv2D(nb_filter, initial_kernel, kernel_initializer='he_normal', padding='same',
+                   strides=initial_strides, use_bias=False, kernel_regularizer=l2(weight_decay))(img_input)
 
-    if subsample_initial_block:
+        if subsample_initial_block:
+            x = BatchNormalization(axis=concat_axis, epsilon=1.1e-5)(x)
+            x = Activation('relu')(x)
+            x = MaxPooling2D((3, 3), strides=(2, 2), padding='same')(x)
+
+        # Add dense blocks
+        for block_idx in range(nb_dense_block - 1):
+            x, nb_filter = __dense_block(x, nb_layers[block_idx], nb_filter, growth_rate, bottleneck=bottleneck,
+                                         dropout_rate=dropout_rate, weight_decay=weight_decay)
+            # add transition_block
+            x = __transition_block(x, nb_filter, compression=compression, weight_decay=weight_decay)
+            nb_filter = int(nb_filter * compression)
+
+        # The last dense_block does not have a transition_block
+        x, nb_filter = __dense_block(x, final_nb_layer, nb_filter, growth_rate, bottleneck=bottleneck,
+                                     dropout_rate=dropout_rate, weight_decay=weight_decay)
+
         x = BatchNormalization(axis=concat_axis, epsilon=1.1e-5)(x)
         x = Activation('relu')(x)
-        x = MaxPooling2D((3, 3), strides=(2, 2), padding='same')(x)
 
-    # Add dense blocks
-    for block_idx in range(nb_dense_block - 1):
-        x, nb_filter = __dense_block(x, nb_layers[block_idx], nb_filter, growth_rate, bottleneck=bottleneck,
-                                     dropout_rate=dropout_rate, weight_decay=weight_decay)
-        # add transition_block
-        x = __transition_block(x, nb_filter, compression=compression, weight_decay=weight_decay)
-        nb_filter = int(nb_filter * compression)
-
-    # The last dense_block does not have a transition_block
-    x, nb_filter = __dense_block(x, final_nb_layer, nb_filter, growth_rate, bottleneck=bottleneck,
-                                 dropout_rate=dropout_rate, weight_decay=weight_decay)
-
-    x = BatchNormalization(axis=concat_axis, epsilon=1.1e-5)(x)
-    x = Activation('relu')(x)
-
-    if include_top:
-        x = GlobalAveragePooling2D()(x)
-        x = Dense(nb_classes, activation=activation)(x)
-    else:
-        if pooling == 'avg':
+        if include_top:
             x = GlobalAveragePooling2D()(x)
-        if pooling == 'max':
-            x = GlobalMaxPooling2D()(x)
+            x = Dense(nb_classes, activation=activation)(x)
+        else:
+            if pooling == 'avg':
+                x = GlobalAveragePooling2D()(x)
+            if pooling == 'max':
+                x = GlobalMaxPooling2D()(x)
 
-    return x
+        return x
 
 
 def __create_fcn_dense_net(nb_classes, img_input, include_top, nb_dense_block=5, growth_rate=12,
@@ -846,104 +850,104 @@ def __create_fcn_dense_net(nb_classes, img_input, include_top, nb_dense_block=5,
         ValueError: in case of invalid argument for `reduction`,
             `nb_dense_block` or `nb_upsampling_conv`.
     '''
+    with K.name_scope('DenseNetFCN'):
+        concat_axis = 1 if K.image_data_format() == 'channels_first' else -1
 
-    concat_axis = 1 if K.image_data_format() == 'channels_first' else -1
-
-    if concat_axis == 1:  # channels_first dim ordering
-        _, rows, cols = input_shape
-    else:
-        rows, cols, _ = input_shape
-
-    if reduction != 0.0:
-        if not (reduction <= 1.0 and reduction > 0.0):
-            raise ValueError('`reduction` value must lie between 0.0 and 1.0')
-
-    # check if upsampling_conv has minimum number of filters
-    # minimum is set to 12, as at least 3 color channels are needed for correct upsampling
-    if not (nb_upsampling_conv > 12 and nb_upsampling_conv % 4 == 0):
-        raise ValueError('Parameter `nb_upsampling_conv` number of channels must '
-                         'be a positive number divisible by 4 and greater than 12')
-
-    # layers in each dense block
-    if type(nb_layers_per_block) is list or type(nb_layers_per_block) is tuple:
-        nb_layers = list(nb_layers_per_block)  # Convert tuple to list
-
-        if len(nb_layers) != (nb_dense_block + 1):
-            raise ValueError('If `nb_dense_block` is a list, its length must be '
-                             '(`nb_dense_block` + 1)')
-
-        bottleneck_nb_layers = nb_layers[-1]
-        rev_layers = nb_layers[::-1]
-        nb_layers.extend(rev_layers[1:])
-    else:
-        bottleneck_nb_layers = nb_layers_per_block
-        nb_layers = [nb_layers_per_block] * (2 * nb_dense_block + 1)
-
-    # compute compression factor
-    compression = 1.0 - reduction
-
-    # Initial convolution
-    x = Conv2D(init_conv_filters, (7, 7), kernel_initializer='he_normal', padding='same', name='initial_conv2D',
-               use_bias=False, kernel_regularizer=l2(weight_decay))(img_input)
-    x = BatchNormalization(axis=concat_axis, epsilon=1.1e-5)(x)
-    x = Activation('relu')(x)
-
-    nb_filter = init_conv_filters
-
-    skip_list = []
-
-    # Add dense blocks and transition down block
-    for block_idx in range(nb_dense_block):
-        x, nb_filter = __dense_block(x, nb_layers[block_idx], nb_filter, growth_rate, dropout_rate=dropout_rate,
-                                     weight_decay=weight_decay)
-
-        # Skip connection
-        skip_list.append(x)
-
-        # add transition_block
-        x = __transition_block(x, nb_filter, compression=compression, weight_decay=weight_decay)
-
-        nb_filter = int(nb_filter * compression)  # this is calculated inside transition_down_block
-
-    # The last dense_block does not have a transition_down_block
-    # return the concatenated feature maps without the concatenation of the input
-    _, nb_filter, concat_list = __dense_block(x, bottleneck_nb_layers, nb_filter, growth_rate,
-                                              dropout_rate=dropout_rate, weight_decay=weight_decay,
-                                              return_concat_list=True)
-
-    skip_list = skip_list[::-1]  # reverse the skip list
-
-    # Add dense blocks and transition up block
-    for block_idx in range(nb_dense_block):
-        n_filters_keep = growth_rate * nb_layers[nb_dense_block + block_idx]
-
-        # upsampling block must upsample only the feature maps (concat_list[1:]),
-        # not the concatenation of the input with the feature maps (concat_list[0].
-        l = concatenate(concat_list[1:], axis=concat_axis)
-
-        t = __transition_up_block(l, nb_filters=n_filters_keep, type=upsampling_type, weight_decay=weight_decay)
-
-        # concatenate the skip connection with the transition block
-        x = concatenate([t, skip_list[block_idx]], axis=concat_axis)
-
-        # Dont allow the feature map size to grow in upsampling dense blocks
-        x_up, nb_filter, concat_list = __dense_block(x, nb_layers[nb_dense_block + block_idx + 1], nb_filter=growth_rate,
-                                                     growth_rate=growth_rate, dropout_rate=dropout_rate,
-                                                     weight_decay=weight_decay, return_concat_list=True,
-                                                     grow_nb_filters=False)
-
-    if include_top:
-        x = Conv2D(nb_classes, (1, 1), activation='linear', padding='same', use_bias=False)(x_up)
-
-        if K.image_data_format() == 'channels_first':
-            channel, row, col = input_shape
+        if concat_axis == 1:  # channels_first dim ordering
+            _, rows, cols = input_shape
         else:
-            row, col, channel = input_shape
+            rows, cols, _ = input_shape
 
-        x = Reshape((row * col, nb_classes))(x)
-        x = Activation(activation)(x)
-        x = Reshape((row, col, nb_classes))(x)
-    else:
-        x = x_up
+        if reduction != 0.0:
+            if not (reduction <= 1.0 and reduction > 0.0):
+                raise ValueError('`reduction` value must lie between 0.0 and 1.0')
 
-    return x
+        # check if upsampling_conv has minimum number of filters
+        # minimum is set to 12, as at least 3 color channels are needed for correct upsampling
+        if not (nb_upsampling_conv > 12 and nb_upsampling_conv % 4 == 0):
+            raise ValueError('Parameter `nb_upsampling_conv` number of channels must '
+                             'be a positive number divisible by 4 and greater than 12')
+
+        # layers in each dense block
+        if type(nb_layers_per_block) is list or type(nb_layers_per_block) is tuple:
+            nb_layers = list(nb_layers_per_block)  # Convert tuple to list
+
+            if len(nb_layers) != (nb_dense_block + 1):
+                raise ValueError('If `nb_dense_block` is a list, its length must be '
+                                 '(`nb_dense_block` + 1)')
+
+            bottleneck_nb_layers = nb_layers[-1]
+            rev_layers = nb_layers[::-1]
+            nb_layers.extend(rev_layers[1:])
+        else:
+            bottleneck_nb_layers = nb_layers_per_block
+            nb_layers = [nb_layers_per_block] * (2 * nb_dense_block + 1)
+
+        # compute compression factor
+        compression = 1.0 - reduction
+
+        # Initial convolution
+        x = Conv2D(init_conv_filters, (7, 7), kernel_initializer='he_normal', padding='same', name='initial_conv2D',
+                   use_bias=False, kernel_regularizer=l2(weight_decay))(img_input)
+        x = BatchNormalization(axis=concat_axis, epsilon=1.1e-5)(x)
+        x = Activation('relu')(x)
+
+        nb_filter = init_conv_filters
+
+        skip_list = []
+
+        # Add dense blocks and transition down block
+        for block_idx in range(nb_dense_block):
+            x, nb_filter = __dense_block(x, nb_layers[block_idx], nb_filter, growth_rate, dropout_rate=dropout_rate,
+                                         weight_decay=weight_decay)
+
+            # Skip connection
+            skip_list.append(x)
+
+            # add transition_block
+            x = __transition_block(x, nb_filter, compression=compression, weight_decay=weight_decay)
+
+            nb_filter = int(nb_filter * compression)  # this is calculated inside transition_down_block
+
+        # The last dense_block does not have a transition_down_block
+        # return the concatenated feature maps without the concatenation of the input
+        _, nb_filter, concat_list = __dense_block(x, bottleneck_nb_layers, nb_filter, growth_rate,
+                                                  dropout_rate=dropout_rate, weight_decay=weight_decay,
+                                                  return_concat_list=True)
+
+        skip_list = skip_list[::-1]  # reverse the skip list
+
+        # Add dense blocks and transition up block
+        for block_idx in range(nb_dense_block):
+            n_filters_keep = growth_rate * nb_layers[nb_dense_block + block_idx]
+
+            # upsampling block must upsample only the feature maps (concat_list[1:]),
+            # not the concatenation of the input with the feature maps (concat_list[0].
+            l = concatenate(concat_list[1:], axis=concat_axis)
+
+            t = __transition_up_block(l, nb_filters=n_filters_keep, type=upsampling_type, weight_decay=weight_decay)
+
+            # concatenate the skip connection with the transition block
+            x = concatenate([t, skip_list[block_idx]], axis=concat_axis)
+
+            # Dont allow the feature map size to grow in upsampling dense blocks
+            x_up, nb_filter, concat_list = __dense_block(x, nb_layers[nb_dense_block + block_idx + 1], nb_filter=growth_rate,
+                                                         growth_rate=growth_rate, dropout_rate=dropout_rate,
+                                                         weight_decay=weight_decay, return_concat_list=True,
+                                                         grow_nb_filters=False)
+
+        if include_top:
+            x = Conv2D(nb_classes, (1, 1), activation='linear', padding='same', use_bias=False)(x_up)
+
+            if K.image_data_format() == 'channels_first':
+                channel, row, col = input_shape
+            else:
+                row, col, channel = input_shape
+
+            x = Reshape((row * col, nb_classes))(x)
+            x = Activation(activation)(x)
+            x = Reshape((row, col, nb_classes))(x)
+        else:
+            x = x_up
+
+        return x
