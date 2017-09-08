@@ -33,7 +33,7 @@ TF_WEIGHTS_PATH_NO_TOP = 'https://github.com/titu1994/Wide-Residual-Networks/rel
 def WideResidualNetwork(depth=28, width=8, dropout_rate=0.0,
                         include_top=True, weights='cifar10',
                         input_tensor=None, input_shape=None,
-                        classes=10):
+                        classes=10, activation='softmax'):
     """Instantiate the Wide Residual Network architecture,
         optionally loading weights pre-trained
         on CIFAR-10. Note that when using TensorFlow,
@@ -89,7 +89,7 @@ def WideResidualNetwork(depth=28, width=8, dropout_rate=0.0,
                                       default_size=32,
                                       min_size=8,
                                       data_format=K.image_dim_ordering(),
-                                      include_top=include_top)
+                                      require_flatten=include_top)
 
     if input_tensor is None:
         img_input = Input(shape=input_shape)
@@ -100,7 +100,7 @@ def WideResidualNetwork(depth=28, width=8, dropout_rate=0.0,
             img_input = input_tensor
 
     x = __create_wide_residual_network(classes, img_input, include_top, depth, width,
-                                       dropout_rate)
+                                       dropout_rate, activation)
 
     # Ensure that the model takes into account
     # any potential predecessors of `input_tensor`.
@@ -159,7 +159,7 @@ def WideResidualNetwork(depth=28, width=8, dropout_rate=0.0,
 def __conv1_block(input):
     x = Conv2D(16, (3, 3), padding='same')(input)
 
-    channel_axis = 1 if K.image_dim_ordering() == 'th' else -1
+    channel_axis = 1 if K.image_data_format() == 'channels_first' else -1
 
     x = BatchNormalization(axis=channel_axis)(x)
     x = Activation('relu')(x)
@@ -169,10 +169,10 @@ def __conv1_block(input):
 def __conv2_block(input, k=1, dropout=0.0):
     init = input
 
-    channel_axis = 1 if K.image_dim_ordering() == 'th' else -1
+    channel_axis = 1 if K.image_data_format() == 'channels_first' else -1
 
     # Check if input number of filters is same as 16 * k, else create convolution2d for this input
-    if K.image_dim_ordering() == 'th':
+    if K.image_data_format() == 'channels_first':
         if init._keras_shape[1] != 16 * k:
             init = Conv2D(16 * k, (1, 1), activation='linear', padding='same')(init)
     else:
@@ -197,10 +197,10 @@ def __conv2_block(input, k=1, dropout=0.0):
 def __conv3_block(input, k=1, dropout=0.0):
     init = input
 
-    channel_axis = 1 if K.image_dim_ordering() == 'th' else -1
+    channel_axis = 1 if K.image_data_format() == 'channels_first' else -1
 
     # Check if input number of filters is same as 32 * k, else create convolution2d for this input
-    if K.image_dim_ordering() == 'th':
+    if K.image_data_format() == 'channels_first':
         if init._keras_shape[1] != 32 * k:
             init = Conv2D(32 * k, (1, 1), activation='linear', padding='same')(init)
     else:
@@ -250,7 +250,8 @@ def ___conv4_block(input, k=1, dropout=0.0):
     return m
 
 
-def __create_wide_residual_network(nb_classes, img_input, include_top, depth=28, width=8, dropout=0.0):
+def __create_wide_residual_network(nb_classes, img_input, include_top, depth=28,
+                                   width=8, dropout=0.0, activation='softmax'):
     ''' Creates a Wide Residual Network with specified parameters
 
     Args:
@@ -288,10 +289,9 @@ def __create_wide_residual_network(nb_classes, img_input, include_top, depth=28,
         x = ___conv4_block(x, width, dropout)
         nb_conv += 2
 
-    x = AveragePooling2D((8, 8))(x)
-
     if include_top:
+        x = AveragePooling2D((8, 8))(x)
         x = Flatten()(x)
-        x = Dense(nb_classes, activation='softmax')(x)
+        x = Dense(nb_classes, activation=activation)(x)
 
     return x
