@@ -69,21 +69,22 @@ def _bn_relu_conv(**conv_params):
     return f
 
 
-def _shortcut(input, residual):
+def _shortcut(input_feature, residual):
     """Adds a shortcut between input and residual block and merges them with "sum"
     """
     # Expand channels of shortcut to match residual.
     # Stride appropriately to match residual (width, height)
     # Should be int if network architecture is correctly configured.
-    input_shape = K.int_shape(input)
+    input_shape = K.int_shape(input_feature)
     residual_shape = K.int_shape(residual)
     stride_width = int(round(input_shape[ROW_AXIS] / residual_shape[ROW_AXIS]))
     stride_height = int(round(input_shape[COL_AXIS] / residual_shape[COL_AXIS]))
     equal_channels = input_shape[CHANNEL_AXIS] == residual_shape[CHANNEL_AXIS]
 
-    shortcut = input
+    shortcut = input_feature
     # 1 X 1 conv if shape is different. Else identity.
     if stride_width > 1 or stride_height > 1 or not equal_channels:
+        print('reshaping via a convolution...')
         shortcut = Conv2D(filters=residual_shape[CHANNEL_AXIS],
                           kernel_size=(1, 1),
                           strides=(stride_width, stride_height),
@@ -113,7 +114,7 @@ def basic_block(filters, init_strides=(1, 1), is_first_block_of_first_layer=Fals
     """Basic 3 X 3 convolution blocks for use on resnets with layers <= 34.
     Follows improved proposed scheme in http://arxiv.org/pdf/1603.05027v2.pdf
     """
-    def f(input):
+    def f(input_features):
 
         if is_first_block_of_first_layer:
             # don't repeat bn->relu since we just did bn->relu->maxpool
@@ -121,16 +122,17 @@ def basic_block(filters, init_strides=(1, 1), is_first_block_of_first_layer=Fals
                            strides=init_strides,
                            padding="same",
                            kernel_initializer="he_normal",
-                           kernel_regularizer=l2(1e-4))(input)
+                           kernel_regularizer=l2(1e-4))(input_features)
         else:
             conv1 = _bn_relu_conv(filters=filters, kernel_size=(3, 3),
-                                  strides=init_strides)(input)
+                                  strides=init_strides)(input_features)
 
-        residual = _bn_relu_conv(filters=filters, kernel_size=(3, 3))(conv1)
-        return _shortcut(input, residual)
+        x = _bn_relu_conv(filters=filters, kernel_size=(3, 3))(conv1)
 
         if dropout is not None:
             x = Dropout(dropout)(x)
+
+        return _shortcut(input_features, x)
 
     return f
 
@@ -170,7 +172,7 @@ def _handle_dim_ordering():
     global ROW_AXIS
     global COL_AXIS
     global CHANNEL_AXIS
-    if K.image_data_format() == 'channels_first':
+    if K.image_data_format() == 'channels_last':
         ROW_AXIS = 1
         COL_AXIS = 2
         CHANNEL_AXIS = 3
