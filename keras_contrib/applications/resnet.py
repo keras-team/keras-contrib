@@ -189,14 +189,14 @@ def _get_block(identifier):
     return identifier
 
 
-def ResNet(input_shape, num_outputs, block_fn, repetitions, initial_filters=64,
+def ResNet(input_shape, num_outputs, block='basic_block', repetitions=[3, 4, 6, 3], initial_filters=64,
            activation='softmax', include_top=True, input_tensor=None, dropout=None):
-    """Builds a custom ResNet like architecture.
+    """Builds a custom ResNet like architecture. Defaults to ResNet50.
 
     Args:
         input_shape: The input shape in the form (nb_channels, nb_rows, nb_cols)
         num_outputs: The number of outputs at final softmax layer
-        block_fn: The block function to use. This is either `basic_block` or `bottleneck`.
+        block_fn: The block function to use. This is either `'basic_block'` or `'bottleneck'`.
             The original paper used basic_block for layers < 50
         repetitions: Number of repetitions of various block units.
             At each block unit, the number of filters are doubled and the input size is halved
@@ -207,6 +207,13 @@ def ResNet(input_shape, num_outputs, block_fn, repetitions, initial_filters=64,
     _handle_dim_ordering()
     if len(input_shape) != 3:
         raise Exception("Input shape should be a tuple (nb_channels, nb_rows, nb_cols)")
+
+    if block == 'basic_block':
+        block_fn = basic_block
+    elif block == 'bottleneck':
+        block_fn = bottleneck
+    else:
+        raise ValueError('Unsupported block type')
 
     # Permute dimension order if necessary
     if K.image_data_format() == 'channels_first':
