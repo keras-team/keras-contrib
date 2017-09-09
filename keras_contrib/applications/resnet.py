@@ -189,13 +189,13 @@ def _get_block(identifier):
     return identifier
 
 
-def ResNet(input_shape, num_outputs, block='basic_block', repetitions=[3, 4, 6, 3], initial_filters=64,
+def ResNet(input_shape, classes, block='basic_block', repetitions=[3, 4, 6, 3], initial_filters=64,
            activation='softmax', include_top=True, input_tensor=None, dropout=None):
     """Builds a custom ResNet like architecture. Defaults to ResNet50.
 
     Args:
         input_shape: The input shape in the form (nb_channels, nb_rows, nb_cols)
-        num_outputs: The number of outputs at final softmax layer
+        classes: The number of outputs at final softmax layer
         block_fn: The block function to use. This is either `'basic_block'` or `'bottleneck'`.
             The original paper used basic_block for layers < 50
         repetitions: Number of repetitions of various block units.
@@ -247,28 +247,28 @@ def ResNet(input_shape, num_outputs, block='basic_block', repetitions=[3, 4, 6, 
         pool2 = AveragePooling2D(pool_size=(block_shape[ROW_AXIS], block_shape[COL_AXIS]),
                                  strides=(1, 1))(x)
         flatten1 = Flatten()(pool2)
-        x = Dense(units=num_outputs, kernel_initializer="he_normal",
+        x = Dense(units=classes, kernel_initializer="he_normal",
                   activation=activation)(flatten1)
 
     model = Model(inputs=img_input, outputs=x)
     return model
 
 
-def resnet_18(input_shape, num_outputs):
-    return ResNet(input_shape, num_outputs, basic_block, [2, 2, 2, 2])
+def resnet_18(input_shape, classes):
+    return ResNet(input_shape, classes, basic_block, [2, 2, 2, 2])
 
 
-def resnet_34(input_shape, num_outputs):
-    return ResNet(input_shape, num_outputs, basic_block, [3, 4, 6, 3])
+def resnet_34(input_shape, classes):
+    return ResNet(input_shape, classes, basic_block, [3, 4, 6, 3])
 
 
-def resnet_50(input_shape, num_outputs):
-    return ResNet(input_shape, num_outputs, bottleneck, [3, 4, 6, 3])
+def resnet_50(input_shape, classes):
+    return ResNet(input_shape, classes, bottleneck, [3, 4, 6, 3])
 
 
-def resnet_101(input_shape, num_outputs):
-    return ResNet(input_shape, num_outputs, bottleneck, [3, 4, 23, 3])
+def resnet_101(input_shape, classes):
+    return ResNet(input_shape, classes, bottleneck, [3, 4, 23, 3])
 
 
-def resnet_152(input_shape, num_outputs):
-        return ResNet(input_shape, num_outputs, bottleneck, [3, 8, 36, 3])
+def resnet_152(input_shape, classes):
+        return ResNet(input_shape, classes, bottleneck, [3, 8, 36, 3])
