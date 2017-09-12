@@ -90,7 +90,7 @@ def _shortcut(input_feature, residual):
                           strides=(stride_width, stride_height),
                           padding="valid",
                           kernel_initializer="he_normal",
-                          kernel_regularizer=l2(0.0001))(input)
+                          kernel_regularizer=l2(0.0001))(input_feature)
 
     return add([shortcut, residual])
 
