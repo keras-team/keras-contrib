@@ -25,9 +25,7 @@ def basic_instancenorm_test():
                input_shape=(3, 4, 2))
     layer_test(normalization.InstanceNormalization,
                kwargs={'gamma_initializer': 'ones',
-                       'beta_initializer': 'ones',
-                       'moving_mean_initializer': 'zeros',
-                       'moving_variance_initializer': 'ones'},
+                       'beta_initializer': 'ones'},
                input_shape=(3, 4, 2))
     layer_test(normalization.InstanceNormalization,
                kwargs={'scale': False, 'center': False},
@@ -229,10 +227,11 @@ def basic_batchrenorm_test():
 
 @keras_test
 def test_batchrenorm_mode_0_or_2():
-    for training in [1, 0]:
-        model = Sequential()
-        norm_m0 = normalization.BatchRenormalization(input_shape=(10,), momentum=0.8)
-        model.add(norm_m0)
+    for training in [1, 0, None]:
+        ip = Input(shape=(10,))
+        norm_m0 = normalization.BatchRenormalization(momentum=0.8)
+        out = norm_m0(ip, training=training)
+        model = Model(ip, out)
         model.compile(loss='mse', optimizer='sgd')
 
         # centered on 5.0, variance 10.0
