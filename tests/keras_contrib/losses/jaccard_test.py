@@ -1,5 +1,7 @@
 from keras_contrib.losses import jaccard_distance
+from keras import backend as K
 import numpy as np
+
 
 def test_jaccard_distance():
     # all_right, almost_right, half_right, all_wrong
@@ -18,11 +20,13 @@ def test_jaccard_distance():
     assert almost_right < half_right
     assert half_right < all_wrong
 
+
 def test_jaccard_distance_shapes_3d():
     y_a = K.variable(np.random.random((5, 6, 7)))
     y_b = K.variable(np.random.random((5, 6, 7)))
     objective_output = jaccard_distance(y_a, y_b)
     assert K.eval(objective_output).shape == (5, 6)
+
 
 def test_jaccard_distance_shapes_2d():
     y_a = K.variable(np.random.random((6, 7)))
