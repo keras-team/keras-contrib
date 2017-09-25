@@ -9,4 +9,3 @@ from .. import regularizers
 from keras.engine import Layer
 from keras.engine import InputSpec
 
-from keras.layers.recurrent import _time_distributed_dense
