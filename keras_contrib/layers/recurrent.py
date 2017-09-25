@@ -8,4 +8,3 @@ from .. import initializers
 from .. import regularizers
 from keras.engine import Layer
 from keras.engine import InputSpec
-
