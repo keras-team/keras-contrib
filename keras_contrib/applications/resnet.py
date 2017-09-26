@@ -149,11 +149,11 @@ def bottleneck(filters, init_strides=(1, 1), is_first_block_of_first_layer=False
 
         if is_first_block_of_first_layer:
             # don't repeat bn->relu since we just did bn->relu->maxpool
-            conv_1_1 = Conv2D(filters=filters, kernel_size=(1, 1),
-                              strides=init_strides,
-                              padding="same",
-                              kernel_initializer="he_normal",
-                              kernel_regularizer=l2(1e-4))(input_feature)
+            x = Conv2D(filters=filters, kernel_size=(1, 1),
+                       strides=init_strides,
+                       padding="same",
+                       kernel_initializer="he_normal",
+                       kernel_regularizer=l2(1e-4))(input_feature)
         else:
             x = _bn_relu_conv(filters=filters, kernel_size=(1, 1),
                               strides=init_strides)(input_feature)
