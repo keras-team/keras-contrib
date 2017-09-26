@@ -95,7 +95,7 @@ def _shortcut(input_feature, residual):
     return add([shortcut, residual])
 
 
-def _residual_block(block_function, filters, repetitions, is_first_layer=False):
+def _residual_block(block_function, filters, repetitions, is_first_layer=False, dropout=None):
     """Builds a residual block with repeating bottleneck blocks.
     """
     def f(input):
@@ -104,7 +104,8 @@ def _residual_block(block_function, filters, repetitions, is_first_layer=False):
             if i == 0 and not is_first_layer:
                 init_strides = (2, 2)
             input = block_function(filters=filters, init_strides=init_strides,
-                                   is_first_block_of_first_layer=(is_first_layer and i == 0))(input)
+                                   is_first_block_of_first_layer=(is_first_layer and i == 0),
+                                   dropout=dropout)(input)
         return input
 
     return f
@@ -124,13 +125,13 @@ def basic_block(filters, init_strides=(1, 1), is_first_block_of_first_layer=Fals
                            kernel_initializer="he_normal",
                            kernel_regularizer=l2(1e-4))(input_features)
         else:
-            conv1 = _bn_relu_conv(filters=filters, kernel_size=(3, 3),
-                                  strides=init_strides)(input_features)
-
-        x = _bn_relu_conv(filters=filters, kernel_size=(3, 3))(conv1)
+            x = _bn_relu_conv(filters=filters, kernel_size=(3, 3),
+                              strides=init_strides)(input_features)
 
         if dropout is not None:
             x = Dropout(dropout)(x)
+
+        x = _bn_relu_conv(filters=filters, kernel_size=(3, 3))(x)
 
         return _shortcut(input_features, x)
 
@@ -154,14 +155,18 @@ def bottleneck(filters, init_strides=(1, 1), is_first_block_of_first_layer=False
                               kernel_initializer="he_normal",
                               kernel_regularizer=l2(1e-4))(input_feature)
         else:
-            conv_1_1 = _bn_relu_conv(filters=filters, kernel_size=(1, 1),
-                                     strides=init_strides)(input_feature)
-
-        conv_3_3 = _bn_relu_conv(filters=filters, kernel_size=(3, 3))(conv_1_1)
-        x = _bn_relu_conv(filters=filters * 4, kernel_size=(1, 1))(conv_3_3)
+            x = _bn_relu_conv(filters=filters, kernel_size=(1, 1),
+                              strides=init_strides)(input_feature)
 
         if dropout is not None:
             x = Dropout(dropout)(x)
+
+        x = _bn_relu_conv(filters=filters, kernel_size=(3, 3))(x)
+
+        if dropout is not None:
+            x = Dropout(dropout)(x)
+
+        x = _bn_relu_conv(filters=filters * 4, kernel_size=(1, 1))(x)
 
         return _shortcut(input_feature, x)
 
@@ -237,7 +242,8 @@ def ResNet(input_shape, classes, block='basic_block', repetitions=[3, 4, 6, 3], 
     block = pool1
     filters = initial_filters
     for i, r in enumerate(repetitions):
-        block = _residual_block(block_fn, filters=filters, repetitions=r, is_first_layer=(i == 0))(block)
+        block = _residual_block(block_fn, filters=filters, repetitions=r, is_first_layer=(i == 0),
+                                dropout=dropout)(block)
         filters *= 2
 
     # Last activation
