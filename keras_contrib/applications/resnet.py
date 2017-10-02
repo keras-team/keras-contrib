@@ -261,7 +261,8 @@ def _string_to_function(identifier):
 
 def ResNet(input_shape=None, classes=10, block='bottleneck', residual_unit='v2', repetitions=[3, 4, 6, 3],
            initial_filters=64, activation='softmax', include_top=True, input_tensor=None, dropout=None,
-           transition_dilation_rate=(1, 1), initial_strides=(2, 2), pooling='max', top='classification'):
+           transition_dilation_rate=(1, 1), initial_strides=(2, 2), initial_kernel_size=(7, 7),
+           pooling='max', top='classification'):
     """Builds a custom ResNet like architecture. Defaults to ResNet50 v2.
 
     Args:
@@ -277,9 +278,17 @@ def ResNet(input_shape=None, classes=10, block='bottleneck', residual_unit='v2',
             The original paper used `basic` for layers < 50.
         repetitions: Number of repetitions of various block units.
             At each block unit, the number of filters are doubled and the input size is halved
+        transition_dilation_rate: Used for pixel-wise prediction tasks such as image segmentation.
         residual_unit: the basic residual unit, 'v1' for conv bn relu, 'v2' for bn relu conv.
+        dropout: None for no dropout, otherwise rate of dropout from 0 to 1. Added based on
+            Wide Residual Networks paper. https://arxiv.org/pdf/1605.07146
         initial_strides: Stride of the very first residual unit and MaxPooling2D call,
-            with default (2, 2).
+            with default (2, 2), set to (1, 1) for small images like cifar.
+        initial_kernel_size: kernel size of the very first convolution, (7, 7) for imagenet
+            and (3, 3) for small image datasets like tiny imagenet and cifar. See ResNeXt
+            paper https://arxiv.org/abs/1611.05431 for details.
+        pooling: Determine if there will be an initial pooling layer, 'max' for imagenet and
+            None for small image datasets.
 
     Returns:
         The keras `Model`.
@@ -322,7 +331,7 @@ def ResNet(input_shape=None, classes=10, block='bottleneck', residual_unit='v2',
     block_fn = _string_to_function(block_fn)
 
     img_input = Input(shape=input_shape, tensor=input_tensor)
-    x = residual_unit(filters=initial_filters, kernel_size=(7, 7), strides=initial_strides)(img_input)
+    x = _conv_bn_relu(filters=initial_filters, kernel_size=initial_kernel_size, strides=initial_strides)(img_input)
     if pooling == 'max':
         x = MaxPooling2D(pool_size=(3, 3), strides=initial_strides, padding="same")(x)
 
