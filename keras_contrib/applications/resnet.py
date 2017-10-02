@@ -117,23 +117,25 @@ def _shortcut(input_feature, residual, conv_name_base=None, bn_name_base=None):
 
 
 def _residual_block(block_function, filters, blocks, stage,
-                    transition_strides=(1, 1), transition_dilation_rate=(1, 1),
-                    dilation_rate=(1, 1), is_first_layer=False, dropout=None):
+                    transition_strides=None, transition_dilation_rates=None,
+                    dilation_rates=(1, 1), is_first_layer=False, dropout=None):
     """Builds a residual block with repeating bottleneck blocks.
 
        stage: integer, current stage label, used for generating layer names
        blocks: number of blocks 'a','b'..., current block label, used for generating layer names
+       transition_strides: a list of tuples for the strides of each transition
+       transition_dilation_rates: a list of tuples for the dilation rate of each transition
     """
+    if transition_dilation_rates is None:
+        transition_dilation_rates = [(1, 1)] * blocks
+    if transition_strides is None:
+        transition_strides = [(1, 1)] * blocks
+
     def f(x):
         for i in range(blocks):
-            if i == 0 and not is_first_layer:
-                if transition_dilation_rate == (1, 1):
-                    transition_strides = (2, 2)
-                else:
-                    dilation_rate = transition_dilation_rate
             x = block_function(filters=filters, stage=stage, block=i,
-                               transition_strides=transition_strides,
-                               dilation_rate=dilation_rate,
+                               transition_strides=transition_strides[i],
+                               dilation_rate=dilation_rates[i],
                                is_first_block_of_first_layer=(is_first_layer and i == 0),
                                dropout=dropout)(x)
         return x
@@ -338,11 +340,16 @@ def ResNet(input_shape=None, classes=10, block='bottleneck', residual_unit='v2',
     block = x
     filters = initial_filters
     for i, r in enumerate(repetitions):
+        transition_dilation_rates = [transition_dilation_rate] * r
+        transition_strides = [(1, 1)] * r
+        if transition_dilation_rate == (1, 1):
+            transition_strides[0] = (2, 2)
         block = _residual_block(block_fn, filters=filters,
                                 stage=i, blocks=r,
                                 is_first_layer=(i == 0),
                                 dropout=dropout,
-                                transition_dilation_rate=transition_dilation_rate)(block)
+                                transition_dilation_rates=transition_dilation_rates,
+                                transition_strides=transition_strides)(block)
         filters *= 2
 
     # Last activation
