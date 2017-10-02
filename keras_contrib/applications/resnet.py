@@ -8,11 +8,13 @@ import six
 from keras.models import Model
 from keras.layers import Input
 from keras.layers import Activation
+from keras.layers import Reshape
 from keras.layers import Dense
 from keras.layers import Flatten
 from keras.layers import Conv2D
 from keras.layers import MaxPooling2D
 from keras.layers import AveragePooling2D
+from keras.layers.pooling import GlobalAveragePooling2D
 from keras.layers import Dropout
 from keras.layers.merge import add
 from keras.layers.normalization import BatchNormalization
@@ -21,55 +23,68 @@ from keras import backend as K
 from keras.applications.imagenet_utils import _obtain_input_shape
 
 
-def _bn_relu(input):
+def _bn_relu(x, bn_name=None, relu_name=None):
     """Helper to build a BN -> relu block
     """
-    norm = BatchNormalization(axis=CHANNEL_AXIS)(input)
-    return Activation("relu")(norm)
+    norm = BatchNormalization(axis=CHANNEL_AXIS, name=bn_name)(x)
+    return Activation("relu", name=relu_name)(norm)
 
 
 def _conv_bn_relu(**conv_params):
-    """Helper to build a conv -> BN -> relu block
+    """Helper to build a conv -> BN -> relu residual unit activation function.
+       This is the original ResNet v1 scheme in https://arxiv.org/abs/1512.03385
     """
     filters = conv_params["filters"]
     kernel_size = conv_params["kernel_size"]
     strides = conv_params.setdefault("strides", (1, 1))
+    dilation_rate = conv_params.setdefault("dilation_rate", (1, 1))
+    conv_name = conv_params.setdefault("conv_name", None)
+    bn_name = conv_params.setdefault("bn_name", None)
+    relu_name = conv_params.setdefault("relu_name", None)
     kernel_initializer = conv_params.setdefault("kernel_initializer", "he_normal")
     padding = conv_params.setdefault("padding", "same")
     kernel_regularizer = conv_params.setdefault("kernel_regularizer", l2(1.e-4))
 
-    def f(input):
-        conv = Conv2D(filters=filters, kernel_size=kernel_size,
-                      strides=strides, padding=padding,
-                      kernel_initializer=kernel_initializer,
-                      kernel_regularizer=kernel_regularizer)(input)
-        return _bn_relu(conv)
+    def f(x):
+        x = Conv2D(filters=filters, kernel_size=kernel_size,
+                   strides=strides, padding=padding,
+                   dilation_rate=dilation_rate,
+                   kernel_initializer=kernel_initializer,
+                   kernel_regularizer=kernel_regularizer,
+                   name=conv_name)(x)
+        return _bn_relu(x, bn_name=bn_name, relu_name=relu_name)
 
     return f
 
 
 def _bn_relu_conv(**conv_params):
-    """Helper to build a BN -> relu -> conv block.
-    This is an improved scheme proposed in http://arxiv.org/pdf/1603.05027v2.pdf
+    """Helper to build a BN -> relu -> conv residual unit with full pre-activation function.
+    This is the ResNet v2 scheme proposed in http://arxiv.org/pdf/1603.05027v2.pdf
     """
     filters = conv_params["filters"]
     kernel_size = conv_params["kernel_size"]
     strides = conv_params.setdefault("strides", (1, 1))
+    dilation_rate = conv_params.setdefault("dilation_rate", (1, 1))
+    conv_name = conv_params.setdefault("conv_name", None)
+    bn_name = conv_params.setdefault("bn_name", None)
+    relu_name = conv_params.setdefault("relu_name", None)
     kernel_initializer = conv_params.setdefault("kernel_initializer", "he_normal")
     padding = conv_params.setdefault("padding", "same")
     kernel_regularizer = conv_params.setdefault("kernel_regularizer", l2(1.e-4))
 
-    def f(input):
-        activation = _bn_relu(input)
+    def f(x):
+        activation = _bn_relu(x, bn_name=bn_name, relu_name=relu_name)
         return Conv2D(filters=filters, kernel_size=kernel_size,
                       strides=strides, padding=padding,
+                      dilation_rate=dilation_rate,
                       kernel_initializer=kernel_initializer,
-                      kernel_regularizer=kernel_regularizer)(activation)
+                      kernel_regularizer=kernel_regularizer,
+                      name=conv_name)(activation)
 
     return f
 
 
-def _shortcut(input_feature, residual):
+def _shortcut(input_feature, residual, conv_name_base=None, bn_name_base=None):
     """Adds a shortcut between input and residual block and merges them with "sum"
     """
     # Expand channels of shortcut to match residual.
@@ -85,60 +100,99 @@ def _shortcut(input_feature, residual):
     # 1 X 1 conv if shape is different. Else identity.
     if stride_width > 1 or stride_height > 1 or not equal_channels:
         print('reshaping via a convolution...')
+        if conv_name_base is not None:
+            conv_name_base = conv_name_base + '1'
         shortcut = Conv2D(filters=residual_shape[CHANNEL_AXIS],
                           kernel_size=(1, 1),
                           strides=(stride_width, stride_height),
                           padding="valid",
                           kernel_initializer="he_normal",
-                          kernel_regularizer=l2(0.0001))(input_feature)
+                          kernel_regularizer=l2(0.0001),
+                          name=conv_name_base)(input_feature)
+        if bn_name_base is not None:
+            bn_name_base = bn_name_base + '1'
+        shortcut = BatchNormalization(axis=CHANNEL_AXIS, name=bn_name_base)(shortcut)
 
     return add([shortcut, residual])
 
 
-def _residual_block(block_function, filters, repetitions, is_first_layer=False, dropout=None):
+def _residual_block(block_function, filters, blocks, stage,
+                    transition_strides=(1, 1), transition_dilation_rate=(1, 1),
+                    dilation_rate=(1, 1), is_first_layer=False, dropout=None):
     """Builds a residual block with repeating bottleneck blocks.
+
+       stage: integer, current stage label, used for generating layer names
+       blocks: number of blocks 'a','b'..., current block label, used for generating layer names
     """
-    def f(input):
-        for i in range(repetitions):
-            init_strides = (1, 1)
+    def f(x):
+        for i in range(blocks):
             if i == 0 and not is_first_layer:
-                init_strides = (2, 2)
-            input = block_function(filters=filters, init_strides=init_strides,
-                                   is_first_block_of_first_layer=(is_first_layer and i == 0),
-                                   dropout=dropout)(input)
-        return input
+                if transition_dilation_rate == (1, 1):
+                    transition_strides = (2, 2)
+                else:
+                    dilation_rate = transition_dilation_rate
+            x = block_function(filters=filters, stage=stage, block=i,
+                               transition_strides=transition_strides,
+                               dilation_rate=dilation_rate,
+                               is_first_block_of_first_layer=(is_first_layer and i == 0),
+                               dropout=dropout)(x)
+        return x
 
     return f
 
 
-def basic_block(filters, init_strides=(1, 1), is_first_block_of_first_layer=False, dropout=None):
+def _block_name_base(stage, block):
+    """Get the convolution name base and batch normalization name base defined by stage and block.
+
+    If there are less than 26 blocks they will be labeled 'a', 'b', 'c' to match the paper and keras
+    and beyond 26 blocks they will simply be numbered.
+    """
+    if block < 27:
+        block = '%c' % (block + 97)  # 97 is the ascii number for lowercase 'a'
+    conv_name_base = 'res' + str(stage) + block + '_branch'
+    bn_name_base = 'bn' + str(stage) + block + '_branch'
+    return conv_name_base, bn_name_base
+
+
+def basic_block(filters, stage, block, transition_strides=(1, 1),
+                dilation_rate=(1, 1), is_first_block_of_first_layer=False, dropout=None,
+                residual_unit=_bn_relu_conv):
     """Basic 3 X 3 convolution blocks for use on resnets with layers <= 34.
     Follows improved proposed scheme in http://arxiv.org/pdf/1603.05027v2.pdf
     """
     def f(input_features):
-
+        conv_name_base, bn_name_base = _block_name_base(stage, block)
         if is_first_block_of_first_layer:
             # don't repeat bn->relu since we just did bn->relu->maxpool
             conv1 = Conv2D(filters=filters, kernel_size=(3, 3),
-                           strides=init_strides,
+                           strides=transition_strides,
+                           dilation_rate=dilation_rate,
                            padding="same",
                            kernel_initializer="he_normal",
-                           kernel_regularizer=l2(1e-4))(input_features)
+                           kernel_regularizer=l2(1e-4),
+                           name=conv_name_base + '2a')(input_features)
         else:
-            x = _bn_relu_conv(filters=filters, kernel_size=(3, 3),
-                              strides=init_strides)(input_features)
+            x = residual_unit(filters=filters, kernel_size=(3, 3),
+                              strides=transition_strides,
+                              dilation_rate=dilation_rate,
+                              conv_name_base=conv_name_base + '2a',
+                              bn_name_base=bn_name_base + '2a')(input_features)
 
         if dropout is not None:
             x = Dropout(dropout)(x)
 
-        x = _bn_relu_conv(filters=filters, kernel_size=(3, 3))(x)
+        x = residual_unit(filters=filters, kernel_size=(3, 3),
+                          conv_name_base=conv_name_base + '2b',
+                          bn_name_base=bn_name_base + '2b')(x)
 
         return _shortcut(input_features, x)
 
     return f
 
 
-def bottleneck(filters, init_strides=(1, 1), is_first_block_of_first_layer=False, dropout=None):
+def bottleneck(filters, stage, block, transition_strides=(1, 1),
+               dilation_rate=(1, 1), is_first_block_of_first_layer=False, dropout=None,
+               residual_unit=_bn_relu_conv):
     """Bottleneck architecture for > 34 layer resnet.
     Follows improved proposed scheme in http://arxiv.org/pdf/1603.05027v2.pdf
 
@@ -146,27 +200,36 @@ def bottleneck(filters, init_strides=(1, 1), is_first_block_of_first_layer=False
         A final conv layer of filters * 4
     """
     def f(input_feature):
-
+        conv_name_base, bn_name_base = _block_name_base(stage, block)
         if is_first_block_of_first_layer:
             # don't repeat bn->relu since we just did bn->relu->maxpool
             x = Conv2D(filters=filters, kernel_size=(1, 1),
-                       strides=init_strides,
+                       strides=transition_strides,
+                       dilation_rate=dilation_rate,
                        padding="same",
                        kernel_initializer="he_normal",
-                       kernel_regularizer=l2(1e-4))(input_feature)
+                       kernel_regularizer=l2(1e-4),
+                       name=conv_name_base + '2a')(input_feature)
         else:
-            x = _bn_relu_conv(filters=filters, kernel_size=(1, 1),
-                              strides=init_strides)(input_feature)
+            x = residual_unit(filters=filters, kernel_size=(1, 1),
+                              strides=transition_strides,
+                              dilation_rate=dilation_rate,
+                              conv_name_base=conv_name_base + '2a',
+                              bn_name_base=bn_name_base + '2a')(input_feature)
 
         if dropout is not None:
             x = Dropout(dropout)(x)
 
-        x = _bn_relu_conv(filters=filters, kernel_size=(3, 3))(x)
+        x = residual_unit(filters=filters, kernel_size=(3, 3),
+                          conv_name_base=conv_name_base + '2b',
+                          bn_name_base=bn_name_base + '2b')(x)
 
         if dropout is not None:
             x = Dropout(dropout)(x)
 
-        x = _bn_relu_conv(filters=filters * 4, kernel_size=(1, 1))(x)
+        x = residual_unit(filters=filters * 4, kernel_size=(1, 1),
+                          conv_name_base=conv_name_base + '2c',
+                          bn_name_base=bn_name_base + '2c')(x)
 
         return _shortcut(input_feature, x)
 
@@ -187,7 +250,7 @@ def _handle_dim_ordering():
         COL_AXIS = 3
 
 
-def _get_block(identifier):
+def _string_to_function(identifier):
     if isinstance(identifier, six.string_types):
         res = globals().get(identifier)
         if not res:
@@ -196,31 +259,54 @@ def _get_block(identifier):
     return identifier
 
 
-def ResNet(input_shape, classes, block='basic_block', repetitions=[3, 4, 6, 3], initial_filters=64,
-           activation='softmax', include_top=True, input_tensor=None, dropout=None):
-    """Builds a custom ResNet like architecture. Defaults to ResNet50.
+def ResNet(input_shape=None, classes=10, block='bottleneck', residual_unit='v2', repetitions=[3, 4, 6, 3],
+           initial_filters=64, activation='softmax', include_top=True, input_tensor=None, dropout=None,
+           transition_dilation_rate=(1, 1), initial_strides=(2, 2), pooling='max', top='classification'):
+    """Builds a custom ResNet like architecture. Defaults to ResNet50 v2.
 
     Args:
-        input_shape: The input shape in the form (nb_channels, nb_rows, nb_cols)
+        input_shape: optional shape tuple, only to be specified
+            if `include_top` is False (otherwise the input shape
+            has to be `(224, 224, 3)` (with `channels_last` dim ordering)
+            or `(3, 224, 224)` (with `channels_first` dim ordering).
+            It should have exactly 3 inputs channels,
+            and width and height should be no smaller than 8.
+            E.g. `(224, 224, 3)` would be one valid value.
         classes: The number of outputs at final softmax layer
-        block_fn: The block function to use. This is either `'basic_block'` or `'bottleneck'`.
-            The original paper used basic_block for layers < 50
+        block_fn: The block function to use. This is either `'basic'` or `'bottleneck'`.
+            The original paper used `basic` for layers < 50.
         repetitions: Number of repetitions of various block units.
             At each block unit, the number of filters are doubled and the input size is halved
+        residual_unit: the basic residual unit, 'v1' for conv bn relu, 'v2' for bn relu conv.
+        initial_strides: Stride of the very first residual unit and MaxPooling2D call,
+            with default (2, 2).
 
     Returns:
         The keras `Model`.
     """
+    # Determine proper input shape
+    input_shape = _obtain_input_shape(input_shape,
+                                      default_size=32,
+                                      min_size=8,
+                                      data_format=K.image_data_format(),
+                                      require_flatten=include_top)
     _handle_dim_ordering()
     if len(input_shape) != 3:
         raise Exception("Input shape should be a tuple (nb_channels, nb_rows, nb_cols)")
 
-    if block == 'basic_block':
+    if block == 'basic':
         block_fn = basic_block
     elif block == 'bottleneck':
         block_fn = bottleneck
-    else:
-        raise ValueError('Unsupported block type')
+    elif isinstance(block, six.string_types):
+        block_fn = _string_to_function(block)
+
+    if residual_unit == 'v2':
+        residual_unit = _bn_relu_conv
+    elif residual_unit == 'v1':
+        residual_unit = _conv_bn_relu
+    elif isinstance(residual_unit, six.string_types):
+        block_fn = _string_to_function(residual_unit)
 
     # Permute dimension order if necessary
     if K.image_data_format() == 'channels_first':
@@ -233,30 +319,41 @@ def ResNet(input_shape, classes, block='basic_block', repetitions=[3, 4, 6, 3], 
                                       require_flatten=include_top)
 
     # Load function from str if needed.
-    block_fn = _get_block(block_fn)
+    block_fn = _string_to_function(block_fn)
 
     img_input = Input(shape=input_shape, tensor=input_tensor)
-    conv1 = _conv_bn_relu(filters=initial_filters, kernel_size=(7, 7), strides=(2, 2))(img_input)
-    pool1 = MaxPooling2D(pool_size=(3, 3), strides=(2, 2), padding="same")(conv1)
+    x = residual_unit(filters=initial_filters, kernel_size=(7, 7), strides=initial_strides)(img_input)
+    if pooling == 'max':
+        x = MaxPooling2D(pool_size=(3, 3), strides=initial_strides, padding="same")(x)
 
-    block = pool1
+    block = x
     filters = initial_filters
     for i, r in enumerate(repetitions):
-        block = _residual_block(block_fn, filters=filters, repetitions=r, is_first_layer=(i == 0),
-                                dropout=dropout)(block)
+        block = _residual_block(block_fn, filters=filters,
+                                stage=i, blocks=r,
+                                is_first_layer=(i == 0),
+                                dropout=dropout,
+                                transition_dilation_rate=transition_dilation_rate)(block)
         filters *= 2
 
     # Last activation
     x = _bn_relu(block)
 
     # Classifier block
-    block_shape = K.int_shape(block)
-    if include_top:
-        pool2 = AveragePooling2D(pool_size=(block_shape[ROW_AXIS], block_shape[COL_AXIS]),
-                                 strides=(1, 1))(x)
-        flatten1 = Flatten()(pool2)
-        x = Dense(units=classes, kernel_initializer="he_normal",
-                  activation=activation)(flatten1)
+    if include_top and top is 'classification':
+        x = GlobalAveragePooling2D()(x)
+        x = Dense(units=classes, activation=activation, kernel_initializer="he_normal")(x)
+    elif include_top and top is 'segmentation':
+        x = Conv2D(classes, (1, 1), activation='linear', padding='same')(x)
+
+        if K.image_data_format() == 'channels_first':
+            channel, row, col = input_shape
+        else:
+            row, col, channel = input_shape
+
+        x = Reshape((row * col, classes))(x)
+        x = Activation(activation)(x)
+        x = Reshape((row, col, classes))(x)
 
     model = Model(inputs=img_input, outputs=x)
     return model
