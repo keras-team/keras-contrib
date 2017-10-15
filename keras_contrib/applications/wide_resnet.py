@@ -290,8 +290,7 @@ def __create_wide_residual_network(nb_classes, img_input, include_top, depth=28,
         nb_conv += 2
 
     if include_top:
-        x = AveragePooling2D((8, 8))(x)
-        x = Flatten()(x)
+        x = GlobalAveragePooling2D()(x)
         x = Dense(nb_classes, activation=activation)(x)
 
     return x
