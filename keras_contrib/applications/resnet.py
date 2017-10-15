@@ -1,4 +1,16 @@
-"""
+"""ResNet v1, v2, and segmentation models for Keras.
+
+# Reference
+
+- [Deep Residual Learning for Image Recognition](https://arxiv.org/abs/1512.03385)
+- [Identity Mappings in Deep Residual Networks](https://arxiv.org/abs/1603.05027)
+
+Reference material for extended functionality:
+
+- [ResNeXt](https://arxiv.org/abs/1611.05431) for Tiny ImageNet support.
+- [Dilated Residual Networks](https://arxiv.org/pdf/1705.09914) for segmentation support.
+- [Deep Residual Learning for Instrument Segmentation in Robotic Surgery](https://arxiv.org/abs/1703.08580)
+  for segmentation support.
 
 Implementation Adapted from: github.com/raghakot/keras-resnet
 """
@@ -15,6 +27,8 @@ from keras.layers import Conv2D
 from keras.layers import MaxPooling2D
 from keras.layers import AveragePooling2D
 from keras.layers.pooling import GlobalAveragePooling2D
+from keras.layers import GlobalMaxPooling2D
+from keras.layers import GlobalAveragePooling2D
 from keras.layers import Dropout
 from keras.layers.merge import add
 from keras.layers.normalization import BatchNormalization
@@ -264,7 +278,7 @@ def _string_to_function(identifier):
 def ResNet(input_shape=None, classes=10, block='bottleneck', residual_unit='v2', repetitions=[3, 4, 6, 3],
            initial_filters=64, activation='softmax', include_top=True, input_tensor=None, dropout=None,
            transition_dilation_rate=(1, 1), initial_strides=(2, 2), initial_kernel_size=(7, 7),
-           pooling='max', top='classification'):
+           initial_pooling='max', final_pooling=None, top='classification'):
     """Builds a custom ResNet like architecture. Defaults to ResNet50 v2.
 
     Args:
@@ -276,25 +290,49 @@ def ResNet(input_shape=None, classes=10, block='bottleneck', residual_unit='v2',
             and width and height should be no smaller than 8.
             E.g. `(224, 224, 3)` would be one valid value.
         classes: The number of outputs at final softmax layer
-        block_fn: The block function to use. This is either `'basic'` or `'bottleneck'`.
+        block: The block function to use. This is either `'basic'` or `'bottleneck'`.
             The original paper used `basic` for layers < 50.
         repetitions: Number of repetitions of various block units.
             At each block unit, the number of filters are doubled and the input size is halved
         transition_dilation_rate: Used for pixel-wise prediction tasks such as image segmentation.
         residual_unit: the basic residual unit, 'v1' for conv bn relu, 'v2' for bn relu conv.
+            See [Identity Mappings in Deep Residual Networks](https://arxiv.org/abs/1603.05027)
+            for details.
         dropout: None for no dropout, otherwise rate of dropout from 0 to 1. Added based on
             Wide Residual Networks paper. https://arxiv.org/pdf/1605.07146
+        transition_dilation_rate: Dilation rate for transition layers. For semantic
+            segmentation of images use a dilation rate of (2, 2).
         initial_strides: Stride of the very first residual unit and MaxPooling2D call,
             with default (2, 2), set to (1, 1) for small images like cifar.
         initial_kernel_size: kernel size of the very first convolution, (7, 7) for imagenet
             and (3, 3) for small image datasets like tiny imagenet and cifar. See ResNeXt
             paper https://arxiv.org/abs/1611.05431 for details.
-        pooling: Determine if there will be an initial pooling layer, 'max' for imagenet and
-            None for small image datasets.
+        initial_pooling: Determine if there will be an initial pooling layer, 'max' for imagenet and
+            None for small image datasets. See ResNeXt paper https://arxiv.org/abs/1611.05431
+            for details.
+        final_pooling: Optional pooling mode for feature extraction at the final model layer
+            when `include_top` is `False`.
+            - `None` means that the output of the model
+                will be the 4D tensor output of the
+                last convolutional layer.
+            - `avg` means that global average pooling
+                will be applied to the output of the
+                last convolutional layer, and thus
+                the output of the model will be a
+                2D tensor.
+            - `max` means that global max pooling will
+                be applied.
+        top: Defines final layers to evaluate based on a specific problem type. Options are
+            'classification' for ImageNet style problems, 'segmentation' for problems like
+            the Pascal VOC dataset, and None to exclude these layers entirely.
 
     Returns:
         The keras `Model`.
     """
+    if activation not in ['softmax', 'sigmoid', None]:
+        raise ValueError('activation must be one of "softmax", "sigmoid", or None')
+    if activation == 'sigmoid' and classes != 1:
+        raise ValueError('sigmoid activation can only be used when classes = 1')
     # Determine proper input shape
     input_shape = _obtain_input_shape(input_shape,
                                       default_size=32,
@@ -334,7 +372,7 @@ def ResNet(input_shape=None, classes=10, block='bottleneck', residual_unit='v2',
 
     img_input = Input(shape=input_shape, tensor=input_tensor)
     x = _conv_bn_relu(filters=initial_filters, kernel_size=initial_kernel_size, strides=initial_strides)(img_input)
-    if pooling == 'max':
+    if initial_pooling == 'max':
         x = MaxPooling2D(pool_size=(3, 3), strides=initial_strides, padding="same")(x)
 
     block = x
@@ -370,26 +408,30 @@ def ResNet(input_shape=None, classes=10, block='bottleneck', residual_unit='v2',
         x = Reshape((row * col, classes))(x)
         x = Activation(activation)(x)
         x = Reshape((row, col, classes))(x)
+    elif final_pooling == 'avg':
+        x = GlobalAveragePooling2D()(x)
+    elif final_pooling == 'max':
+        x = GlobalMaxPooling2D()(x)
 
     model = Model(inputs=img_input, outputs=x)
     return model
 
 
-def resnet_18(input_shape, classes):
+def ResNet18(input_shape, classes):
     return ResNet(input_shape, classes, basic_block, [2, 2, 2, 2])
 
 
-def resnet_34(input_shape, classes):
+def ResNet34(input_shape, classes):
     return ResNet(input_shape, classes, basic_block, [3, 4, 6, 3])
 
 
-def resnet_50(input_shape, classes):
+def ResNet50(input_shape, classes):
     return ResNet(input_shape, classes, bottleneck, [3, 4, 6, 3])
 
 
-def resnet_101(input_shape, classes):
+def ResNet101(input_shape, classes):
     return ResNet(input_shape, classes, bottleneck, [3, 4, 23, 3])
 
 
-def resnet_152(input_shape, classes):
+def ResNet152(input_shape, classes):
         return ResNet(input_shape, classes, bottleneck, [3, 8, 36, 3])

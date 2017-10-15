@@ -10,10 +10,9 @@ from keras.datasets import cifar10
 from keras.preprocessing.image import ImageDataGenerator
 from keras.utils import np_utils
 from keras.callbacks import ReduceLROnPlateau, CSVLogger, EarlyStopping
+from keras_contrib.applications import ResNet18
 
 import numpy as np
-import resnet
-
 
 lr_reducer = ReduceLROnPlateau(factor=np.sqrt(0.1), cooldown=0, patience=5, min_lr=0.5e-6)
 early_stopper = EarlyStopping(min_delta=0.001, patience=10)
@@ -46,7 +45,7 @@ X_test -= mean_image
 X_train /= 128.
 X_test /= 128.
 
-model = resnet.ResnetBuilder.build_resnet_18((img_channels, img_rows, img_cols), nb_classes)
+model = ResNet18((img_channels, img_rows, img_cols), nb_classes)
 model.compile(loss='categorical_crossentropy',
               optimizer='adam',
               metrics=['accuracy'])
