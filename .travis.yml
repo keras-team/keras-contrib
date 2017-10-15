@@ -38,16 +38,28 @@ install:
   - pip install git+git://github.com/fchollet/keras.git
 
   # install PIL for preprocessing tests
-  #- if [[ "$TRAVIS_PYTHON_VERSION" == "2.7" ]]; then
-  #    conda install pil;
-  #  elif [[ "$TRAVIS_PYTHON_VERSION" == "3.5" ]]; then
-  #    conda install Pillow;
-  #  fi
+  - if [[ "$TRAVIS_PYTHON_VERSION" == "2.7" ]]; then
+      conda install pil;
+    elif [[ "$TRAVIS_PYTHON_VERSION" == "3.5" ]]; then
+      conda install Pillow;
+    fi
 
-  - python setup.py install
+  - pip install -e .[tests]
 
-  # install TensorFlow (CPU)
+  # install TensorFlow (CPU version).
   - pip install tensorflow
+  
+  # install cntk
+  - if [[ "$TRAVIS_PYTHON_VERSION" == "2.7" ]]; then
+      pip install https://cntk.ai/PythonWheel/CPU-Only/cntk-2.2-cp27-cp27mu-linux_x86_64.whl;
+    elif [[ "$TRAVIS_PYTHON_VERSION" == "3.5" ]]; then
+      pip install https://cntk.ai/PythonWheel/CPU-Only/cntk-2.2-cp35-cp35m-linux_x86_64.whl;
+    fi
+
+  # install pydot for visualization tests
+  - if [[ "$TRAVIS_PYTHON_VERSION" == "2.7" ]]; then
+      conda install pydot graphviz;
+    fi
 
 # command to run tests
 script:
@@ -61,7 +73,7 @@ script:
   - if [[ "$TEST_MODE" == "PEP8" ]]; then
        PYTHONPATH=$PWD:$PYTHONPATH py.test --pep8 -m pep8 -n0;
     else
-       PYTHONPATH=$PWD:$PYTHONPATH py.test tests/;
+       PYTHONPATH=$PWD:$PYTHONPATH py.test tests/ --ignore=tests/integration_tests --ignore=tests/test_documentation.py --cov=keras tests/ --cov-report term-missing;
     fi
 after_success:
   - coveralls
