@@ -1,5 +1,6 @@
 from theano import tensor as T
 from theano.sandbox.neighbours import images2neibs
+import numpy as np
 
 try:
     import theano.sparse as th_sparse_module
@@ -197,3 +198,26 @@ def moments(x, axes, shift=None, keep_dims=False):
     var_batch = KTH.var(x, axis=axes, keepdims=keep_dims)
 
     return mean_batch, var_batch
+
+
+def clip(x, min_value, max_value):
+    """Element-wise value clipping.
+
+    If min_value > max_value, clipping range is [min_value,min_value].
+
+    # Arguments
+        x: Tensor or variable.
+        min_value: Tensor, float, int, or None.
+            If min_value is None, defaults to -infinity.
+        max_value: Tensor, float, int, or None.
+            If max_value is None, defaults to infinity.
+
+    # Returns
+        A tensor.
+    """
+    if max_value is None:
+        max_value = np.inf
+    if min_value is None:
+        min_value = -np.inf
+    max_value = T.maximum(min_value, max_value)
+    return T.clip(x, min_value, max_value)
