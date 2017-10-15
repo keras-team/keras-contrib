@@ -132,7 +132,8 @@ def _shortcut(input_feature, residual, conv_name_base=None, bn_name_base=None):
 
 def _residual_block(block_function, filters, blocks, stage,
                     transition_strides=None, transition_dilation_rates=None,
-                    dilation_rates=(1, 1), is_first_layer=False, dropout=None):
+                    dilation_rates=(1, 1), is_first_layer=False, dropout=None,
+                    residual_unit=_bn_relu_conv):
     """Builds a residual block with repeating bottleneck blocks.
 
        stage: integer, current stage label, used for generating layer names
@@ -151,7 +152,8 @@ def _residual_block(block_function, filters, blocks, stage,
                                transition_strides=transition_strides[i],
                                dilation_rate=dilation_rates[i],
                                is_first_block_of_first_layer=(is_first_layer and i == 0),
-                               dropout=dropout)(x)
+                               dropout=dropout,
+                               residual_unit=residual_unit)(x)
         return x
 
     return f
@@ -180,13 +182,13 @@ def basic_block(filters, stage, block, transition_strides=(1, 1),
         conv_name_base, bn_name_base = _block_name_base(stage, block)
         if is_first_block_of_first_layer:
             # don't repeat bn->relu since we just did bn->relu->maxpool
-            conv1 = Conv2D(filters=filters, kernel_size=(3, 3),
-                           strides=transition_strides,
-                           dilation_rate=dilation_rate,
-                           padding="same",
-                           kernel_initializer="he_normal",
-                           kernel_regularizer=l2(1e-4),
-                           name=conv_name_base + '2a')(input_features)
+            x = Conv2D(filters=filters, kernel_size=(3, 3),
+                       strides=transition_strides,
+                       dilation_rate=dilation_rate,
+                       padding="same",
+                       kernel_initializer="he_normal",
+                       kernel_regularizer=l2(1e-4),
+                       name=conv_name_base + '2a')(input_features)
         else:
             x = residual_unit(filters=filters, kernel_size=(3, 3),
                               strides=transition_strides,
@@ -275,7 +277,7 @@ def _string_to_function(identifier):
     return identifier
 
 
-def ResNet(input_shape=None, classes=10, block='bottleneck', residual_unit='v2', repetitions=[3, 4, 6, 3],
+def ResNet(input_shape=None, classes=10, block='bottleneck', residual_unit='v2', repetitions=None,
            initial_filters=64, activation='softmax', include_top=True, input_tensor=None, dropout=None,
            transition_dilation_rate=(1, 1), initial_strides=(2, 2), initial_kernel_size=(7, 7),
            initial_pooling='max', final_pooling=None, top='classification'):
@@ -293,23 +295,24 @@ def ResNet(input_shape=None, classes=10, block='bottleneck', residual_unit='v2',
         block: The block function to use. This is either `'basic'` or `'bottleneck'`.
             The original paper used `basic` for layers < 50.
         repetitions: Number of repetitions of various block units.
-            At each block unit, the number of filters are doubled and the input size is halved
+            At each block unit, the number of filters are doubled and the input size is halved.
+            Default of None implies the ResNet50v2 values of [3, 4, 6, 3].
         transition_dilation_rate: Used for pixel-wise prediction tasks such as image segmentation.
         residual_unit: the basic residual unit, 'v1' for conv bn relu, 'v2' for bn relu conv.
             See [Identity Mappings in Deep Residual Networks](https://arxiv.org/abs/1603.05027)
             for details.
-        dropout: None for no dropout, otherwise rate of dropout from 0 to 1. Added based on
-            Wide Residual Networks paper. https://arxiv.org/pdf/1605.07146
+        dropout: None for no dropout, otherwise rate of dropout from 0 to 1.
+            Based on [Wide Residual Networks.(https://arxiv.org/pdf/1605.07146) paper.
         transition_dilation_rate: Dilation rate for transition layers. For semantic
             segmentation of images use a dilation rate of (2, 2).
         initial_strides: Stride of the very first residual unit and MaxPooling2D call,
             with default (2, 2), set to (1, 1) for small images like cifar.
         initial_kernel_size: kernel size of the very first convolution, (7, 7) for imagenet
-            and (3, 3) for small image datasets like tiny imagenet and cifar. See ResNeXt
-            paper https://arxiv.org/abs/1611.05431 for details.
-        initial_pooling: Determine if there will be an initial pooling layer, 'max' for imagenet and
-            None for small image datasets. See ResNeXt paper https://arxiv.org/abs/1611.05431
-            for details.
+            and (3, 3) for small image datasets like tiny imagenet and cifar.
+            See [ResNeXt](https://arxiv.org/abs/1611.05431) paper for details.
+        initial_pooling: Determine if there will be an initial pooling layer,
+            'max' for imagenet and None for small image datasets.
+            See [ResNeXt](https://arxiv.org/abs/1611.05431) paper for details.
         final_pooling: Optional pooling mode for feature extraction at the final model layer
             when `include_top` is `False`.
             - `None` means that the output of the model
@@ -333,6 +336,8 @@ def ResNet(input_shape=None, classes=10, block='bottleneck', residual_unit='v2',
         raise ValueError('activation must be one of "softmax", "sigmoid", or None')
     if activation == 'sigmoid' and classes != 1:
         raise ValueError('sigmoid activation can only be used when classes = 1')
+    if repetitions is None:
+        repetitions = [3, 4, 6, 3]
     # Determine proper input shape
     input_shape = _obtain_input_shape(input_shape,
                                       default_size=32,
@@ -349,13 +354,17 @@ def ResNet(input_shape=None, classes=10, block='bottleneck', residual_unit='v2',
         block_fn = bottleneck
     elif isinstance(block, six.string_types):
         block_fn = _string_to_function(block)
+    else:
+        block_fn = block
 
     if residual_unit == 'v2':
         residual_unit = _bn_relu_conv
     elif residual_unit == 'v1':
         residual_unit = _conv_bn_relu
     elif isinstance(residual_unit, six.string_types):
-        block_fn = _string_to_function(residual_unit)
+        residual_unit = _string_to_function(residual_unit)
+    else:
+        residual_unit = residual_unit
 
     # Permute dimension order if necessary
     if K.image_data_format() == 'channels_first':
@@ -366,9 +375,6 @@ def ResNet(input_shape=None, classes=10, block='bottleneck', residual_unit='v2',
                                       min_size=8,
                                       data_format=K.image_data_format(),
                                       require_flatten=include_top)
-
-    # Load function from str if needed.
-    block_fn = _string_to_function(block_fn)
 
     img_input = Input(shape=input_shape, tensor=input_tensor)
     x = _conv_bn_relu(filters=initial_filters, kernel_size=initial_kernel_size, strides=initial_strides)(img_input)
@@ -387,7 +393,8 @@ def ResNet(input_shape=None, classes=10, block='bottleneck', residual_unit='v2',
                                 is_first_layer=(i == 0),
                                 dropout=dropout,
                                 transition_dilation_rates=transition_dilation_rates,
-                                transition_strides=transition_strides)(block)
+                                transition_strides=transition_strides,
+                                residual_unit=residual_unit)(block)
         filters *= 2
 
     # Last activation
@@ -418,20 +425,30 @@ def ResNet(input_shape=None, classes=10, block='bottleneck', residual_unit='v2',
 
 
 def ResNet18(input_shape, classes):
-    return ResNet(input_shape, classes, basic_block, [2, 2, 2, 2])
+    """ResNet with 18 layers and v2 residual units
+    """
+    return ResNet(input_shape, classes, basic_block, repetitions=[2, 2, 2, 2])
 
 
 def ResNet34(input_shape, classes):
-    return ResNet(input_shape, classes, basic_block, [3, 4, 6, 3])
+    """ResNet with 34 layers and v2 residual units
+    """
+    return ResNet(input_shape, classes, basic_block, repetitions=[3, 4, 6, 3])
 
 
 def ResNet50(input_shape, classes):
-    return ResNet(input_shape, classes, bottleneck, [3, 4, 6, 3])
+    """ResNet with 50 layers and v2 residual units
+    """
+    return ResNet(input_shape, classes, bottleneck, repetitions=[3, 4, 6, 3])
 
 
 def ResNet101(input_shape, classes):
-    return ResNet(input_shape, classes, bottleneck, [3, 4, 23, 3])
+    """ResNet with 101 layers and v2 residual units
+    """
+    return ResNet(input_shape, classes, bottleneck, repetitions=[3, 4, 23, 3])
 
 
 def ResNet152(input_shape, classes):
-        return ResNet(input_shape, classes, bottleneck, [3, 8, 36, 3])
+    """ResNet with 152 layers and v2 residual units
+    """
+    return ResNet(input_shape, classes, bottleneck, repetitions=[3, 8, 36, 3])

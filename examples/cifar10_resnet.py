@@ -9,14 +9,21 @@ from __future__ import print_function
 from keras.datasets import cifar10
 from keras.preprocessing.image import ImageDataGenerator
 from keras.utils import np_utils
-from keras.callbacks import ReduceLROnPlateau, CSVLogger, EarlyStopping
-from keras_contrib.applications import ResNet18
+from keras.callbacks import ModelCheckpoint
+from keras.callbacks import ReduceLROnPlateau
+from keras.callbacks import CSVLogger
+from keras.callbacks import EarlyStopping
+from keras_contrib.applications.resnet import ResNet18
 
 import numpy as np
 
+
+weights_file = 'ResNet18v2-CIFAR-10.h5'
 lr_reducer = ReduceLROnPlateau(factor=np.sqrt(0.1), cooldown=0, patience=5, min_lr=0.5e-6)
 early_stopper = EarlyStopping(min_delta=0.001, patience=10)
-csv_logger = CSVLogger('resnet18_cifar10.csv')
+csv_logger = CSVLogger('ResNet18v2-CIFAR-10.csv')
+model_checkpoint = ModelCheckpoint(weights_file, monitor='val_acc', save_best_only=True,
+                                   save_weights_only=True, mode='auto')
 
 batch_size = 32
 nb_classes = 10
@@ -45,7 +52,7 @@ X_test -= mean_image
 X_train /= 128.
 X_test /= 128.
 
-model = ResNet18((img_channels, img_rows, img_cols), nb_classes)
+model = ResNet18((img_rows, img_cols, img_channels), nb_classes)
 model.compile(loss='categorical_crossentropy',
               optimizer='adam',
               metrics=['accuracy'])
@@ -57,7 +64,7 @@ if not data_augmentation:
               nb_epoch=nb_epoch,
               validation_data=(X_test, Y_test),
               shuffle=True,
-              callbacks=[lr_reducer, early_stopper, csv_logger])
+              callbacks=[lr_reducer, early_stopper, csv_logger, model_checkpoint])
 else:
     print('Using real-time data augmentation.')
     # This will do preprocessing and realtime data augmentation:
@@ -81,5 +88,9 @@ else:
     model.fit_generator(datagen.flow(X_train, Y_train, batch_size=batch_size),
                         steps_per_epoch=X_train.shape[0] // batch_size,
                         validation_data=(X_test, Y_test),
-                        epochs=nb_epoch, verbose=1, max_q_size=100,
-                        callbacks=[lr_reducer, early_stopper, csv_logger])
+                        epochs=nb_epoch, verbose=2,
+                        callbacks=[lr_reducer, early_stopper, csv_logger, model_checkpoint])
+
+scores = model.evaluate(X_test, Y_test, batch_size=batch_size)
+print('Test loss : ', scores[0])
+print('Test accuracy : ', scores[1])
