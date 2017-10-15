@@ -266,13 +266,13 @@ class BatchRenormalization(Layer):
                                                 name='{}_running_std'.format(self.name),
                                                 trainable=False)
 
-        self.r_max = K.variable(np.ones((1,)), name='{}_r_max'.format(self.name))
+        self.r_max = K.variable(1, name='{}_r_max'.format(self.name))
 
-        self.d_max = K.variable(np.zeros((1,)), name='{}_d_max'.format(self.name))
+        self.d_max = K.variable(0, name='{}_d_max'.format(self.name))
 
-        self.t = K.variable(np.zeros((1,)), name='{}_t'.format(self.name))
+        self.t = K.variable(0, name='{}_t'.format(self.name))
 
-        self.t_delta_tensor = K.variable(np.array([self.t_delta]))
+        self.t_delta_tensor = K.constant(self.t_delta)
 
         if self.initial_weights is not None:
             self.set_weights(self.initial_weights)
@@ -292,13 +292,11 @@ class BatchRenormalization(Layer):
         mean_batch, var_batch = K.moments(inputs, reduction_axes, shift=None, keep_dims=False)
         std_batch = (K.sqrt(var_batch + self.epsilon))
 
-        r_max_value = K.get_value(self.r_max)
         r = std_batch / (K.sqrt(self.running_variance + self.epsilon))
-        r = K.stop_gradient(K.clip(r, 1 / r_max_value, r_max_value))
+        r = K.stop_gradient(K.clip(r, 1 / self.r_max, self.r_max))
 
-        d_max_value = K.get_value(self.d_max)
         d = (mean_batch - self.running_mean) / K.sqrt(self.running_variance + self.epsilon)
-        d = K.stop_gradient(K.clip(d, -d_max_value, d_max_value))
+        d = K.stop_gradient(K.clip(d, -self.d_max, self.d_max))
 
         if sorted(reduction_axes) == range(K.ndim(inputs))[:-1]:
             x_normed_batch = (inputs - mean_batch) / std_batch
