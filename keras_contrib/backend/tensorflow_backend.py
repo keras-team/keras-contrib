@@ -8,13 +8,48 @@ except ImportError:
 from keras.backend import tensorflow_backend as KTF
 from keras.backend.common import floatx, image_data_format
 from keras.backend.tensorflow_backend import _preprocess_conv3d_input
-from keras.backend.tensorflow_backend import _postprocess_conv3d_output
 from keras.backend.tensorflow_backend import _preprocess_padding
 from keras.backend.tensorflow_backend import _preprocess_conv2d_input
-from keras.backend.tensorflow_backend import _postprocess_conv2d_output
 from keras.backend.tensorflow_backend import _to_tensor
 
 py_all = all
+
+
+def _postprocess_conv2d_output(x, data_format):
+    """Transpose and cast the output from conv2d if needed.
+
+    # Arguments
+        x: A tensor.
+        data_format: string, `"channels_last"` or `"channels_first"`.
+
+    # Returns
+        A tensor.
+    """
+
+    if data_format == 'channels_first':
+        x = tf.transpose(x, (0, 3, 1, 2))
+
+    if floatx() == 'float64':
+        x = tf.cast(x, 'float64')
+    return x
+
+
+ def _postprocess_conv3d_output(x, data_format):
+     """Transpose and cast the output from conv3d if needed.
+ 
+     # Arguments
+         x: A tensor.
+         data_format: string, `"channels_last"` or `"channels_first"`.
+ 
+     # Returns
+         A tensor.
+     """
+     if data_format == 'channels_first':
+         x = tf.transpose(x, (0, 4, 1, 2, 3))
+ 
+     if floatx() == 'float64':
+         x = tf.cast(x, 'float64')
+     return x
 
 
 def _preprocess_deconv_output_shape(x, shape, data_format):
@@ -27,7 +62,9 @@ def _preprocess_deconv_output_shape(x, shape, data_format):
     return shape
 
 
-def conv2d(x, kernel, strides=(1, 1), padding='valid', data_format='channels_first',
+def 
+
+(x, kernel, strides=(1, 1), padding='valid', data_format='channels_first',
            image_shape=None, filter_shape=None):
     '''2D convolution.
     # Arguments
