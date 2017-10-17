@@ -15,16 +15,6 @@ from keras.backend.tensorflow_backend import _to_tensor
 py_all = all
 
 
-def _preprocess_deconv_output_shape(x, shape, data_format):
-    if data_format == 'channels_first':
-        shape = (shape[0],) + tuple(shape[2:]) + (shape[1],)
-
-    if shape[0] is None:
-        shape = (tf.shape(x)[0],) + tuple(shape[1:])
-        shape = tf.stack(list(shape))
-    return shape
-
-
 def conv2d(x, kernel, strides=(1, 1), padding='valid', data_format='channels_first',
            image_shape=None, filter_shape=None):
     '''2D convolution.
