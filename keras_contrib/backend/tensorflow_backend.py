@@ -6,25 +6,183 @@ try:
 except ImportError:
     import tensorflow.contrib.ctc as ctc
 from keras.backend import tensorflow_backend as KTF
+from keras.backend import dtype
 from keras.backend.common import floatx, image_data_format
-from keras.backend.tensorflow_backend import _preprocess_conv3d_input
-from keras.backend.tensorflow_backend import _postprocess_conv3d_output
-from keras.backend.tensorflow_backend import _preprocess_padding
-from keras.backend.tensorflow_backend import _preprocess_conv2d_input
-from keras.backend.tensorflow_backend import _postprocess_conv2d_output
 from keras.backend.tensorflow_backend import _to_tensor
 
 py_all = all
 
 
-def _preprocess_deconv_output_shape(x, shape, data_format):
+# CONVOLUTIONS
+
+def _preprocess_deconv3d_output_shape(x, shape, data_format):
+    """Get the output_shape for the 3D deconvolution.
+
+    # Arguments
+        x: input tensor.
+        shape: output shape.
+        data_format: string, `"channels_last"` or `"channels_first"`.
+
+    # Returns
+        The output shape.
+    """
     if data_format == 'channels_first':
-        shape = (shape[0],) + tuple(shape[2:]) + (shape[1],)
+        shape = (shape[0], shape[2], shape[3], shape[4], shape[1])
 
     if shape[0] is None:
-        shape = (tf.shape(x)[0],) + tuple(shape[1:])
+        shape = (tf.shape(x)[0], ) + tuple(shape[1:])
         shape = tf.stack(list(shape))
     return shape
+
+
+def _preprocess_deconv_output_shape(x, shape, data_format):
+    """Get the output_shape for the deconvolution.
+
+    # Arguments
+        x: input tensor.
+        shape: output shape.
+        data_format: string, `"channels_last"` or `"channels_first"`.
+
+    # Returns
+        The output shape.
+    """
+    if data_format == 'channels_first':
+        shape = (shape[0], shape[2], shape[3], shape[1])
+
+    if shape[0] is None:
+        shape = (tf.shape(x)[0], ) + tuple(shape[1:])
+        shape = tf.stack(list(shape))
+    return shape
+
+
+def _preprocess_conv2d_input(x, data_format):
+    """Transpose and cast the input before the conv2d.
+
+    # Arguments
+        x: input tensor.
+        data_format: string, `"channels_last"` or `"channels_first"`.
+
+    # Returns
+        A tensor.
+    """
+    if dtype(x) == 'float64':
+        x = tf.cast(x, 'float32')
+    if data_format == 'channels_first':
+        # TF uses the last dimension as channel dimension,
+        # instead of the 2nd one.
+        # TH input shape: (samples, input_depth, rows, cols)
+        # TF input shape: (samples, rows, cols, input_depth)
+        x = tf.transpose(x, (0, 2, 3, 1))
+    return x
+
+
+def _preprocess_conv3d_input(x, data_format):
+    """Transpose and cast the input before the conv3d.
+
+    # Arguments
+        x: input tensor.
+        data_format: string, `"channels_last"` or `"channels_first"`.
+
+    # Returns
+        A tensor.
+    """
+    if dtype(x) == 'float64':
+        x = tf.cast(x, 'float32')
+    if data_format == 'channels_first':
+        x = tf.transpose(x, (0, 2, 3, 4, 1))
+    return x
+
+
+def _preprocess_conv2d_kernel(kernel, data_format):
+    """Transpose and cast the kernel before the conv2d.
+
+    # Arguments
+        kernel: kernel tensor.
+        data_format: string, `"channels_last"` or `"channels_first"`.
+
+    # Returns
+        A tensor.
+    """
+    if dtype(kernel) == 'float64':
+        kernel = tf.cast(kernel, 'float32')
+    if data_format == 'channels_first':
+        kernel = tf.transpose(kernel, (2, 3, 1, 0))
+    return kernel
+
+
+def _preprocess_conv3d_kernel(kernel, data_format):
+    """Transpose and cast the kernel before the conv3d.
+
+    # Arguments
+        kernel: kernel tensor.
+        data_format: string, `"channels_last"` or `"channels_first"`.
+
+    # Returns
+        A tensor.
+    """
+    if dtype(kernel) == 'float64':
+        kernel = tf.cast(kernel, 'float32')
+    if data_format == 'channels_first':
+        kernel = tf.transpose(kernel, (2, 3, 4, 1, 0))
+    return kernel
+
+
+def _preprocess_padding(padding):
+    """Convert keras' padding to tensorflow's padding.
+
+    # Arguments
+        padding: string, `"same"` or `"valid"`.
+
+    # Returns
+        a string, `"SAME"` or `"VALID"`.
+
+    # Raises
+        ValueError: if `padding` is invalid.
+    """
+    if padding == 'same':
+        padding = 'SAME'
+    elif padding == 'valid':
+        padding = 'VALID'
+    else:
+        raise ValueError('Invalid padding:', padding)
+    return padding
+
+
+def _postprocess_conv2d_output(x, data_format):
+    """Transpose and cast the output from conv2d if needed.
+
+    # Arguments
+        x: A tensor.
+        data_format: string, `"channels_last"` or `"channels_first"`.
+
+    # Returns
+        A tensor.
+    """
+
+    if data_format == 'channels_first':
+        x = tf.transpose(x, (0, 3, 1, 2))
+
+    if floatx() == 'float64':
+        x = tf.cast(x, 'float64')
+    return x
+
+
+def _postprocess_conv3d_output(x, data_format):
+    """Transpose and cast the output from conv3d if needed.
+
+    # Arguments
+        x: A tensor.
+        data_format: string, `"channels_last"` or `"channels_first"`.
+
+    # Returns
+        A tensor.
+    """
+    if data_format == 'channels_first':
+        x = tf.transpose(x, (0, 4, 1, 2, 3))
+
+    if floatx() == 'float64':
+        x = tf.cast(x, 'float64')
+    return x
 
 
 def conv2d(x, kernel, strides=(1, 1), padding='valid', data_format='channels_first',
