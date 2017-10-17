@@ -34,22 +34,22 @@ def _postprocess_conv2d_output(x, data_format):
     return x
 
 
- def _postprocess_conv3d_output(x, data_format):
-     """Transpose and cast the output from conv3d if needed.
+def _postprocess_conv3d_output(x, data_format):
+    """Transpose and cast the output from conv3d if needed.
 
-     # Arguments
-         x: A tensor.
-         data_format: string, `"channels_last"` or `"channels_first"`.
+    # Arguments
+        x: A tensor.
+        data_format: string, `"channels_last"` or `"channels_first"`.
 
-     # Returns
-         A tensor.
-     """
-     if data_format == 'channels_first':
-         x = tf.transpose(x, (0, 4, 1, 2, 3))
+    # Returns
+        A tensor.
+    """
+    if data_format == 'channels_first':
+        x = tf.transpose(x, (0, 4, 1, 2, 3))
 
-     if floatx() == 'float64':
-         x = tf.cast(x, 'float64')
-     return x
+    if floatx() == 'float64':
+        x = tf.cast(x, 'float64')
+    return x
 
 
 def _preprocess_deconv_output_shape(x, shape, data_format):
