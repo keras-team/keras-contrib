@@ -7,8 +7,6 @@ except ImportError:
     import tensorflow.contrib.ctc as ctc
 from keras.backend import tensorflow_backend as KTF
 from keras.backend.common import floatx, image_data_format
-from keras.backend.tensorflow_backend import _preprocess_conv3d_input
-from keras.backend.tensorflow_backend import _postprocess_conv3d_output
 from keras.backend.tensorflow_backend import _preprocess_padding
 from keras.backend.tensorflow_backend import _preprocess_conv2d_input
 from keras.backend.tensorflow_backend import _postprocess_conv2d_output
@@ -70,45 +68,6 @@ def conv2d(x, kernel, strides=(1, 1), padding='valid', data_format='channels_fir
     if floatx() == 'float64':
         x = tf.cast(x, 'float64')
     return x
-
-
-def deconv3d(x, kernel, output_shape, strides=(1, 1, 1),
-             padding='valid',
-             data_format='default',
-             image_shape=None, filter_shape=None):
-    '''3D deconvolution (i.e. transposed convolution).
-
-    # Arguments
-        x: input tensor.
-        kernel: kernel tensor.
-        output_shape: 1D int tensor for the output shape.
-        strides: strides tuple.
-        padding: string, "same" or "valid".
-        data_format: "tf" or "th".
-            Whether to use Theano or TensorFlow dimension ordering
-            for inputs/kernels/ouputs.
-
-    # Returns
-        A tensor, result of transposed 3D convolution.
-
-    # Raises
-        ValueError: if `data_format` is neither `tf` or `th`.
-    '''
-    if data_format == 'default':
-        data_format = image_data_format()
-    if data_format not in {'channels_first', 'channels_last'}:
-        raise ValueError('Unknown data_format ' + str(data_format))
-
-    x = _preprocess_conv3d_input(x, data_format)
-    output_shape = _preprocess_deconv_output_shape(x, output_shape,
-                                                   data_format)
-    kernel = tf.transpose(kernel, (0, 1, 2, 4, 3))
-    padding = _preprocess_padding(padding)
-    strides = (1,) + strides + (1,)
-
-    x = tf.nn.conv3d_transpose(x, kernel, output_shape, strides,
-                               padding=padding)
-    return _postprocess_conv3d_output(x, data_format)
 
 
 def extract_image_patches(x, ksizes, ssizes, padding='same',
