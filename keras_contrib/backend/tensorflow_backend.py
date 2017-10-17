@@ -36,17 +36,17 @@ def _postprocess_conv2d_output(x, data_format):
 
  def _postprocess_conv3d_output(x, data_format):
      """Transpose and cast the output from conv3d if needed.
- 
+
      # Arguments
          x: A tensor.
          data_format: string, `"channels_last"` or `"channels_first"`.
- 
+
      # Returns
          A tensor.
      """
      if data_format == 'channels_first':
          x = tf.transpose(x, (0, 4, 1, 2, 3))
- 
+
      if floatx() == 'float64':
          x = tf.cast(x, 'float64')
      return x
@@ -62,9 +62,7 @@ def _preprocess_deconv_output_shape(x, shape, data_format):
     return shape
 
 
-def 
-
-(x, kernel, strides=(1, 1), padding='valid', data_format='channels_first',
+def conv2d(x, kernel, strides=(1, 1), padding='valid', data_format='channels_first',
            image_shape=None, filter_shape=None):
     '''2D convolution.
     # Arguments
