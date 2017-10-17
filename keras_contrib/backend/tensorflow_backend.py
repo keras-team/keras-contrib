@@ -183,6 +183,7 @@ def _postprocess_conv3d_output(x, data_format):
         x = tf.cast(x, 'float64')
     return x
 
+
 def conv2d(x, kernel, strides=(1, 1), padding='valid', data_format='channels_first',
            image_shape=None, filter_shape=None):
     '''2D convolution.
