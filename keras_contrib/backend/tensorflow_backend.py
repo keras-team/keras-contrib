@@ -6,6 +6,7 @@ try:
 except ImportError:
     import tensorflow.contrib.ctc as ctc
 from keras.backend import tensorflow_backend as KTF
+from keras.backend import dtype
 from keras.backend.common import floatx
 from keras.backend.common import image_data_format
 from keras.backend.tensorflow_backend import _to_tensor
