@@ -19,6 +19,8 @@ def make_rotation_matrix(rotation_range_value, choice_number):
     :param choice_number: which axis choose
     :return: rotation matrix
     """
+    rotation_range_value = np.random.uniform(-rotation_range_value, rotation_range_value)
+
     if rotation_range_value != 0.0:
         theta = np.pi / 180 * rotation_range_value
     else:
@@ -51,7 +53,7 @@ def make_shift_matrix(x,
                       height_shift_range,
                       width_shift_range,
                       depth_shift_range):
-    """Peroforms a random spatial shift matrix
+    """Make a random spatial shift matrix
 
     :param x: Input tensor. Must be 4D
     :param img_row_axis: Index of axis for rows in the input tensor.
@@ -307,8 +309,6 @@ def random_transform(x,
     img_channel_axis = channel_axis - 1
     # use composition of homographies
     # to generate final transform that needs to be applied
-
-    rotation_range = np.random.uniform(-rotation_range, rotation_range)
 
     rotation_matrix = make_rotation_matrix(rotation_range,
                                            rotation_choice_number)
