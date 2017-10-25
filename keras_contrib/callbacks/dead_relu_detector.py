@@ -26,10 +26,7 @@ class DeadReluDetector(Callback):
     @staticmethod
     def is_relu_layer(layer):
         # Should work for all layers with relu activation. Tested for Dense and Conv2D
-        if 'activation' in layer.get_config():
-            return layer.get_config()['activation'] == 'relu'
-        else:
-            return False
+        return 'activation' in layer.get_config() and layer.get_config()['activation'] == 'relu'
 
     def get_relu_activations(self):
         model_input = self.model.input
