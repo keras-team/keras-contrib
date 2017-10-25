@@ -63,14 +63,12 @@ class DeadReluDetector(Callback):
             act_len = len(shape_act)
 
             # should work for both Conv and Flat
-            if K.backend() == 'tensorflow':
+            if K.image_data_format() == 'channels_last':
                 # features in last axis
                 axis_filter = -1
-            elif K.backend() == 'theano':
+            else:
                 # features before the convolution axis, for weight_len the input and output have to be subtracted
                 axis_filter = -1 - (weight_len - 2)
-            else:
-                raise ValueError('Unknown backend: {}'.format(K.backend()))
 
             total_featuremaps = shape_act[axis_filter]
 

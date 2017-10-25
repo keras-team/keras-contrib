@@ -96,12 +96,10 @@ def test_DeadDeadReluDetector_conv():
     n_samples = 9
 
     # (5, 5) kernel, 4 input featuremaps and 10 output featuremaps
-    if K.backend() == 'tensorflow':
+    if K.image_data_format() == 'channels_last':
         input_shape = (n_samples, 5, 5, 4)
-    elif K.backend() == 'theano':
-        input_shape = (n_samples, 4, 5, 5)
     else:
-        raise ValueError('Unknown backend: {}'.format(K.backend()))
+        input_shape = (n_samples, 4, 5, 5)
 
     # ignore batch size
     input_shape_conv = tuple(input_shape[1:])
