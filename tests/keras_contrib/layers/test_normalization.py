@@ -188,7 +188,7 @@ def test_instancenorm_perchannel_correctness():
         for channel in range(3):
             activations = out[instance, channel]
             assert abs(activations.mean()) > 1e-2
-            assert abs(activations.std() - 1.0) > 1e-1
+            assert abs(activations.std() - 1.0) > 1e-6
 
         # but values are still normalized per-instance
         activations = out[instance]
