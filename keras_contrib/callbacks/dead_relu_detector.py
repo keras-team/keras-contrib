@@ -20,7 +20,7 @@ class DeadReluDetector(Callback):
             False means the warning message is printed.
     """
 
-    def __init__(self, x_train, verbose=False, bool_warning = False):
+    def __init__(self, x_train, verbose=False, bool_warning=False):
         super(DeadReluDetector, self).__init__()
         self.x_train = x_train
         self.verbose = verbose
@@ -87,9 +87,8 @@ class DeadReluDetector(Callback):
             if (self.verbose and dead_neurons > 0) or dead_neurons_share > self.dead_neurons_share_threshold:
                 str_warning = 'Layer {} (#{}) has {} dead neurons ({:.2%})!'.format(layer_name, layer_index,
                                                                                     dead_neurons, dead_neurons_share)
-                
+
                 if self.bool_warning:
                     warnings.warn(str_warning, RuntimeWarning)
                 else:
                     print(str_warning)
-

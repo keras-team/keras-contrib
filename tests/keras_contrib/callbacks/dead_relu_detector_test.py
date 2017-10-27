@@ -29,7 +29,7 @@ def test_DeadDeadReluDetector():
                 dataset,
                 np.ones(shape_out),
                 epochs=1,
-                callbacks=[callbacks.DeadReluDetector(dataset, verbose=verbose)],
+                callbacks=[callbacks.DeadReluDetector(dataset, verbose=verbose, bool_warning=True)],
                 verbose=False
             )
             assert len(w) == expected_warnings
@@ -71,7 +71,7 @@ def test_DeadDeadReluDetector_bias():
                 dataset,
                 np.ones(shape_out),
                 epochs=1,
-                callbacks=[callbacks.DeadReluDetector(dataset, verbose=verbose)],
+                callbacks=[callbacks.DeadReluDetector(dataset, verbose=verbose, bool_warning=True)],
                 verbose=False
             )
             assert len(w) == expected_warnings
@@ -119,7 +119,7 @@ def test_DeadDeadReluDetector_conv():
                 dataset,
                 np.ones(shape_out),
                 epochs=1,
-                callbacks=[callbacks.DeadReluDetector(dataset, verbose=verbose)],
+                callbacks=[callbacks.DeadReluDetector(dataset, verbose=verbose, bool_warning=True)],
                 verbose=False
             )
             assert len(w) == expected_warnings
