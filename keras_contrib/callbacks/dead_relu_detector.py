@@ -15,13 +15,17 @@ class DeadReluDetector(Callback):
             True means that even a single dead neuron triggers warning
             False means that only significant number of dead neurons (10% or more)
             triggers warning
+        bool_warning: output mode
+            True means a warning is raised
+            False means the warning message is printed.
     """
 
-    def __init__(self, x_train, verbose=False):
+    def __init__(self, x_train, verbose=False, bool_warning = False):
         super(DeadReluDetector, self).__init__()
         self.x_train = x_train
         self.verbose = verbose
         self.dead_neurons_share_threshold = 0.1
+        self.bool_warning = bool_warning
 
     @staticmethod
     def is_relu_layer(layer):
@@ -49,7 +53,9 @@ class DeadReluDetector(Callback):
                 # layer_weight is a list [W] (+ [b])
                 layer_weight = self.model.layers[layer_index].get_weights()
                 # with kernel and bias, the weights are saved as a list [W, b]. If only weights, it is [W]
-                assert type(layer_weight) == list
+                if type(layer_weight) is not list:
+                    raise ValueError("'Layer_weight' should be a list, but was {}".format(type(layer_weight)))
+
                 layer_weight_shape = np.shape(layer_weight[0])
                 yield [layer_index, layer_activations, layer_name, layer_weight_shape]
 
@@ -81,5 +87,9 @@ class DeadReluDetector(Callback):
             if (self.verbose and dead_neurons > 0) or dead_neurons_share > self.dead_neurons_share_threshold:
                 str_warning = 'Layer {} (#{}) has {} dead neurons ({:.2%})!'.format(layer_name, layer_index,
                                                                                     dead_neurons, dead_neurons_share)
-                print(str_warning)
-                warnings.warn(str_warning, RuntimeWarning)
+                
+                if self.bool_warning:
+                    warnings.warn(str_warning, RuntimeWarning)
+                else:
+                    print(str_warning)
+
