@@ -1,7 +1,5 @@
 '''
-Trains a DenseNet-40-12 model on the CIFAR-10 Dataset.
-
-Gets a 94.84% accuracy score after 100 epochs.
+Trains a DenseNet-40-12 model to do segmentation on the Pascal VOC Dataset.
 '''
 from __future__ import absolute_import
 from __future__ import print_function
