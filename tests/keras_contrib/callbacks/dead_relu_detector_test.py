@@ -1,7 +1,11 @@
 import pytest
 import numpy as np
 import sys
-import io
+
+if (sys.version_info > (3, 0)):
+    from io import StringIO
+else:
+    from StringIO import StringIO
 
 from keras_contrib import callbacks
 from keras.models import Sequential
@@ -17,8 +21,10 @@ def check_print(do_train, expected_warnings, nr_dead=None, perc_dead=None):
     :param nr_dead: int
     :param perc_dead: float, 10% should be written as 0.1
     """
+    
     saved_stdout = sys.stdout
-    out = io.StringIO()
+
+    out = StringIO()
     sys.stdout = out    # overwrite current stdout
 
     do_train()
@@ -133,7 +139,7 @@ def test_DeadDeadReluDetector_conv():
     shape_weights = (5, 5, 4, n_out)
     shape_out = (n_samples, n_out)
 
-    def do_test(weights_bias, expected_warnings, verbose, nr_dead = None, perc_dead = None):
+    def do_test(weights_bias, expected_warnings, verbose, nr_dead=None, perc_dead=None):
         """
         :param perc_dead: as float, 10% should be written as 0.1
         """

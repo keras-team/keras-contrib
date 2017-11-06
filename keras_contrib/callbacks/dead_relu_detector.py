@@ -78,7 +78,7 @@ class DeadReluDetector(Callback):
 
             dead_neurons = np.sum(np.sum(activation_values, axis=axis) == 0)
 
-            dead_neurons_share = dead_neurons / total_featuremaps
+            dead_neurons_share = float(dead_neurons) / float(total_featuremaps)
             if (self.verbose and dead_neurons > 0) or dead_neurons_share >= self.dead_neurons_share_threshold:
                 str_warning = 'Layer {} (#{}) has {} dead neurons ({:.2%})!'.format(layer_name, layer_index,
                                                                                     dead_neurons, dead_neurons_share)
