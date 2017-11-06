@@ -1,5 +1,4 @@
 import numpy as np
-import warnings
 
 from keras.callbacks import Callback
 from keras import backend as K
@@ -12,20 +11,16 @@ class DeadReluDetector(Callback):
     # Arguments
         x_train: Training dataset to check whether or not neurons fire
         verbose: verbosity mode
-            True means that even a single dead neuron triggers warning
+            True means that even a single dead neuron triggers a warning message
             False means that only significant number of dead neurons (10% or more)
-            triggers warning
-        bool_warning: output mode
-            True means a warning is raised
-            False means the warning message is printed.
+            triggers a warning message
     """
 
-    def __init__(self, x_train, verbose=False, bool_warning=False):
+    def __init__(self, x_train, verbose=False):
         super(DeadReluDetector, self).__init__()
         self.x_train = x_train
         self.verbose = verbose
         self.dead_neurons_share_threshold = 0.1
-        self.bool_warning = bool_warning
 
     @staticmethod
     def is_relu_layer(layer):
@@ -84,11 +79,8 @@ class DeadReluDetector(Callback):
             dead_neurons = np.sum(np.sum(activation_values, axis=axis) == 0)
 
             dead_neurons_share = dead_neurons / total_featuremaps
-            if (self.verbose and dead_neurons > 0) or dead_neurons_share > self.dead_neurons_share_threshold:
+            if (self.verbose and dead_neurons > 0) or dead_neurons_share >= self.dead_neurons_share_threshold:
                 str_warning = 'Layer {} (#{}) has {} dead neurons ({:.2%})!'.format(layer_name, layer_index,
                                                                                     dead_neurons, dead_neurons_share)
 
-                if self.bool_warning:
-                    warnings.warn(str_warning, RuntimeWarning)
-                else:
-                    print(str_warning)
+                print(str_warning)
