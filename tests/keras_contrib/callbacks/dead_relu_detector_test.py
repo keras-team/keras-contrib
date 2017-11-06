@@ -133,7 +133,7 @@ def test_DeadDeadReluDetector_conv():
     shape_weights = (5, 5, 4, n_out)
     shape_out = (n_samples, n_out)
 
-    def do_test(weights_bias, expected_warnings, verbose, nr_dead: int = None, perc_dead: float = None):
+    def do_test(weights_bias, expected_warnings, verbose, nr_dead = None, perc_dead = None):
         """
         :param perc_dead: as float, 10% should be written as 0.1
         """
@@ -159,8 +159,7 @@ def test_DeadDeadReluDetector_conv():
     weights_1_dead[..., 0] = 0
     weights_2_dead = np.ones(shape_weights)    # weights that correspond to NN with 2/11 neurons dead
     weights_2_dead[..., 0:2] = 0
-    weights_all_dead = np.ones(shape_weights)    # weights that correspond to NN with all neurons dead
-    weights_all_dead[..., :] = 0
+    weights_all_dead = np.zeros(shape_weights)    # weights that correspond to NN with all neurons dead
 
     bias = np.zeros((11, ))
 
@@ -171,8 +170,8 @@ def test_DeadDeadReluDetector_conv():
     do_test(weights_bias_1_dead, verbose=True, expected_warnings=1, nr_dead=1, perc_dead=1. / n_out)
     do_test(weights_bias_1_dead, verbose=False, expected_warnings=0)
     do_test(weights_bias_2_dead, verbose=True, expected_warnings=1, nr_dead=2, perc_dead=2. / n_out)
-    do_test(weights_bias_all_dead, verbose=True, expected_warnings=1, nr_dead=n_out, perc_dead=1.)
+    do_test(weights_bias_all_dead, verbose=True, expected_warnings=1, nr_dead=n_out, perc_dead=n_out / n_out)
 
 
 if __name__ == '__main__':
-    test_DeadDeadReluDetector_conv()
+    pytest.main([__file__])
