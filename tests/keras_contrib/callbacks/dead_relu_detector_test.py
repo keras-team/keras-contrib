@@ -175,5 +175,4 @@ def test_DeadDeadReluDetector_conv():
 
 
 if __name__ == '__main__':
-    # pytest.main([__file__])
     test_DeadDeadReluDetector_conv()
