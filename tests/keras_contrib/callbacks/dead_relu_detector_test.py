@@ -21,7 +21,7 @@ def check_print(do_train, expected_warnings, nr_dead=None, perc_dead=None):
     :param nr_dead: int
     :param perc_dead: float, 10% should be written as 0.1
     """
-    
+
     saved_stdout = sys.stdout
 
     out = StringIO()
