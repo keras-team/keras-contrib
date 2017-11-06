@@ -13,8 +13,8 @@ n_out = 11  # with 1 neuron dead, 1/11 is just below the threshold of 10% with v
 
 def check_print(do_train, expected_warnings, nr_dead: int = None, perc_dead: float = None):
     """
+    Receive stdout to check if correct warning message is delivered
     :param perc_dead: as float, 10% should be written as 0.1
-    Receive stdout to check if correct warning message is delivered.
     """
     saved_stdout = sys.stdout
     out = io.StringIO()
