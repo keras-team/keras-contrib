@@ -336,7 +336,7 @@ def NASNetMobile(input_shape=None,
                  input_tensor=None,
                  pooling=None,
                  classes=1000):
-    """Instantiates a NASNet architecture in CIFAR mode.
+    """Instantiates a NASNet architecture in Mobile ImageNet mode.
     Note that only TensorFlow is supported for now,
     therefore it only works with the data format
     `image_data_format='channels_last'` in your Keras config
@@ -388,6 +388,77 @@ def NASNetMobile(input_shape=None,
                   nb_blocks=4,
                   stem_filters=32,
                   skip_reduction=False,
+                  use_auxilary_branch=use_auxilary_branch,
+                  filters_multiplier=2,
+                  dropout=dropout,
+                  include_top=include_top,
+                  weights=weights,
+                  input_tensor=input_tensor,
+                  pooling=pooling,
+                  classes=classes,
+                  default_size=224)
+
+
+def NASNetCIFAR(input_shape=None,
+                dropout=0.0,
+                use_auxilary_branch=False,
+                include_top=True,
+                weights=None,
+                input_tensor=None,
+                pooling=None,
+                classes=10):
+    """Instantiates a NASNet architecture in CIFAR mode.
+    Note that only TensorFlow is supported for now,
+    therefore it only works with the data format
+    `image_data_format='channels_last'` in your Keras config
+    at `~/.keras/keras.json`.
+
+    # Arguments
+        input_shape: optional shape tuple, only to be specified
+            if `include_top` is False (otherwise the input shape
+            has to be `(32, 32, 3)` for NASNetMobile
+            It should have exactly 3 inputs channels,
+            and width and height should be no smaller than 32.
+            E.g. `(32, 32, 3)` would be one valid value.
+        use_auxilary_branch: Whether to use the auxilary branch during
+            training or evaluation.
+        dropout: dropout rate
+        include_top: whether to include the fully-connected
+            layer at the top of the network.
+        weights: `None` (random initialization) or
+            `imagenet` (ImageNet weights)
+        input_tensor: optional Keras tensor (i.e. output of
+            `layers.Input()`)
+            to use as image input for the model.
+        pooling: Optional pooling mode for feature extraction
+            when `include_top` is `False`.
+            - `None` means that the output of the model
+                will be the 4D tensor output of the
+                last convolutional layer.
+            - `avg` means that global average pooling
+                will be applied to the output of the
+                last convolutional layer, and thus
+                the output of the model will be a
+                2D tensor.
+            - `max` means that global max pooling will
+                be applied.
+        classes: optional number of classes to classify images
+            into, only to be specified if `include_top` is True, and
+            if no `weights` argument is specified.
+        default_size: specifies the default image size of the model
+    # Returns
+        A Keras model instance.
+    # Raises
+        ValueError: in case of invalid argument for `weights`,
+            or invalid input shape.
+        RuntimeError: If attempting to run this model with a
+            backend that does not support separable convolutions.
+    """
+    return NASNet(input_shape,
+                  penultimate_filters=768,
+                  nb_blocks=2,
+                  stem_filters=96,
+                  skip_reduction=True,
                   use_auxilary_branch=use_auxilary_branch,
                   filters_multiplier=2,
                   dropout=dropout,
