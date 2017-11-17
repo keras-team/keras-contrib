@@ -52,7 +52,7 @@ def NASNet(input_shape=None,
            filters_multiplier=2,
            dropout=0.5,
            include_top=True,
-           weights='imagenet',
+           weights=None,
            input_tensor=None,
            pooling=None,
            classes=1000,
@@ -170,7 +170,8 @@ def NASNet(input_shape=None,
         else:
             img_input = input_tensor
 
-    assert penultimate_filters % 24 == 0, "`penultimate_filters` needs to be divisible by 24"
+    assert penultimate_filters % 24 == 0, "`penultimate_filters` needs to be divisible " \
+                                                              "by 6 * (2^N)."
 
     channel_dim = 1 if K.image_data_format() == 'channels_first' else -1
     filters =  penultimate_filters // 24
@@ -197,22 +198,23 @@ def NASNet(input_shape=None,
     if use_auxilary_branch:
         img_dim = 2 if K.image_data_format() == 'channels_first' else -2
 
-        auxilary_x = Activation('relu')(x)
-        auxilary_x = AveragePooling2D((5, 5), strides=(3, 3), padding='valid', name='aux_pool')(auxilary_x)
-        auxilary_x = Conv2D(128, (1, 1), padding='same', use_bias=False, name='aux_conv_projection',
-                            kernel_initializer='he_normal')(auxilary_x)
-        auxilary_x = BatchNormalization(axis=channel_dim, momentum=_BN_DECAY, epsilon=_BN_EPSILON,
-                                        name='aux_bn_projection')(auxilary_x)
-        auxilary_x = Activation('relu')(auxilary_x)
+        with K.name_scope('auxilary_branch'):
+	        auxilary_x = Activation('relu')(x)
+	        auxilary_x = AveragePooling2D((5, 5), strides=(3, 3), padding='valid', name='aux_pool')(auxilary_x)
+	        auxilary_x = Conv2D(128, (1, 1), padding='same', use_bias=False, name='aux_conv_projection',
+	                            kernel_initializer='he_normal')(auxilary_x)
+	        auxilary_x = BatchNormalization(axis=channel_dim, momentum=_BN_DECAY, epsilon=_BN_EPSILON,
+	                                        name='aux_bn_projection')(auxilary_x)
+	        auxilary_x = Activation('relu')(auxilary_x)
 
-        auxilary_x = Conv2D(768, auxilary_x._keras_shape[img_dim], padding='valid', use_bias=False,
-                            kernel_initializer='he_normal', name='aux_conv_reduction')(auxilary_x)
-        auxilary_x = BatchNormalization(axis=channel_dim, momentum=_BN_DECAY, epsilon=_BN_EPSILON,
-                                        name='aux_bn_reduction')(auxilary_x)
-        auxilary_x = Activation('relu')(auxilary_x)
+	        auxilary_x = Conv2D(768, auxilary_x._keras_shape[img_dim], padding='valid', use_bias=False,
+	                            kernel_initializer='he_normal', name='aux_conv_reduction')(auxilary_x)
+	        auxilary_x = BatchNormalization(axis=channel_dim, momentum=_BN_DECAY, epsilon=_BN_EPSILON,
+	                                        name='aux_bn_reduction')(auxilary_x)
+	        auxilary_x = Activation('relu')(auxilary_x)
 
-        auxilary_x = GlobalAveragePooling2D()(auxilary_x)
-        auxilary_x = Dense(classes, activation='softmax')(auxilary_x)
+	        auxilary_x = GlobalAveragePooling2D()(auxilary_x)
+	        auxilary_x = Dense(classes, activation='softmax')(auxilary_x)
 
     x, p0 = _reduction_A(x, p, filters * filters_multiplier ** 2, id='reduce_%d' % (2 * nb_blocks))
 
@@ -444,32 +446,33 @@ def _adjust_block(p, ip, filters, id=None):
     channel_dim = 1 if K.image_data_format() == 'channels_first' else -1
     img_dim = 2 if K.image_data_format() == 'channels_first' else -2
 
-    if p is None:
-        p = ip
+    with K.name_scope('adjust_block'):
+	    if p is None:
+	        p = ip
 
-    elif p._keras_shape[img_dim] != ip._keras_shape[img_dim]:
-        with K.name_scope('adjust_reduction_block_%s' % id):
-            p = Activation('relu', name='adjust_relu_1_%s' % id)(p)
+	    elif p._keras_shape[img_dim] != ip._keras_shape[img_dim]:
+	        with K.name_scope('adjust_reduction_block_%s' % id):
+	            p = Activation('relu', name='adjust_relu_1_%s' % id)(p)
 
-            p1 = AveragePooling2D((1, 1), strides=(2, 2), padding='valid', name='adjust_avg_pool_1_%s' % id)(p)
-            p1 = Conv2D(filters // 2, (1, 1), padding='same', use_bias=False,
-                        name='adjust_conv_1_%s' % id, kernel_initializer='he_normal')(p1)
+	            p1 = AveragePooling2D((1, 1), strides=(2, 2), padding='valid', name='adjust_avg_pool_1_%s' % id)(p)
+	            p1 = Conv2D(filters // 2, (1, 1), padding='same', use_bias=False,
+	                        name='adjust_conv_1_%s' % id, kernel_initializer='he_normal')(p1)
 
-            p2 = AveragePooling2D((1, 1), strides=(2, 2), padding='valid', name='adjust_avg_pool_2_%s' % id)(p)
-            p2 = Conv2D(filters // 2, (1, 1), padding='same', use_bias=False,
-                        name='adjust_conv_2_%s' % id, kernel_initializer='he_normal')(p2)
+	            p2 = AveragePooling2D((1, 1), strides=(2, 2), padding='valid', name='adjust_avg_pool_2_%s' % id)(p)
+	            p2 = Conv2D(filters // 2, (1, 1), padding='same', use_bias=False,
+	                        name='adjust_conv_2_%s' % id, kernel_initializer='he_normal')(p2)
 
-            p = concatenate([p1, p2], axis=channel_dim)
-            p = BatchNormalization(axis=channel_dim, momentum=_BN_DECAY, epsilon=_BN_EPSILON,
-                                   name='adjust_bn_%s' % id)(p)
+	            p = concatenate([p1, p2], axis=channel_dim)
+	            p = BatchNormalization(axis=channel_dim, momentum=_BN_DECAY, epsilon=_BN_EPSILON,
+	                                   name='adjust_bn_%s' % id)(p)
 
-    elif p._keras_shape[channel_dim] != filters:
-        with K.name_scope('adjust_projection_block_%s' % id):
-            p = Activation('relu')(p)
-            p = Conv2D(filters, (1, 1), strides=(1, 1), padding='same', name='adjust_conv_projection_%s' % id,
-                       use_bias=False, kernel_initializer='he_normal')(p)
-            p = BatchNormalization(axis=channel_dim, momentum=_BN_DECAY, epsilon=_BN_EPSILON,
-                                   name='adjust_bn_%s' % id)(p)
+	    elif p._keras_shape[channel_dim] != filters:
+	        with K.name_scope('adjust_projection_block_%s' % id):
+	            p = Activation('relu')(p)
+	            p = Conv2D(filters, (1, 1), strides=(1, 1), padding='same', name='adjust_conv_projection_%s' % id,
+	                       use_bias=False, kernel_initializer='he_normal')(p)
+	            p = BatchNormalization(axis=channel_dim, momentum=_BN_DECAY, epsilon=_BN_EPSILON,
+	                                   name='adjust_bn_%s' % id)(p)
     return p
 
 
@@ -487,38 +490,39 @@ def _normal_A(ip, p, filters, id=None):
     '''
     channel_dim = 1 if K.image_data_format() == 'channels_first' else -1
 
-    p = _adjust_block(p, ip, filters, id)
+    with K.name_scope('normal_A_block_%s' % id):
+	    p = _adjust_block(p, ip, filters, id)
 
-    h = Activation('relu')(ip)
-    h = Conv2D(filters, (1, 1), strides=(1, 1), padding='same', name='normal_conv_1_%s' % id,
-               use_bias=False, kernel_initializer='he_normal')(h)
-    h = BatchNormalization(axis=channel_dim, momentum=_BN_DECAY, epsilon=_BN_EPSILON,
-                           name='normal_bn_1_%s' % id)(h)
+	    h = Activation('relu')(ip)
+	    h = Conv2D(filters, (1, 1), strides=(1, 1), padding='same', name='normal_conv_1_%s' % id,
+	               use_bias=False, kernel_initializer='he_normal')(h)
+	    h = BatchNormalization(axis=channel_dim, momentum=_BN_DECAY, epsilon=_BN_EPSILON,
+	                           name='normal_bn_1_%s' % id)(h)
 
-    with K.name_scope('normal_A_block_1'):
-        x1 = _separable_conv_block(h, filters, id='normal_left1_%s' % id)
-        x1 = add([x1, h], name='normal_add_1_%s' % id)
+	    with K.name_scope('block_1'):
+	        x1 = _separable_conv_block(h, filters, id='normal_left1_%s' % id)
+	        x1 = add([x1, h], name='normal_add_1_%s' % id)
 
-    with K.name_scope('normal_A_block_2'):
-        x2_1 = _separable_conv_block(p, filters, id='normal_left2_%s' % id)
-        x2_2 = _separable_conv_block(h, filters, kernel_size=(5, 5), id='normal_right2_%s' % id)
-        x2 = add([x2_1, x2_2], name='normal_add_2_%s' % id)
+	    with K.name_scope('block_2'):
+	        x2_1 = _separable_conv_block(p, filters, id='normal_left2_%s' % id)
+	        x2_2 = _separable_conv_block(h, filters, kernel_size=(5, 5), id='normal_right2_%s' % id)
+	        x2 = add([x2_1, x2_2], name='normal_add_2_%s' % id)
 
-    with K.name_scope('normal_A_block_3'):
-        x3 = AveragePooling2D((3, 3), strides=(1, 1), padding='same', name='normal_left3_%s' % (id))(h)
-        x3 = add([x3, p], name='normal_add_3_%s' % id)
+	    with K.name_scope('block_3'):
+	        x3 = AveragePooling2D((3, 3), strides=(1, 1), padding='same', name='normal_left3_%s' % (id))(h)
+	        x3 = add([x3, p], name='normal_add_3_%s' % id)
 
-    with K.name_scope('normal_A_block_4'):
-        x4_1 = AveragePooling2D((3, 3), strides=(1, 1), padding='same', name='normal_left4_%s' % (id))(p)
-        x4_2 = AveragePooling2D((3, 3), strides=(1, 1), padding='same', name='normal_right4_%s' % (id))(p)
-        x4 = add([x4_1, x4_2], name='normal_add_4_%s' % id)
+	    with K.name_scope('block_4'):
+	        x4_1 = AveragePooling2D((3, 3), strides=(1, 1), padding='same', name='normal_left4_%s' % (id))(p)
+	        x4_2 = AveragePooling2D((3, 3), strides=(1, 1), padding='same', name='normal_right4_%s' % (id))(p)
+	        x4 = add([x4_1, x4_2], name='normal_add_4_%s' % id)
 
-    with K.name_scope('normal_A_block_5'):
-        x5_1 = _separable_conv_block(p, filters, (5, 5), id='normal_left5_%s' % id)
-        x5_2 = _separable_conv_block(p, filters, (3, 3), id='normal_right5_%s' % id)
-        x5 = add([x5_1, x5_2], name='normal_add_5_%s' % id)
+	    with K.name_scope('block_5'):
+	        x5_1 = _separable_conv_block(p, filters, (5, 5), id='normal_left5_%s' % id)
+	        x5_2 = _separable_conv_block(p, filters, (3, 3), id='normal_right5_%s' % id)
+	        x5 = add([x5_1, x5_2], name='normal_add_5_%s' % id)
 
-    x = concatenate([p, x2, x5, x3, x4, x1], axis=channel_dim, name='normal_concat_%s' % id)
+	    x = concatenate([p, x2, x5, x3, x4, x1], axis=channel_dim, name='normal_concat_%s' % id)
     return x, ip
 
 
@@ -537,36 +541,37 @@ def _reduction_A(ip, p, filters, id=None):
     """"""
     channel_dim = 1 if K.image_data_format() == 'channels_first' else -1
 
-    p = _adjust_block(p, ip, filters, id)
+    with K.name_scope('reduction_A_block_%s' % id):
+	    p = _adjust_block(p, ip, filters, id)
 
-    h = Activation('relu')(ip)
-    h = Conv2D(filters, (1, 1), strides=(1, 1), padding='same', name='reduction_conv_1_%s' % id,
-               use_bias=False, kernel_initializer='he_normal')(h)
-    h = BatchNormalization(axis=channel_dim, momentum=_BN_DECAY, epsilon=_BN_EPSILON,
-                           name='reduction_bn_1_%s' % id)(h)
+	    h = Activation('relu')(ip)
+	    h = Conv2D(filters, (1, 1), strides=(1, 1), padding='same', name='reduction_conv_1_%s' % id,
+	               use_bias=False, kernel_initializer='he_normal')(h)
+	    h = BatchNormalization(axis=channel_dim, momentum=_BN_DECAY, epsilon=_BN_EPSILON,
+	                           name='reduction_bn_1_%s' % id)(h)
 
-    with K.name_scope('reduction_A_block_1'):
-        x1_1 = _separable_conv_block(p, filters, (7, 7), strides=(2, 2), id='reduction_left1_%s' % id)
-        x1_2 = _separable_conv_block(h, filters, (5, 5), strides=(2, 2), id='reduction_right1_%s' % id)
-        x1 = add([x1_1, x1_2], name='reduction_add_1_%s' % id)
+	    with K.name_scope('block_1'):
+	        x1_1 = _separable_conv_block(p, filters, (7, 7), strides=(2, 2), id='reduction_left1_%s' % id)
+	        x1_2 = _separable_conv_block(h, filters, (5, 5), strides=(2, 2), id='reduction_right1_%s' % id)
+	        x1 = add([x1_1, x1_2], name='reduction_add_1_%s' % id)
 
-    with K.name_scope('reduction_A_block_2'):
-        x2_1 = MaxPooling2D((3, 3), strides=(2, 2), padding='same', name='reduction_left2_%s' % id)(h)
-        x2_2 = _separable_conv_block(p, filters, (7, 7), strides=(2, 2), id='reduction_right2_%s' % id)
-        x2 = add([x2_1, x2_2], name='reduction_add_2_%s' % id)
+	    with K.name_scope('block_2'):
+	        x2_1 = MaxPooling2D((3, 3), strides=(2, 2), padding='same', name='reduction_left2_%s' % id)(h)
+	        x2_2 = _separable_conv_block(p, filters, (7, 7), strides=(2, 2), id='reduction_right2_%s' % id)
+	        x2 = add([x2_1, x2_2], name='reduction_add_2_%s' % id)
 
-    with K.name_scope('reduction_A_block_3'):
-        x3_1 = AveragePooling2D((3, 3), strides=(2, 2), padding='same', name='reduction_left3_%s' % id)(h)
-        x3_2 = _separable_conv_block(p, filters, (5, 5), strides=(2, 2), id='reduction_right3_%s' % id)
-        x3 = add([x3_1, x3_2], name='reduction_add3_%s' % id)
+	    with K.name_scope('block_3'):
+	        x3_1 = AveragePooling2D((3, 3), strides=(2, 2), padding='same', name='reduction_left3_%s' % id)(h)
+	        x3_2 = _separable_conv_block(p, filters, (5, 5), strides=(2, 2), id='reduction_right3_%s' % id)
+	        x3 = add([x3_1, x3_2], name='reduction_add3_%s' % id)
 
-    with K.name_scope('reduction_A_block_4'):
-        x4_1 = MaxPooling2D((3, 3), strides=(2, 2), padding='same', name='reduction_left4_%s' % id)(h)
-        x4_2 = _separable_conv_block(x1, filters, (3, 3), id='reduction_right4_%s' % id)
-        x4 = add([x4_1, x4_2], name='reduction_add4_%s' % id)
+	    with K.name_scope('block_4'):
+	        x4_1 = MaxPooling2D((3, 3), strides=(2, 2), padding='same', name='reduction_left4_%s' % id)(h)
+	        x4_2 = _separable_conv_block(x1, filters, (3, 3), id='reduction_right4_%s' % id)
+	        x4 = add([x4_1, x4_2], name='reduction_add4_%s' % id)
 
-    with K.name_scope('reduction_A_block_5'):
-        x5 = AveragePooling2D((3, 3), strides=(1, 1), padding='same', name='reduction_left5_%s' % id)(x1)
+	    with K.name_scope('block_5'):
+	        x5 = AveragePooling2D((3, 3), strides=(1, 1), padding='same', name='reduction_left5_%s' % id)(x1)
 
-    x = concatenate([x2, x3, x5, x4], axis=channel_dim, name='reduction_concat_%s' % id)
-    return x, ip
+	    x = concatenate([x2, x3, x5, x4], axis=channel_dim, name='reduction_concat_%s' % id)
+	    return x, ip
