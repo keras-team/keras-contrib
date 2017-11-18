@@ -215,7 +215,7 @@ def NASNet(input_shape=None,
             auxilary_x = Activation('relu')(auxilary_x)
 
             auxilary_x = GlobalAveragePooling2D()(auxilary_x)
-            auxilary_x = Dense(classes, activation='softmax')(auxilary_x)
+            auxilary_x = Dense(classes, activation='softmax', name='aux_predictions')(auxilary_x)
 
     x, p0 = _reduction_A(x, p, filters * filters_multiplier ** 2, id='reduce_%d' % (2 * nb_blocks))
 
