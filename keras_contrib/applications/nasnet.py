@@ -195,7 +195,8 @@ def NASNet(input_shape=None,
 
     auxilary_x = None
     if use_auxilary_branch:
-        img_dim = 2 if K.image_data_format() == 'channels_first' else -2
+        img_height = 1 if K.image_data_format() == 'channels_first' else 2
+        img_width = 2 if K.image_data_format() == 'channels_first' else 3
 
         with K.name_scope('auxilary_branch'):
             auxilary_x = Activation('relu')(x)
@@ -206,8 +207,9 @@ def NASNet(input_shape=None,
                                             name='aux_bn_projection')(auxilary_x)
             auxilary_x = Activation('relu')(auxilary_x)
 
-            auxilary_x = Conv2D(768, auxilary_x._keras_shape[img_dim], padding='valid', use_bias=False,
-                                kernel_initializer='he_normal', name='aux_conv_reduction')(auxilary_x)
+            auxilary_x = Conv2D(768, (auxilary_x._keras_shape[img_height], auxilary_x._keras_shape[img_width]),
+                                padding='valid', use_bias=False, kernel_initializer='he_normal',
+                                name='aux_conv_reduction')(auxilary_x)
             auxilary_x = BatchNormalization(axis=channel_dim, momentum=_BN_DECAY, epsilon=_BN_EPSILON,
                                             name='aux_bn_reduction')(auxilary_x)
             auxilary_x = Activation('relu')(auxilary_x)
