@@ -18,7 +18,7 @@ import numpy as np
 
 
 weights_file = 'NASNet-CIFAR-10.h5'
-lr_reducer = ReduceLROnPlateau(factor=np.sqrt(0.5), cooldown=0, patience=5, min_lr=0.5e-6)
+lr_reducer = ReduceLROnPlateau(factor=np.sqrt(0.5), cooldown=0, patience=5, min_lr=0.5e-5)
 csv_logger = CSVLogger('NASNet-CIFAR-10.csv')
 model_checkpoint = ModelCheckpoint(weights_file, monitor='val_predictions_acc', save_best_only=True,
                                    save_weights_only=True, mode='max')
@@ -51,12 +51,8 @@ X_train /= 128.
 X_test /= 128.
 
 # For training, the auxilary branch must be used to correctly train NASNet
-model = NASNetCIFAR((img_rows, img_cols, img_channels), dropout=0.5,
-                    use_auxilary_branch=True)
-model.compile(loss=['categorical_crossentropy', 'categorical_crossentropy'],
-              optimizer='adam',
-              loss_weights=[1.0, 0.4],
-              metrics=['accuracy'])
+model = NASNetCIFAR((img_rows, img_cols, img_channels))
+model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
 
 if not data_augmentation:
     print('Not using data augmentation.')
@@ -65,6 +61,7 @@ if not data_augmentation:
               nb_epoch=nb_epoch,
               validation_data=(X_test, Y_test),
               shuffle=True,
+              verbose=1,
               callbacks=[lr_reducer, csv_logger, model_checkpoint])
 else:
     print('Using real-time data augmentation.')
@@ -89,7 +86,7 @@ else:
     model.fit_generator(datagen.flow(X_train, Y_train, batch_size=batch_size),
                         steps_per_epoch=X_train.shape[0] // batch_size,
                         validation_data=(X_test, Y_test),
-                        epochs=nb_epoch, verbose=2,
+                        epochs=nb_epoch, verbose=1,
                         callbacks=[lr_reducer, csv_logger, model_checkpoint])
 
 scores = model.evaluate(X_test, Y_test, batch_size=batch_size)
