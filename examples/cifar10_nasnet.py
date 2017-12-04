@@ -1,7 +1,6 @@
 """
 Adapted from keras example cifar10_cnn.py
 Train NASNet-CIFAR on the CIFAR10 small images dataset.
-
 GPU run command with Theano backend (with TensorFlow, the GPU is automatically used):
     THEANO_FLAGS=mode=FAST_RUN,device=gpu,floatX=float32 python cifar10_nasnet.py
 """
@@ -12,7 +11,8 @@ from keras.utils import np_utils
 from keras.callbacks import ModelCheckpoint
 from keras.callbacks import ReduceLROnPlateau
 from keras.callbacks import CSVLogger
-from keras_contrib.applications.nasnet import NASNetCIFAR
+from keras.optimizers import Adam
+from keras_contrib.applications.nasnet import NASNetCIFAR, preprocess_input
 
 import numpy as np
 
@@ -20,12 +20,12 @@ import numpy as np
 weights_file = 'NASNet-CIFAR-10.h5'
 lr_reducer = ReduceLROnPlateau(factor=np.sqrt(0.5), cooldown=0, patience=5, min_lr=0.5e-5)
 csv_logger = CSVLogger('NASNet-CIFAR-10.csv')
-model_checkpoint = ModelCheckpoint(weights_file, monitor='val_predictions_acc', save_best_only=True,
+model_checkpoint = ModelCheckpoint(weights_file, monitor='val_prediction_acc', save_best_only=True,
                                    save_weights_only=True, mode='max')
 
 batch_size = 128
 nb_classes = 10
-nb_epoch = 200
+nb_epoch = 200 # should be 600
 data_augmentation = True
 
 # input image dimensions
@@ -43,16 +43,17 @@ Y_test = np_utils.to_categorical(y_test, nb_classes)
 X_train = X_train.astype('float32')
 X_test = X_test.astype('float32')
 
-# subtract mean and normalize
-mean_image = np.mean(X_train, axis=0)
-X_train -= mean_image
-X_test -= mean_image
-X_train /= 128.
-X_test /= 128.
+# preprocess input
+X_train = preprocess_input(X_train)
+X_test = preprocess_input(X_test)
 
 # For training, the auxilary branch must be used to correctly train NASNet
-model = NASNetCIFAR((img_rows, img_cols, img_channels))
-model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
+model = NASNetCIFAR((img_rows, img_cols, img_channels), use_auxilary_branch=True)
+model.summary()
+
+optimizer = Adam(lr=1e-3, clipnorm=5)
+model.compile(loss=['categorical_crossentropy', 'categorical_crossentropy'],
+              optimizer=optimizer, metrics=['accuracy'], loss_weights=[1.0, 0.4])
 
 if not data_augmentation:
     print('Not using data augmentation.')
@@ -61,7 +62,7 @@ if not data_augmentation:
               nb_epoch=nb_epoch,
               validation_data=(X_test, Y_test),
               shuffle=True,
-              verbose=1,
+              verbose=2,
               callbacks=[lr_reducer, csv_logger, model_checkpoint])
 else:
     print('Using real-time data augmentation.')
@@ -86,7 +87,7 @@ else:
     model.fit_generator(datagen.flow(X_train, Y_train, batch_size=batch_size),
                         steps_per_epoch=X_train.shape[0] // batch_size,
                         validation_data=(X_test, Y_test),
-                        epochs=nb_epoch, verbose=1,
+                        epochs=nb_epoch, verbose=2,
                         callbacks=[lr_reducer, csv_logger, model_checkpoint])
 
 scores = model.evaluate(X_test, Y_test, batch_size=batch_size)

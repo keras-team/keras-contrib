@@ -180,13 +180,20 @@ def NASNet(input_shape=None,
     channel_dim = 1 if K.image_data_format() == 'channels_first' else -1
     filters = penultimate_filters // 24
 
-    x = Conv2D(stem_filters, (3, 3), strides=(2, 2), padding='valid', use_bias=False, name='stem_conv1',
-               kernel_initializer='he_normal', kernel_regularizer=l2(weight_decay))(img_input)
+    if not skip_reduction:
+        x = Conv2D(stem_filters, (3, 3), strides=(2, 2), padding='valid', use_bias=False, name='stem_conv1',
+                   kernel_initializer='he_normal', kernel_regularizer=l2(weight_decay))(img_input)
+    else:
+        x = Conv2D(stem_filters, (3, 3), strides=(1, 1), padding='same', use_bias=False, name='stem_conv1',
+                   kernel_initializer='he_normal', kernel_regularizer=l2(weight_decay))(img_input)
+
     x = BatchNormalization(axis=channel_dim, momentum=_BN_DECAY, epsilon=_BN_EPSILON,
                            name='stem_bn1')(x)
 
-    x, p = _reduction_A(x, None, filters // (filters_multiplier ** 2), weight_decay, id='stem_1')
-    x, p = _reduction_A(x, p, filters // filters_multiplier, weight_decay, id='stem_2')
+    p = None
+    if not skip_reduction:  # imagenet / mobile mode
+        x, p = _reduction_A(x, p, filters // (filters_multiplier ** 2), weight_decay, id='stem_1')
+        x, p = _reduction_A(x, p, filters // filters_multiplier, weight_decay, id='stem_2')
 
     for i in range(nb_blocks):
         x, p = _normal_A(x, p, filters, weight_decay, id='%d' % (i))
@@ -199,31 +206,15 @@ def NASNet(input_shape=None,
         x, p = _normal_A(x, p, filters * filters_multiplier, weight_decay, id='%d' % (nb_blocks + i + 1))
 
     auxilary_x = None
-    if use_auxilary_branch:
-        img_height = 1 if K.image_data_format() == 'channels_first' else 2
-        img_width = 2 if K.image_data_format() == 'channels_first' else 3
-
-        with K.name_scope('auxilary_branch'):
-            auxilary_x = Activation('relu')(x)
-            auxilary_x = AveragePooling2D((5, 5), strides=(3, 3), padding='valid', name='aux_pool')(auxilary_x)
-            auxilary_x = Conv2D(128, (1, 1), padding='same', use_bias=False, name='aux_conv_projection',
-                                kernel_initializer='he_normal', kernel_regularizer=l2(weight_decay))(auxilary_x)
-            auxilary_x = BatchNormalization(axis=channel_dim, momentum=_BN_DECAY, epsilon=_BN_EPSILON,
-                                            name='aux_bn_projection')(auxilary_x)
-            auxilary_x = Activation('relu')(auxilary_x)
-
-            auxilary_x = Conv2D(768, (auxilary_x._keras_shape[img_height], auxilary_x._keras_shape[img_width]),
-                                padding='valid', use_bias=False, kernel_initializer='he_normal',
-                                kernel_regularizer=l2(weight_decay), name='aux_conv_reduction')(auxilary_x)
-            auxilary_x = BatchNormalization(axis=channel_dim, momentum=_BN_DECAY, epsilon=_BN_EPSILON,
-                                            name='aux_bn_reduction')(auxilary_x)
-            auxilary_x = Activation('relu')(auxilary_x)
-
-            auxilary_x = GlobalAveragePooling2D()(auxilary_x)
-            auxilary_x = Dense(classes, activation='softmax', kernel_regularizer=l2(weight_decay),
-                               name='aux_predictions')(auxilary_x)
+    if not skip_reduction:  # imagenet / mobile mode
+        if use_auxilary_branch:
+            auxilary_x = _add_auxilary_head(x, classes, weight_decay)
 
     x, p0 = _reduction_A(x, p, filters * filters_multiplier ** 2, weight_decay, id='reduce_%d' % (2 * nb_blocks))
+
+    if skip_reduction:  # CIFAR mode
+        if use_auxilary_branch:
+            auxilary_x = _add_auxilary_head(x, classes, weight_decay)
 
     p = p0 if not skip_reduction else p
 
@@ -554,7 +545,7 @@ def _adjust_block(p, ip, filters, weight_decay=5e-5, id=None):
         if p is None:
             p = ip
 
-        elif p._keras_shape[img_dim] != ip._keras_shape[img_dim]:
+        if p._keras_shape[img_dim] != ip._keras_shape[img_dim]:
             with K.name_scope('adjust_reduction_block_%s' % id):
                 p = Activation('relu', name='adjust_relu_1_%s' % id)(p)
 
@@ -688,3 +679,40 @@ def _reduction_A(ip, p, filters, weight_decay=5e-5, id=None):
 
         x = concatenate([x2, x3, x5, x4], axis=channel_dim, name='reduction_concat_%s' % id)
         return x, ip
+
+
+def _add_auxilary_head(x, classes, weight_decay):
+    '''Adds an auxilary head for training the model
+
+    # Arguments
+        x: input tensor
+        classes: number of output classes
+        weight_decay: l2 regularization weight
+
+    # Returns
+        a keras Tensor
+    '''
+    img_height = 1 if K.image_data_format() == 'channels_last' else 2
+    img_width = 2 if K.image_data_format() == 'channels_last' else 3
+    channel_axis = 1 if K.image_data_format() == 'channels_first' else -1
+
+    with K.name_scope('auxilary_branch'):
+        auxilary_x = Activation('relu')(x)
+        auxilary_x = AveragePooling2D((5, 5), strides=(3, 3), padding='valid', name='aux_pool')(auxilary_x)
+        auxilary_x = Conv2D(128, (1, 1), padding='same', use_bias=False, name='aux_conv_projection',
+                            kernel_initializer='he_normal', kernel_regularizer=l2(weight_decay))(auxilary_x)
+        auxilary_x = BatchNormalization(axis=channel_axis, momentum=_BN_DECAY, epsilon=_BN_EPSILON,
+                                        name='aux_bn_projection')(auxilary_x)
+        auxilary_x = Activation('relu')(auxilary_x)
+
+        auxilary_x = Conv2D(768, (auxilary_x._keras_shape[img_height], auxilary_x._keras_shape[img_width]),
+                            padding='valid', use_bias=False, kernel_initializer='he_normal',
+                            kernel_regularizer=l2(weight_decay), name='aux_conv_reduction')(auxilary_x)
+        auxilary_x = BatchNormalization(axis=channel_axis, momentum=_BN_DECAY, epsilon=_BN_EPSILON,
+                                        name='aux_bn_reduction')(auxilary_x)
+        auxilary_x = Activation('relu')(auxilary_x)
+
+        auxilary_x = GlobalAveragePooling2D()(auxilary_x)
+        auxilary_x = Dense(classes, activation='softmax', kernel_regularizer=l2(weight_decay),
+                           name='aux_predictions')(auxilary_x)
+    return auxilary_x
