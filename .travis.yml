@@ -32,7 +32,7 @@ install:
 
   - conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION numpy scipy matplotlib pandas pytest h5py
   - source activate test-environment
-  - pip install pytest-cov python-coveralls pytest-xdist coverage==3.7.1 #we need this version of coverage for coveralls.io to work
+  - pip install pytest-cov pytest-xdist
   - pip install pep8 pytest-pep8
   - conda install mkl mkl-service
   - pip install theano
@@ -77,5 +77,3 @@ script:
     else
        PYTHONPATH=$PWD:$PYTHONPATH py.test tests/ --ignore=tests/integration_tests --ignore=tests/test_documentation.py --cov=keras tests/ --cov-report term-missing;
     fi
-after_success:
-  - coveralls
