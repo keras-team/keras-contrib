@@ -84,6 +84,9 @@ else:
     datagen.fit(X_train)
 
     # wrap the ImageDataGenerator to yield two label batches [y, y] for each input batch X
+    # When training a NASNet model, we have to use its auxilary training head
+    # Therefore the model is technically a 1 input - 2 output model, and requires
+    # the label to be duplicated for the auxilary head
     def image_data_generator_wrapper(image_datagenerator, batch_size):
         iterator = datagen.flow(X_train, Y_train, batch_size=batch_size)
 

@@ -248,7 +248,7 @@ def NASNet(input_shape=None,
 
     # load weights (when available)
     if weights is not None:
-        warnings.warn('Weights of NASNet models have not been ported yet for Keras.')
+        warnings.warn('Weights of NASNet models have not yet been ported to Keras')
 
     if old_data_format:
         K.set_image_data_format(old_data_format)
@@ -683,6 +683,10 @@ def _reduction_A(ip, p, filters, weight_decay=5e-5, id=None):
 
 def _add_auxilary_head(x, classes, weight_decay):
     '''Adds an auxilary head for training the model
+
+    From section A.7 "Training of ImageNet models" of the paper, all NASNet models are
+    trained using an auxilary classifier around 2/3 of the depth of the network, with
+    a loss weight of 0.4
 
     # Arguments
         x: input tensor
