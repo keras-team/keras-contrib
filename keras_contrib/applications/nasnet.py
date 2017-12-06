@@ -186,7 +186,7 @@ def NASNet(input_shape=None,
             img_input = input_tensor
 
     assert penultimate_filters % 24 == 0, "`penultimate_filters` needs to be divisible " \
-                                          "by 6 * (2^N)."
+                                          "by 24."
 
     channel_dim = 1 if K.image_data_format() == 'channels_first' else -1
     filters = penultimate_filters // 24
