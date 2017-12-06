@@ -10,6 +10,8 @@ The reference implementation:
    nasnet/nasnet.py
 2. TensorNets
  - https://github.com/taehoonlee/tensornets/blob/master/tensornets/nasnets.py
+3. Weights
+ - https://github.com/tensorflow/models/tree/master/research/slim/nets/nasnet
 """
 from __future__ import print_function
 from __future__ import absolute_import
