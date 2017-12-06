@@ -163,7 +163,7 @@ def NASNet(input_shape=None,
                                       require_flatten=include_top or weights)
 
     if K.image_data_format() != 'channels_last':
-        warnings.warn('The MobileNet family of models is only available '
+        warnings.warn('The NASNet family of models is only available '
                       'for the input data format "channels_last" '
                       '(width, height, channels). '
                       'However your settings specify the default '
