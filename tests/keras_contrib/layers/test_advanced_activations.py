@@ -26,6 +26,7 @@ def test_srelu_share():
     layer_test(advanced_activations.SReLU, kwargs={'shared_axes': 1},
                input_shape=(2, 3, 4))
 
+
 @keras_test
 def test_swish_constant():
     layer_test(advanced_activations.Swish, kwargs={'beta': 1.0, 'trainable': False},

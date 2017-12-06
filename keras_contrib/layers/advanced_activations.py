@@ -235,6 +235,9 @@ class SReLU(Layer):
         base_config = super(SReLU, self).get_config()
         return dict(list(base_config.items()) + list(config.items()))
 
+get_custom_objects().update({'SReLU': SReLU})
+
+
 class Swish(Layer):
     """ Swish (Ramachandranet al., 2017)
 
@@ -279,4 +282,4 @@ class Swish(Layer):
         base_config = super(Swish, self).get_config()
         return dict(list(base_config.items()) + list(config.items()))
 
-get_custom_objects().update({'SReLU': SReLU, 'Swish': Swish})
+get_custom_objects().update({'Swish': Swish})
