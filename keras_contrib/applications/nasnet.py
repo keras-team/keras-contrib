@@ -44,13 +44,22 @@ from keras import backend as K
 _BN_DECAY = 0.9997
 _BN_EPSILON = 1e-3
 
+NASNET_MOBILE_WEIGHT_PATH = "https://github.com/titu1994/Keras-NASNet/releases/download/v1.0/NASNet-mobile.h5"
+NASNET_MOBILE_WEIGHT_PATH_NO_TOP = "https://github.com/titu1994/Keras-NASNet/releases/download/v1.0/NASNet-mobile-no-top.h5"
+NASNET_MOBILE_WEIGHT_PATH_WITH_AUXULARY = "https://github.com/titu1994/Keras-NASNet/releases/download/v1.0/NASNet-auxiliary-mobile.h5"
+NASNET_MOBILE_WEIGHT_PATH_WITH_AUXULARY_NO_TOP = "https://github.com/titu1994/Keras-NASNet/releases/download/v1.0/NASNet-auxiliary-mobile-no-top.h5"
+NASNET_LARGE_WEIGHT_PATH = "https://github.com/titu1994/Keras-NASNet/releases/download/v1.1/NASNet-large.h5"
+NASNET_LARGE_WEIGHT_PATH_NO_TOP = "https://github.com/titu1994/Keras-NASNet/releases/download/v1.1/NASNet-large-no-top.h5"
+NASNET_LARGE_WEIGHT_PATH_WITH_auxiliary = "https://github.com/titu1994/Keras-NASNet/releases/download/v1.1/NASNet-auxiliary-large.h5"
+NASNET_LARGE_WEIGHT_PATH_WITH_auxiliary_NO_TOP = "https://github.com/titu1994/Keras-NASNet/releases/download/v1.1/NASNet-auxiliary-large-no-top.h5"
+
 
 def NASNet(input_shape=None,
            penultimate_filters=4032,
            nb_blocks=6,
            stem_filters=96,
            skip_reduction=True,
-           use_auxilary_branch=False,
+           use_auxiliary_branch=False,
            filters_multiplier=2,
            dropout=0.5,
            weight_decay=5e-5,
@@ -85,7 +94,7 @@ def NASNet(input_shape=None,
         stem_filters: number of filters in the initial stem block
         skip_reduction: Whether to skip the reduction step at the tail
             end of the network. Set to `False` for CIFAR models.
-        use_auxilary_branch: Whether to use the auxilary branch during
+        use_auxiliary_branch: Whether to use the auxiliary branch during
             training or evaluation.
         filters_multiplier: controls the width of the network.
             - If `filters_multiplier` < 1.0, proportionally decreases the number
@@ -205,16 +214,16 @@ def NASNet(input_shape=None,
     for i in range(nb_blocks):
         x, p = _normal_A(x, p, filters * filters_multiplier, weight_decay, id='%d' % (nb_blocks + i + 1))
 
-    auxilary_x = None
+    auxiliary_x = None
     if not skip_reduction:  # imagenet / mobile mode
-        if use_auxilary_branch:
-            auxilary_x = _add_auxilary_head(x, classes, weight_decay)
+        if use_auxiliary_branch:
+            auxiliary_x = _add_auxiliary_head(x, classes, weight_decay)
 
     x, p0 = _reduction_A(x, p, filters * filters_multiplier ** 2, weight_decay, id='reduce_%d' % (2 * nb_blocks))
 
     if skip_reduction:  # CIFAR mode
-        if use_auxilary_branch:
-            auxilary_x = _add_auxilary_head(x, classes, weight_decay)
+        if use_auxiliary_branch:
+            auxiliary_x = _add_auxiliary_head(x, classes, weight_decay)
 
     p = p0 if not skip_reduction else p
 
@@ -241,14 +250,53 @@ def NASNet(input_shape=None,
         inputs = img_input
 
     # Create model.
-    if use_auxilary_branch:
-        model = Model(inputs, [x, auxilary_x], name='NASNet_with_auxilary')
+    if use_auxiliary_branch:
+        model = Model(inputs, [x, auxiliary_x], name='NASNet_with_auxiliary')
     else:
         model = Model(inputs, x, name='NASNet')
 
-    # load weights (when available)
-    if weights is not None:
-        warnings.warn('Weights of NASNet models have not yet been ported to Keras')
+    # load weights
+    if weights == 'imagenet':
+        if default_size == 224:  # mobile version
+            if include_top:
+                if use_auxiliary_branch:
+                    weight_path = NASNET_MOBILE_WEIGHT_PATH_WITH_AUXULARY
+                    model_name = 'nasnet_mobile_with_aux.h5'
+                else:
+                    weight_path = NASNET_MOBILE_WEIGHT_PATH
+                    model_name = 'nasnet_mobile.h5'
+            else:
+                if use_auxiliary_branch:
+                    weight_path = NASNET_MOBILE_WEIGHT_PATH_WITH_AUXULARY_NO_TOP
+                    model_name = 'nasnet_mobile_with_aux_no_top.h5'
+                else:
+                    weight_path = NASNET_MOBILE_WEIGHT_PATH_NO_TOP
+                    model_name = 'nasnet_mobile_no_top.h5'
+
+            weights_file = get_file(model_name, weight_path, cache_subdir='models')
+            model.load_weights(weights_file, by_name=True)
+
+        elif default_size == 331:  # large version
+            if include_top:
+                if use_auxiliary_branch:
+                    weight_path = NASNET_LARGE_WEIGHT_PATH_WITH_auxiliary
+                    model_name = 'nasnet_large_with_aux.h5'
+                else:
+                    weight_path = NASNET_LARGE_WEIGHT_PATH
+                    model_name = 'nasnet_large.h5'
+            else:
+                if use_auxiliary_branch:
+                    weight_path = NASNET_LARGE_WEIGHT_PATH_WITH_auxiliary_NO_TOP
+                    model_name = 'nasnet_large_with_aux_no_top.h5'
+                else:
+                    weight_path = NASNET_LARGE_WEIGHT_PATH_NO_TOP
+                    model_name = 'nasnet_large_no_top.h5'
+
+            weights_file = get_file(model_name, weight_path, cache_subdir='models')
+            model.load_weights(weights_file, by_name=True)
+
+        else:
+            raise ValueError('ImageNet weights can only be loaded on NASNetLarge or NASNetMobile')
 
     if old_data_format:
         K.set_image_data_format(old_data_format)
@@ -259,9 +307,9 @@ def NASNet(input_shape=None,
 def NASNetLarge(input_shape=(331, 331, 3),
                 dropout=0.5,
                 weight_decay=5e-5,
-                use_auxilary_branch=False,
+                use_auxiliary_branch=False,
                 include_top=True,
-                weights=None,
+                weights='imagenet',
                 input_tensor=None,
                 pooling=None,
                 classes=1000):
@@ -278,7 +326,7 @@ def NASNetLarge(input_shape=(331, 331, 3),
             It should have exactly 3 inputs channels,
             and width and height should be no smaller than 32.
             E.g. `(224, 224, 3)` would be one valid value.
-        use_auxilary_branch: Whether to use the auxilary branch during
+        use_auxiliary_branch: Whether to use the auxiliary branch during
             training or evaluation.
         dropout: dropout rate
         weight_decay: l2 regularization weight
@@ -321,8 +369,8 @@ def NASNetLarge(input_shape=(331, 331, 3),
                   penultimate_filters=4032,
                   nb_blocks=6,
                   stem_filters=96,
-                  skip_reduction=True,
-                  use_auxilary_branch=use_auxilary_branch,
+                  skip_reduction=False,
+                  use_auxiliary_branch=use_auxiliary_branch,
                   filters_multiplier=2,
                   dropout=dropout,
                   weight_decay=weight_decay,
@@ -337,9 +385,9 @@ def NASNetLarge(input_shape=(331, 331, 3),
 def NASNetMobile(input_shape=(224, 224, 3),
                  dropout=0.5,
                  weight_decay=4e-5,
-                 use_auxilary_branch=False,
+                 use_auxiliary_branch=False,
                  include_top=True,
-                 weights=None,
+                 weights='imagenet',
                  input_tensor=None,
                  pooling=None,
                  classes=1000):
@@ -356,7 +404,7 @@ def NASNetMobile(input_shape=(224, 224, 3),
             It should have exactly 3 inputs channels,
             and width and height should be no smaller than 32.
             E.g. `(224, 224, 3)` would be one valid value.
-        use_auxilary_branch: Whether to use the auxilary branch during
+        use_auxiliary_branch: Whether to use the auxiliary branch during
             training or evaluation.
         dropout: dropout rate
         weight_decay: l2 regularization weight
@@ -400,7 +448,7 @@ def NASNetMobile(input_shape=(224, 224, 3),
                   nb_blocks=4,
                   stem_filters=32,
                   skip_reduction=False,
-                  use_auxilary_branch=use_auxilary_branch,
+                  use_auxiliary_branch=use_auxiliary_branch,
                   filters_multiplier=2,
                   dropout=dropout,
                   weight_decay=weight_decay,
@@ -415,7 +463,7 @@ def NASNetMobile(input_shape=(224, 224, 3),
 def NASNetCIFAR(input_shape=(32, 32, 3),
                 dropout=0.0,
                 weight_decay=5e-4,
-                use_auxilary_branch=False,
+                use_auxiliary_branch=False,
                 include_top=True,
                 weights=None,
                 input_tensor=None,
@@ -434,7 +482,7 @@ def NASNetCIFAR(input_shape=(32, 32, 3),
             It should have exactly 3 inputs channels,
             and width and height should be no smaller than 32.
             E.g. `(32, 32, 3)` would be one valid value.
-        use_auxilary_branch: Whether to use the auxilary branch during
+        use_auxiliary_branch: Whether to use the auxiliary branch during
             training or evaluation.
         dropout: dropout rate
         weight_decay: l2 regularization weight
@@ -476,9 +524,9 @@ def NASNetCIFAR(input_shape=(32, 32, 3),
     return NASNet(input_shape,
                   penultimate_filters=768,
                   nb_blocks=6,
-                  stem_filters=96,
+                  stem_filters=32,
                   skip_reduction=True,
-                  use_auxilary_branch=use_auxilary_branch,
+                  use_auxiliary_branch=use_auxiliary_branch,
                   filters_multiplier=2,
                   dropout=dropout,
                   weight_decay=weight_decay,
@@ -545,7 +593,7 @@ def _adjust_block(p, ip, filters, weight_decay=5e-5, id=None):
         if p is None:
             p = ip
 
-        if p._keras_shape[img_dim] != ip._keras_shape[img_dim]:
+        elif p._keras_shape[img_dim] != ip._keras_shape[img_dim]:
             with K.name_scope('adjust_reduction_block_%s' % id):
                 p = Activation('relu', name='adjust_relu_1_%s' % id)(p)
 
@@ -598,13 +646,14 @@ def _normal_A(ip, p, filters, weight_decay=5e-5, id=None):
                                name='normal_bn_1_%s' % id)(h)
 
         with K.name_scope('block_1'):
-            x1 = _separable_conv_block(h, filters, weight_decay=weight_decay, id='normal_left1_%s' % id)
-            x1 = add([x1, h], name='normal_add_1_%s' % id)
+            x1_1 = _separable_conv_block(h, filters, kernel_size=(5, 5), weight_decay=weight_decay,
+                                         id='normal_left1_%s' % id)
+            x1_2 = _separable_conv_block(p, filters, weight_decay=weight_decay, id='normal_right1_%s' % id)
+            x1 = add([x1_1, x1_2], name='normal_add_1_%s' % id)
 
         with K.name_scope('block_2'):
-            x2_1 = _separable_conv_block(p, filters, weight_decay=weight_decay, id='normal_left2_%s' % id)
-            x2_2 = _separable_conv_block(h, filters, kernel_size=(5, 5), weight_decay=weight_decay,
-                                         id='normal_right2_%s' % id)
+            x2_1 = _separable_conv_block(p, filters, (5, 5), weight_decay=weight_decay, id='normal_left2_%s' % id)
+            x2_2 = _separable_conv_block(p, filters, (3, 3), weight_decay=weight_decay, id='normal_right2_%s' % id)
             x2 = add([x2_1, x2_2], name='normal_add_2_%s' % id)
 
         with K.name_scope('block_3'):
@@ -617,11 +666,10 @@ def _normal_A(ip, p, filters, weight_decay=5e-5, id=None):
             x4 = add([x4_1, x4_2], name='normal_add_4_%s' % id)
 
         with K.name_scope('block_5'):
-            x5_1 = _separable_conv_block(p, filters, (5, 5), weight_decay=weight_decay, id='normal_left5_%s' % id)
-            x5_2 = _separable_conv_block(p, filters, (3, 3), weight_decay=weight_decay, id='normal_right5_%s' % id)
-            x5 = add([x5_1, x5_2], name='normal_add_5_%s' % id)
+            x5 = _separable_conv_block(h, filters, weight_decay=weight_decay, id='normal_left5_%s' % id)
+            x5 = add([x5, h], name='normal_add_5_%s' % id)
 
-        x = concatenate([p, x2, x5, x3, x4, x1], axis=channel_dim, name='normal_concat_%s' % id)
+        x = concatenate([p, x1, x2, x3, x4, x5], axis=channel_dim, name='normal_concat_%s' % id)
     return x, ip
 
 
@@ -651,10 +699,10 @@ def _reduction_A(ip, p, filters, weight_decay=5e-5, id=None):
                                name='reduction_bn_1_%s' % id)(h)
 
         with K.name_scope('block_1'):
-            x1_1 = _separable_conv_block(p, filters, (7, 7), strides=(2, 2), weight_decay=weight_decay,
+            x1_1 = _separable_conv_block(h, filters, (5, 5), strides=(2, 2), weight_decay=weight_decay,
                                          id='reduction_left1_%s' % id)
-            x1_2 = _separable_conv_block(h, filters, (5, 5), strides=(2, 2), weight_decay=weight_decay,
-                                         id='reduction_right1_%s' % id)
+            x1_2 = _separable_conv_block(p, filters, (7, 7), strides=(2, 2), weight_decay=weight_decay,
+                                         id='reduction_1_%s' % id)
             x1 = add([x1_1, x1_2], name='reduction_add_1_%s' % id)
 
         with K.name_scope('block_2'):
@@ -670,22 +718,23 @@ def _reduction_A(ip, p, filters, weight_decay=5e-5, id=None):
             x3 = add([x3_1, x3_2], name='reduction_add3_%s' % id)
 
         with K.name_scope('block_4'):
-            x4_1 = MaxPooling2D((3, 3), strides=(2, 2), padding='same', name='reduction_left4_%s' % id)(h)
-            x4_2 = _separable_conv_block(x1, filters, (3, 3), weight_decay=weight_decay, id='reduction_right4_%s' % id)
-            x4 = add([x4_1, x4_2], name='reduction_add4_%s' % id)
+            x4 = AveragePooling2D((3, 3), strides=(1, 1), padding='same', name='reduction_left4_%s' % id)(x1)
+            x4 = add([x2, x4])
 
         with K.name_scope('block_5'):
-            x5 = AveragePooling2D((3, 3), strides=(1, 1), padding='same', name='reduction_left5_%s' % id)(x1)
+            x5_1 = _separable_conv_block(x1, filters, (3, 3), weight_decay=weight_decay, id='reduction_left4_%s' % id)
+            x5_2 = MaxPooling2D((3, 3), strides=(2, 2), padding='same', name='reduction_right5_%s' % id)(h)
+            x5 = add([x5_1, x5_2], name='reduction_add4_%s' % id)
 
-        x = concatenate([x2, x3, x5, x4], axis=channel_dim, name='reduction_concat_%s' % id)
+        x = concatenate([x2, x3, x4, x5], axis=channel_dim, name='reduction_concat_%s' % id)
         return x, ip
 
 
-def _add_auxilary_head(x, classes, weight_decay):
-    '''Adds an auxilary head for training the model
+def _add_auxiliary_head(x, classes, weight_decay):
+    '''Adds an auxiliary head for training the model
 
     From section A.7 "Training of ImageNet models" of the paper, all NASNet models are
-    trained using an auxilary classifier around 2/3 of the depth of the network, with
+    trained using an auxiliary classifier around 2/3 of the depth of the network, with
     a loss weight of 0.4
 
     # Arguments
@@ -700,23 +749,23 @@ def _add_auxilary_head(x, classes, weight_decay):
     img_width = 2 if K.image_data_format() == 'channels_last' else 3
     channel_axis = 1 if K.image_data_format() == 'channels_first' else -1
 
-    with K.name_scope('auxilary_branch'):
-        auxilary_x = Activation('relu')(x)
-        auxilary_x = AveragePooling2D((5, 5), strides=(3, 3), padding='valid', name='aux_pool')(auxilary_x)
-        auxilary_x = Conv2D(128, (1, 1), padding='same', use_bias=False, name='aux_conv_projection',
-                            kernel_initializer='he_normal', kernel_regularizer=l2(weight_decay))(auxilary_x)
-        auxilary_x = BatchNormalization(axis=channel_axis, momentum=_BN_DECAY, epsilon=_BN_EPSILON,
-                                        name='aux_bn_projection')(auxilary_x)
-        auxilary_x = Activation('relu')(auxilary_x)
+    with K.name_scope('auxiliary_branch'):
+        auxiliary_x = Activation('relu')(x)
+        auxiliary_x = AveragePooling2D((5, 5), strides=(3, 3), padding='valid', name='aux_pool')(auxiliary_x)
+        auxiliary_x = Conv2D(128, (1, 1), padding='same', use_bias=False, name='aux_conv_projection',
+                             kernel_initializer='he_normal', kernel_regularizer=l2(weight_decay))(auxiliary_x)
+        auxiliary_x = BatchNormalization(axis=channel_axis, momentum=_BN_DECAY, epsilon=_BN_EPSILON,
+                                         name='aux_bn_projection')(auxiliary_x)
+        auxiliary_x = Activation('relu')(auxiliary_x)
 
-        auxilary_x = Conv2D(768, (auxilary_x._keras_shape[img_height], auxilary_x._keras_shape[img_width]),
-                            padding='valid', use_bias=False, kernel_initializer='he_normal',
-                            kernel_regularizer=l2(weight_decay), name='aux_conv_reduction')(auxilary_x)
-        auxilary_x = BatchNormalization(axis=channel_axis, momentum=_BN_DECAY, epsilon=_BN_EPSILON,
-                                        name='aux_bn_reduction')(auxilary_x)
-        auxilary_x = Activation('relu')(auxilary_x)
+        auxiliary_x = Conv2D(768, (auxiliary_x._keras_shape[img_height], auxiliary_x._keras_shape[img_width]),
+                             padding='valid', use_bias=False, kernel_initializer='he_normal',
+                             kernel_regularizer=l2(weight_decay), name='aux_conv_reduction')(auxiliary_x)
+        auxiliary_x = BatchNormalization(axis=channel_axis, momentum=_BN_DECAY, epsilon=_BN_EPSILON,
+                                         name='aux_bn_reduction')(auxiliary_x)
+        auxiliary_x = Activation('relu')(auxiliary_x)
 
-        auxilary_x = GlobalAveragePooling2D()(auxilary_x)
-        auxilary_x = Dense(classes, activation='softmax', kernel_regularizer=l2(weight_decay),
-                           name='aux_predictions')(auxilary_x)
-    return auxilary_x
+        auxiliary_x = GlobalAveragePooling2D()(auxiliary_x)
+        auxiliary_x = Dense(classes, activation='softmax', kernel_regularizer=l2(weight_decay),
+                            name='aux_predictions')(auxiliary_x)
+    return auxiliary_x
