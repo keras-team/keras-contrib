@@ -1,7 +1,6 @@
 import pytest
 from numpy.testing import assert_allclose
 import numpy as np
-import scipy.sparse as sparse
 
 from keras import backend as K
 from keras.backend import theano_backend as KTH, floatx, set_floatx, variable
