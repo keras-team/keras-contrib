@@ -366,9 +366,6 @@ def ResNet(input_shape=None, classes=10, block='bottleneck', residual_unit='v2',
     else:
         residual_unit = residual_unit
 
-    # Permute dimension order if necessary
-    if K.image_data_format() == 'channels_first':
-        input_shape = (input_shape[1], input_shape[2], input_shape[0])
     # Determine proper input shape
     input_shape = _obtain_input_shape(input_shape,
                                       default_size=32,
