@@ -4,7 +4,6 @@ from keras import backend as K
 from PIL import Image
 import numpy as np
 import os
-import cv2
 
 
 def center_crop(x, center_crop_size, data_format, **kwargs):
