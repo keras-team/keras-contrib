@@ -19,6 +19,9 @@ TimeDistributed adapted from: github.com/voletiv/keras-resnet
 from __future__ import division
 
 import six
+import warnings
+from keras.utils.data_utils import get_file
+from keras.utils import layer_utils
 from keras.models import Model
 from keras.layers import Input
 from keras.layers import Activation
@@ -39,16 +42,26 @@ from keras import backend as K
 from keras.applications.imagenet_utils import _obtain_input_shape
 
 
-def _bn_relu(x, bn_name=None, relu_name=None, time_distributed=False, verbose=False):
+WEIGHTS_PATH = 'https://github.com/fchollet/deep-learning-models/releases/download/v0.2/resnet50_weights_tf_dim_ordering_tf_kernels.h5'
+WEIGHTS_PATH_NO_TOP = 'https://github.com/fchollet/deep-learning-models/releases/download/v0.2/resnet50_weights_tf_dim_ordering_tf_kernels_notop.h5'
+
+
+def _bn_relu(x, bn_name=None, relu_name=None, time_distributed=False, verbose=False,
+             resnet_v1_residual=None, resnet_v1_bn2a_b2a_strides=(1, 1), padding='same'):
     """Helper to build a BN -> relu block
     """
     if verbose:
         print("    _bn_relu")
     if time_distributed:
-        norm = TimeDistributed(BatchNormalization(axis=CHANNEL_AXIS))(x)
+        norm = TimeDistributed(BatchNormalization(axis=CHANNEL_AXIS, name=bn_name))(x)
     else:
         norm = BatchNormalization(axis=CHANNEL_AXIS, name=bn_name)(x)
-    return Activation("relu", name=relu_name)(norm)
+
+    x = Activation("relu", name=relu_name)(norm)
+    if resnet_v1_residual is not None:
+        # special ResNetV1 shortcut
+        x = add([resnet_v1_residual, x])
+    return x
 
 
 def _conv_bn_relu(**conv_params):
@@ -67,6 +80,8 @@ def _conv_bn_relu(**conv_params):
     kernel_regularizer = conv_params.setdefault("kernel_regularizer", l2(1.e-4))
     time_distributed = conv_params.setdefault("time_distributed", False)
     verbose = conv_params.setdefault("verbose", False)
+    resnet_v1_residual = conv_params.setdefault("resnet_v1_residual", None)
+    resnet_v1_bn2a_b2a_strides = conv_params.setdefault("resnet_v1_bn2a_b2a_strides", (1, 1))
 
     def f(x):
         if verbose:
@@ -85,7 +100,10 @@ def _conv_bn_relu(**conv_params):
             x = conv_layer(x)
 
         return _bn_relu(x, bn_name=bn_name, relu_name=relu_name,
-                        time_distributed=time_distributed, verbose=verbose)
+                        time_distributed=time_distributed, verbose=verbose,
+                        resnet_v1_residual=resnet_v1_residual,
+                        resnet_v1_bn2a_b2a_strides=resnet_v1_bn2a_b2a_strides,
+                        padding=padding)
 
     return f
 
@@ -129,7 +147,7 @@ def _bn_relu_conv(**conv_params):
 
 
 def _shortcut(input_feature, residual, conv_name_base=None, bn_name_base=None,
-              time_distributed=False, verbose=False):
+              residual_unit=_bn_relu_conv, time_distributed=False, verbose=False):
     """Adds a shortcut between input and residual block and merges them with "sum"
     """
     # Expand channels of shortcut to match residual.
@@ -146,7 +164,7 @@ def _shortcut(input_feature, residual, conv_name_base=None, bn_name_base=None,
     if stride_width > 1 or stride_height > 1 or not equal_channels:
         if verbose:
             print("    SHORTCUT not right: input -", shortcut.shape, "residual -", residual.shape)
-            print("    reshaping via a convolution...")
+            print("    reshaping via a convolution, this is a workaround you should avoid...")
 
         if conv_name_base is not None:
             conv_name_base = conv_name_base + '1'
@@ -175,10 +193,15 @@ def _shortcut(input_feature, residual, conv_name_base=None, bn_name_base=None,
     if verbose:
         print("    SHORTCUT : input -", shortcut.shape, "residual -", residual.shape)
 
-    return add([shortcut, residual])
+    if residual_unit is _conv_bn_relu:
+        # ResNetV1 special case
+        return residual
+    else:
+        # all other cases
+        return add([shortcut, residual])
 
 
-def _residual_block(block_function, filters, blocks, stage,
+def _residual_block(block_function, filters, num_blocks, stage,
                     transition_strides=None, transition_dilation_rates=None,
                     dilation_rates=None, is_first_layer=False, dropout=None,
                     residual_unit=_bn_relu_conv,
@@ -191,14 +214,14 @@ def _residual_block(block_function, filters, blocks, stage,
        transition_dilation_rates: a list of tuples for the dilation rate of each transition
     """
     if transition_dilation_rates is None:
-        transition_dilation_rates = [(1, 1)] * blocks
+        transition_dilation_rates = [(1, 1)] * num_blocks
     if transition_strides is None:
-        transition_strides = [(1, 1)] * blocks
+        transition_strides = [(1, 1)] * num_blocks
     if dilation_rates is None:
-        dilation_rates = [(1, 1)] * blocks
+        dilation_rates = [(1, 1)] * num_blocks
 
     def f(x):
-        for i in range(blocks):
+        for i in range(num_blocks):
             x = block_function(filters=filters, stage=stage, block=i,
                                transition_strides=transition_strides[i],
                                dilation_rate=dilation_rates[i],
@@ -255,8 +278,8 @@ def basic_block(filters, stage, block, transition_strides=(1, 1),
             x = residual_unit(filters=filters, kernel_size=(3, 3),
                               strides=transition_strides,
                               dilation_rate=dilation_rate,
-                              conv_name_base=conv_name_base + '2a',
-                              bn_name_base=bn_name_base + '2a',
+                              conv_name=conv_name_base + '2a',
+                              bn_name=bn_name_base + '2a',
                               time_distributed=time_distributed,
                               verbose=verbose)(input_features)
 
@@ -266,14 +289,21 @@ def basic_block(filters, stage, block, transition_strides=(1, 1),
             else:
                 x = Dropout(dropout)(x)
 
+        resnet_v1_residual = None
+        if residual_unit is _conv_bn_relu:
+            resnet_v1_residual = input_feature
+
         x = residual_unit(filters=filters, kernel_size=(3, 3),
                           conv_name_base=conv_name_base + '2b',
                           bn_name_base=bn_name_base + '2b',
                           time_distributed=time_distributed,
-                          verbose=verbose)(x)
+                          verbose=verbose,
+                          resnet_v1_residual=resnet_v1_residual)(x)
 
         return _shortcut(input_features, x,
-                         time_distributed=time_distributed, verbose=verbose)
+                         time_distributed=time_distributed, verbose=verbose,
+                         conv_name_base=conv_name_base, bn_name_base=bn_name_base,
+                         residual_unit=residual_unit)
 
     return f
 
@@ -294,8 +324,8 @@ def bottleneck(filters, stage, block, transition_strides=(1, 1),
 
         conv_name_base, bn_name_base = _block_name_base(stage, block)
 
-        if is_first_block_of_first_layer:
-            # don't repeat bn->relu since we just did bn->relu->maxpool
+        if is_first_block_of_first_layer and residual_unit == _bn_relu_conv:
+            # ResNetv2: don't repeat bn->relu since we just did bn->relu->maxpool
             conv_layer = Conv2D(filters=filters, kernel_size=(1, 1),
                                 strides=transition_strides,
                                 dilation_rate=dilation_rate,
@@ -308,11 +338,13 @@ def bottleneck(filters, stage, block, transition_strides=(1, 1),
             else:
                 x = conv_layer(input_feature)
         else:
+            # ResNetv1: *DOES* call here on the first block and other blocks.
+            # ResNetv2: *DOES NOT* call here on the first block, but does otherwise.
             x = residual_unit(filters=filters, kernel_size=(1, 1),
                               strides=transition_strides,
                               dilation_rate=dilation_rate,
-                              conv_name_base=conv_name_base + '2a',
-                              bn_name_base=bn_name_base + '2a',
+                              conv_name=conv_name_base + '2a',
+                              bn_name=bn_name_base + '2a',
                               time_distributed=time_distributed,
                               verbose=verbose)(input_feature)
 
@@ -323,8 +355,8 @@ def bottleneck(filters, stage, block, transition_strides=(1, 1),
                 x = Dropout(dropout)(x)
 
         x = residual_unit(filters=filters, kernel_size=(3, 3),
-                          conv_name_base=conv_name_base + '2b',
-                          bn_name_base=bn_name_base + '2b',
+                          conv_name=conv_name_base + '2b',
+                          bn_name=bn_name_base + '2b',
                           time_distributed=time_distributed,
                           verbose=verbose)(x)
 
@@ -334,14 +366,21 @@ def bottleneck(filters, stage, block, transition_strides=(1, 1),
             else:
                 x = Dropout(dropout)(x)
 
+        resnet_v1_residual = None
+        if residual_unit == _conv_bn_relu and not is_first_block_of_first_layer:
+            resnet_v1_residual = input_feature
+
         x = residual_unit(filters=filters * 4, kernel_size=(1, 1),
                           conv_name_base=conv_name_base + '2c',
                           bn_name_base=bn_name_base + '2c',
                           time_distributed=time_distributed,
-                          verbose=verbose)(x)
+                          verbose=verbose,
+                          resnet_v1_residual=resnet_v1_residual)(x)
 
         return _shortcut(input_feature, x,
-                         time_distributed=time_distributed, verbose=verbose)
+                         time_distributed=time_distributed, verbose=verbose,
+                         conv_name_base=conv_name_base, bn_name_base=bn_name_base,
+                         residual_unit=residual_unit)
 
     return f
 
@@ -386,14 +425,14 @@ def obtain_input_shape(input_shape, require_flatten=True, time_distributed=False
     if time_distributed:
         input_image_shape = (input_shape[1], input_shape[2], input_shape[3])
         input_image_shape = _obtain_input_shape(input_image_shape,
-                                                default_size=32,
+                                                default_size=224,
                                                 min_size=8,
                                                 data_format=K.image_data_format(),
                                                 require_flatten=require_flatten)
         input_shape = (input_shape[0],) + input_image_shape
     else:
         input_shape = _obtain_input_shape(input_shape,
-                                          default_size=32,
+                                          default_size=224,
                                           min_size=8,
                                           data_format=K.image_data_format(),
                                           require_flatten=require_flatten)
@@ -403,8 +442,8 @@ def obtain_input_shape(input_shape, require_flatten=True, time_distributed=False
 def ResNet(input_shape=None, classes=10, block='bottleneck', residual_unit='v2', repetitions=None,
            initial_filters=64, activation='softmax', include_top=True, input_tensor=None,
            dropout=None, transition_dilation_rate=(1, 1), initial_strides=(2, 2),
-           initial_kernel_size=(7, 7), initial_pooling='max', final_pooling=None,
-           top='classification', time_distributed=False, verbose=False):
+           initial_kernel_size=(7, 7), initial_pooling='max', initial_padding='same', final_pooling=None,
+           top='classification', time_distributed=False, verbose=False, weights=None):
     """Builds a custom ResNet like architecture. Defaults to ResNet50 v2.
 
     Args:
@@ -443,6 +482,8 @@ def ResNet(input_shape=None, classes=10, block='bottleneck', residual_unit='v2',
         initial_pooling: Determine if there will be an initial pooling layer,
             'max' for imagenet and None for small image datasets.
             See [ResNeXt](https://arxiv.org/abs/1611.05431) paper for details.
+        initial_padding: One of 'valid' or 'same' applied to the initial MaxPooling2D
+            so it is possible to match the Keras ResNet2D weight dimensions exactly (case-insensitive).
         final_pooling: Optional pooling mode for feature extraction at the final model layer
             when `include_top` is `False`.
             - `None` means that the output of the model
@@ -510,14 +551,15 @@ def ResNet(input_shape=None, classes=10, block='bottleneck', residual_unit='v2',
     # Initial
     img_input = Input(shape=input_shape, tensor=input_tensor)
     x = _conv_bn_relu(filters=initial_filters, kernel_size=initial_kernel_size, strides=initial_strides,
-                      time_distributed=time_distributed, verbose=verbose)(img_input)
+                      time_distributed=time_distributed, verbose=verbose, conv_name='conv1',
+                      bn_name='bn_conv1', padding=initial_padding, resnet_v1_bn2a_b2a_strides=initial_strides)(img_input)
     if initial_pooling == 'max':
         if verbose:
             print("    MaxPooling2D")
         if time_distributed:
-            x = TimeDistributed(MaxPooling2D(pool_size=(3, 3), strides=initial_strides, padding="same"))(x)
+            x = TimeDistributed(MaxPooling2D(pool_size=(3, 3), strides=(1, 1), padding='same'))(x)
         else:
-            x = MaxPooling2D(pool_size=(3, 3), strides=initial_strides, padding="same")(x)
+            x = MaxPooling2D(pool_size=(3, 3), strides=(1, 1), padding=initial_padding)(x)
 
     block = x
     filters = initial_filters
@@ -526,8 +568,13 @@ def ResNet(input_shape=None, classes=10, block='bottleneck', residual_unit='v2',
         transition_strides = [(1, 1)] * r
         if transition_dilation_rate == (1, 1):
             transition_strides[0] = (2, 2)
+        resnet_v1_bn2a_b2a_strides = None
+        stage = i + 2  # First Conv2D is stage 1, i == 0 is stage 2
+        if stage == 2 and _conv_bn_relu == _conv_bn_relu:
+            # Special ResNetV1 strides to match Keras ResNet50
+            resnet_v1_bn2a_b2a_strides = (2, 2)
         block = _residual_block(block_fn, filters=filters,
-                                stage=i, blocks=r,
+                                stage=i+2, num_blocks=r,
                                 is_first_layer=(i == 0),
                                 dropout=dropout,
                                 transition_dilation_rates=transition_dilation_rates,
@@ -549,7 +596,7 @@ def ResNet(input_shape=None, classes=10, block='bottleneck', residual_unit='v2',
             x = TimeDistributed(Dense(units=classes, activation=activation, kernel_initializer="he_normal"))(x)
         else:
             x = GlobalAveragePooling2D()(x)
-            x = Dense(units=classes, activation=activation, kernel_initializer="he_normal")(x)
+            x = Dense(units=classes, activation=activation, kernel_initializer="he_normal", name='fc' + str(classes))(x)
     elif include_top and top is 'segmentation':
         if verbose:
             print("    segmentation")
@@ -591,39 +638,81 @@ def ResNet(input_shape=None, classes=10, block='bottleneck', residual_unit='v2',
             x = GlobalMaxPooling2D()(x)
 
     model = Model(inputs=img_input, outputs=x)
+
+    if weights is not None and weights != 'imagenet':
+        model.load_weights(weights)
+
     return model
 
 
-def ResNet18(input_shape, classes, time_distributed=False, verbose=False):
+def ResNet18(input_shape=None, classes=10, time_distributed=False, verbose=False, **kwargs):
     """ResNet with 18 layers and v2 residual units
     """
     return ResNet(input_shape, classes, basic_block, repetitions=[2, 2, 2, 2],
-                  time_distributed=time_distributed, verbose=verbose)
+                  time_distributed=time_distributed, verbose=verbose, **kwargs)
 
 
-def ResNet34(input_shape, classes, time_distributed=False, verbose=False):
+def ResNet34(input_shape=None, classes=10, time_distributed=False, verbose=False, **kwargs):
     """ResNet with 34 layers and v2 residual units
     """
     return ResNet(input_shape, classes, basic_block, repetitions=[3, 4, 6, 3],
-                  time_distributed=time_distributed, verbose=verbose)
+                  time_distributed=time_distributed, verbose=verbose, **kwargs)
 
 
-def ResNet50(input_shape, classes, time_distributed=False, verbose=False):
-    """ResNet with 50 layers and v2 residual units
+def ResNet50(input_shape=None, classes=1000, time_distributed=False, verbose=False,
+             weights='imagenet', include_top=True, residual_unit='v1', initial_strides=(2, 2), **kwargs):
+    """ResNet with 50 layers and v1 residual units
+
+    ResNet50 defaults to ResNet v1, unlike other models models that default to v2.
+    This is done to be backwards compatible with the ResNet50 pretrained provided in Keras.
     """
-    return ResNet(input_shape, classes, bottleneck, repetitions=[3, 4, 6, 3],
-                  time_distributed=time_distributed, verbose=verbose)
+    model = ResNet(input_shape, classes, bottleneck, repetitions=[3, 4, 6, 3],
+                   time_distributed=time_distributed, verbose=verbose, include_top=include_top,
+                   residual_unit=residual_unit, initial_strides=initial_strides,
+                   initial_padding='valid', **kwargs)
+
+    # load weights
+    if weights == 'imagenet' and residual_unit == 'v1':
+        if include_top:
+            weights_path = get_file('resnet50_weights_tf_dim_ordering_tf_kernels.h5',
+                                    WEIGHTS_PATH,
+                                    cache_subdir='models',
+                                    md5_hash='a7b3fe01876f51b976af0dea6bc144eb')
+        else:
+            weights_path = get_file('resnet50_weights_tf_dim_ordering_tf_kernels_notop.h5',
+                                    WEIGHTS_PATH_NO_TOP,
+                                    cache_subdir='models',
+                                    md5_hash='a268eb855778b3df3c7506639542a6af')
+        model.load_weights(weights_path)
+        if K.backend() == 'theano':
+            layer_utils.convert_all_kernels_in_model(model)
+            if include_top:
+                maxpool = model.get_layer(name='avg_pool')
+                shape = maxpool.output_shape[1:]
+                dense = model.get_layer(name='fc1000')
+                layer_utils.convert_dense_weights_data_format(dense, shape, 'channels_first')
+
+        if K.image_data_format() == 'channels_first' and K.backend() == 'tensorflow':
+            warnings.warn('You are using the TensorFlow backend, yet you '
+                          'are using the Theano '
+                          'image data format convention '
+                          '(`image_data_format="channels_first"`). '
+                          'For best performance, set '
+                          '`image_data_format="channels_last"` in '
+                          'your Keras config '
+                          'at ~/.keras/keras.json.')
+    return model
 
 
-def ResNet101(input_shape, classes, time_distributed=False, verbose=False):
+def ResNet101(input_shape=None, classes=1000, time_distributed=False, verbose=False, **kwargs):
     """ResNet with 101 layers and v2 residual units
     """
     return ResNet(input_shape, classes, bottleneck, repetitions=[3, 4, 23, 3],
-                  time_distributed=time_distributed, verbose=verbose)
+                  time_distributed=time_distributed, verbose=verbose, **kwargs)
 
 
-def ResNet152(input_shape, classes, time_distributed=False, verbose=False):
+def ResNet152(input_shape=None, classes=1000, time_distributed=False, verbose=False, **kwargs):
     """ResNet with 152 layers and v2 residual units
     """
     return ResNet(input_shape, classes, bottleneck, repetitions=[3, 8, 36, 3],
-                  time_distributed=time_distributed, verbose=verbose)
+                  time_distributed=time_distributed, verbose=verbose, **kwargs)
