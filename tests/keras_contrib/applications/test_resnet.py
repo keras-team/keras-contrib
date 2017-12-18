@@ -34,7 +34,7 @@ def _test_model_compile(model_fn, test_dims, time_distributed=False):
 
 def test_resnet():
     # [(width, height, channels, classes), ...]
-    test_dims = [(224, 120, 3, 100), (512, 640, 3, 100)]
+    test_dims = [(224, 224, 3, 100), (512, 640, 3, 100)]
     time_distributed = False
     for dims in test_dims:
         _test_model_compile(ResNet18, dims, time_distributed=time_distributed)

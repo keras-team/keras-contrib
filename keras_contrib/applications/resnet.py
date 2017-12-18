@@ -225,10 +225,11 @@ def _block_name_base(stage, block):
     If there are less than 26 blocks they will be labeled 'a', 'b', 'c' to match the paper and keras
     and beyond 26 blocks they will simply be numbered.
     """
-    if block < 27:
+    if block >= 0 and block < 26:
         block = '%c' % (block + 97)  # 97 is the ascii number for lowercase 'a'
     conv_name_base = 'res' + str(stage) + str(block) + '_branch'
     bn_name_base = 'bn' + str(stage) + str(block) + '_branch'
+
     return conv_name_base, bn_name_base
 
 
