@@ -180,7 +180,7 @@ def _shortcut(input_feature, residual, conv_name_base=None, bn_name_base=None,
 
 def _residual_block(block_function, filters, blocks, stage,
                     transition_strides=None, transition_dilation_rates=None,
-                    dilation_rates=(1, 1), is_first_layer=False, dropout=None,
+                    dilation_rates=None, is_first_layer=False, dropout=None,
                     residual_unit=_bn_relu_conv,
                     time_distributed=False, verbose=False):
     """Builds a residual block with repeating bottleneck blocks.
@@ -194,6 +194,8 @@ def _residual_block(block_function, filters, blocks, stage,
         transition_dilation_rates = [(1, 1)] * blocks
     if transition_strides is None:
         transition_strides = [(1, 1)] * blocks
+    if dilation_rates is None:
+        dilation_rates = [(1, 1)] * blocks
 
     def f(x):
         for i in range(blocks):
@@ -218,8 +220,8 @@ def _block_name_base(stage, block):
     """
     if block < 27:
         block = '%c' % (block + 97)  # 97 is the ascii number for lowercase 'a'
-    conv_name_base = 'res' + str(stage) + block + '_branch'
-    bn_name_base = 'bn' + str(stage) + block + '_branch'
+    conv_name_base = 'res' + str(stage) + str(block) + '_branch'
+    bn_name_base = 'bn' + str(stage) + str(block) + '_branch'
     return conv_name_base, bn_name_base
 
 
@@ -388,7 +390,7 @@ def obtain_input_shape(input_shape, require_flatten=True, time_distributed=False
                                                 min_size=8,
                                                 data_format=K.image_data_format(),
                                                 require_flatten=require_flatten)
-        input_shape = (input_shape[0], *input_image_shape)
+        input_shape = (input_shape[0],) + input_image_shape
     else:
         input_shape = _obtain_input_shape(input_shape,
                                           default_size=32,
@@ -500,14 +502,6 @@ def ResNet(input_shape=None, classes=10, block='bottleneck', residual_unit='v2',
         residual_unit = _string_to_function(residual_unit)
     else:
         residual_unit = residual_unit
-
-    # Permute dimension order if necessary
-    if time_distributed:
-        if K.image_data_format() == 'channels_first':
-            input_shape = (input_shape[0], input_shape[3], input_shape[1], input_shape[2])
-    else:
-        if K.image_data_format() == 'channels_first':
-            input_shape = (input_shape[2], input_shape[0], input_shape[1])
 
     # Determine proper input shape again
     input_shape = obtain_input_shape(input_shape=input_shape, require_flatten=include_top,
