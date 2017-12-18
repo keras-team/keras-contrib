@@ -46,8 +46,7 @@ WEIGHTS_PATH = 'https://github.com/fchollet/deep-learning-models/releases/downlo
 WEIGHTS_PATH_NO_TOP = 'https://github.com/fchollet/deep-learning-models/releases/download/v0.2/resnet50_weights_tf_dim_ordering_tf_kernels_notop.h5'
 
 
-def _bn_relu(x, bn_name=None, relu_name=None, time_distributed=False, verbose=False,
-             resnet_v1_residual=None, resnet_v1_bn2a_b2a_strides=(1, 1), padding='same'):
+def _bn_relu(x, bn_name=None, relu_name=None, time_distributed=False, verbose=False):
     """Helper to build a BN -> relu block
     """
     if verbose:
@@ -56,12 +55,7 @@ def _bn_relu(x, bn_name=None, relu_name=None, time_distributed=False, verbose=Fa
         norm = TimeDistributed(BatchNormalization(axis=CHANNEL_AXIS, name=bn_name))(x)
     else:
         norm = BatchNormalization(axis=CHANNEL_AXIS, name=bn_name)(x)
-
-    x = Activation("relu", name=relu_name)(norm)
-    if resnet_v1_residual is not None:
-        # special ResNetV1 shortcut
-        x = add([resnet_v1_residual, x])
-    return x
+    return Activation("relu", name=relu_name)(norm)
 
 
 def _conv_bn_relu(**conv_params):
@@ -80,8 +74,6 @@ def _conv_bn_relu(**conv_params):
     kernel_regularizer = conv_params.setdefault("kernel_regularizer", l2(1.e-4))
     time_distributed = conv_params.setdefault("time_distributed", False)
     verbose = conv_params.setdefault("verbose", False)
-    resnet_v1_residual = conv_params.setdefault("resnet_v1_residual", None)
-    resnet_v1_bn2a_b2a_strides = conv_params.setdefault("resnet_v1_bn2a_b2a_strides", (1, 1))
 
     def f(x):
         if verbose:
@@ -100,10 +92,7 @@ def _conv_bn_relu(**conv_params):
             x = conv_layer(x)
 
         return _bn_relu(x, bn_name=bn_name, relu_name=relu_name,
-                        time_distributed=time_distributed, verbose=verbose,
-                        resnet_v1_residual=resnet_v1_residual,
-                        resnet_v1_bn2a_b2a_strides=resnet_v1_bn2a_b2a_strides,
-                        padding=padding)
+                        time_distributed=time_distributed, verbose=verbose)
 
     return f
 
@@ -147,7 +136,7 @@ def _bn_relu_conv(**conv_params):
 
 
 def _shortcut(input_feature, residual, conv_name_base=None, bn_name_base=None,
-              residual_unit=_bn_relu_conv, time_distributed=False, verbose=False):
+              time_distributed=False, verbose=False):
     """Adds a shortcut between input and residual block and merges them with "sum"
     """
     # Expand channels of shortcut to match residual.
@@ -164,7 +153,7 @@ def _shortcut(input_feature, residual, conv_name_base=None, bn_name_base=None,
     if stride_width > 1 or stride_height > 1 or not equal_channels:
         if verbose:
             print("    SHORTCUT not right: input -", shortcut.shape, "residual -", residual.shape)
-            print("    reshaping via a convolution, this is a workaround you should avoid...")
+            print("    reshaping via a convolution...")
 
         if conv_name_base is not None:
             conv_name_base = conv_name_base + '1'
@@ -193,15 +182,10 @@ def _shortcut(input_feature, residual, conv_name_base=None, bn_name_base=None,
     if verbose:
         print("    SHORTCUT : input -", shortcut.shape, "residual -", residual.shape)
 
-    if residual_unit is _conv_bn_relu:
-        # ResNetV1 special case
-        return residual
-    else:
-        # all other cases
-        return add([shortcut, residual])
+    return add([shortcut, residual])
 
 
-def _residual_block(block_function, filters, num_blocks, stage,
+def _residual_block(block_function, filters, blocks, stage,
                     transition_strides=None, transition_dilation_rates=None,
                     dilation_rates=None, is_first_layer=False, dropout=None,
                     residual_unit=_bn_relu_conv,
@@ -214,14 +198,14 @@ def _residual_block(block_function, filters, num_blocks, stage,
        transition_dilation_rates: a list of tuples for the dilation rate of each transition
     """
     if transition_dilation_rates is None:
-        transition_dilation_rates = [(1, 1)] * num_blocks
+        transition_dilation_rates = [(1, 1)] * blocks
     if transition_strides is None:
-        transition_strides = [(1, 1)] * num_blocks
+        transition_strides = [(1, 1)] * blocks
     if dilation_rates is None:
-        dilation_rates = [(1, 1)] * num_blocks
+        dilation_rates = [(1, 1)] * blocks
 
     def f(x):
-        for i in range(num_blocks):
+        for i in range(blocks):
             x = block_function(filters=filters, stage=stage, block=i,
                                transition_strides=transition_strides[i],
                                dilation_rate=dilation_rates[i],
@@ -289,21 +273,15 @@ def basic_block(filters, stage, block, transition_strides=(1, 1),
             else:
                 x = Dropout(dropout)(x)
 
-        resnet_v1_residual = None
-        if residual_unit is _conv_bn_relu:
-            resnet_v1_residual = input_feature
-
         x = residual_unit(filters=filters, kernel_size=(3, 3),
                           conv_name_base=conv_name_base + '2b',
                           bn_name_base=bn_name_base + '2b',
                           time_distributed=time_distributed,
-                          verbose=verbose,
-                          resnet_v1_residual=resnet_v1_residual)(x)
+                          verbose=verbose)(x)
 
         return _shortcut(input_features, x,
                          time_distributed=time_distributed, verbose=verbose,
-                         conv_name_base=conv_name_base, bn_name_base=bn_name_base,
-                         residual_unit=residual_unit)
+                         conv_name_base=conv_name_base, bn_name_base=bn_name_base)
 
     return f
 
@@ -366,21 +344,15 @@ def bottleneck(filters, stage, block, transition_strides=(1, 1),
             else:
                 x = Dropout(dropout)(x)
 
-        resnet_v1_residual = None
-        if residual_unit == _conv_bn_relu and not is_first_block_of_first_layer:
-            resnet_v1_residual = input_feature
-
         x = residual_unit(filters=filters * 4, kernel_size=(1, 1),
                           conv_name_base=conv_name_base + '2c',
                           bn_name_base=bn_name_base + '2c',
                           time_distributed=time_distributed,
-                          verbose=verbose,
-                          resnet_v1_residual=resnet_v1_residual)(x)
+                          verbose=verbose)(x)
 
         return _shortcut(input_feature, x,
                          time_distributed=time_distributed, verbose=verbose,
-                         conv_name_base=conv_name_base, bn_name_base=bn_name_base,
-                         residual_unit=residual_unit)
+                         conv_name_base=conv_name_base, bn_name_base=bn_name_base)
 
     return f
 
@@ -552,12 +524,12 @@ def ResNet(input_shape=None, classes=10, block='bottleneck', residual_unit='v2',
     img_input = Input(shape=input_shape, tensor=input_tensor)
     x = _conv_bn_relu(filters=initial_filters, kernel_size=initial_kernel_size, strides=initial_strides,
                       time_distributed=time_distributed, verbose=verbose, conv_name='conv1',
-                      bn_name='bn_conv1', padding=initial_padding, resnet_v1_bn2a_b2a_strides=initial_strides)(img_input)
+                      bn_name='bn_conv1')(img_input)
     if initial_pooling == 'max':
         if verbose:
             print("    MaxPooling2D")
         if time_distributed:
-            x = TimeDistributed(MaxPooling2D(pool_size=(3, 3), strides=(1, 1), padding='same'))(x)
+            x = TimeDistributed(MaxPooling2D(pool_size=(3, 3), strides=(1, 1), padding=initial_padding))(x)
         else:
             x = MaxPooling2D(pool_size=(3, 3), strides=(1, 1), padding=initial_padding)(x)
 
@@ -568,13 +540,9 @@ def ResNet(input_shape=None, classes=10, block='bottleneck', residual_unit='v2',
         transition_strides = [(1, 1)] * r
         if transition_dilation_rate == (1, 1):
             transition_strides[0] = (2, 2)
-        resnet_v1_bn2a_b2a_strides = None
         stage = i + 2  # First Conv2D is stage 1, i == 0 is stage 2
-        if stage == 2 and _conv_bn_relu == _conv_bn_relu:
-            # Special ResNetV1 strides to match Keras ResNet50
-            resnet_v1_bn2a_b2a_strides = (2, 2)
         block = _residual_block(block_fn, filters=filters,
-                                stage=i+2, num_blocks=r,
+                                stage=i+2, blocks=r,
                                 is_first_layer=(i == 0),
                                 dropout=dropout,
                                 transition_dilation_rates=transition_dilation_rates,
