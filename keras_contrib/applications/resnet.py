@@ -470,7 +470,9 @@ def ResNet(input_shape=None, classes=10, block='bottleneck', residual_unit='v2',
             the Pascal VOC dataset, and None to exclude these layers entirely.
         time_distributed: Boolean that indicates whether the ResNet is to be repeated over a
             time axis, to make a TimeDistributed ResNet
-        verbose: Boolean that indicates whether to print layer names as they are built
+        time_distributed: True wraps all layers in TimeDistributed layers for use in RNNs.
+        weights: Path to a pre-trained keras weights file which will be loaded from disk.
+        verbose: True prints layer names as they are built, False disables the printouts.
 
     Returns:
         The keras `Model`.
@@ -490,10 +492,16 @@ def ResNet(input_shape=None, classes=10, block='bottleneck', residual_unit='v2',
 
     if time_distributed:
         if len(input_shape) != 4:
-            raise Exception("Input shape should be a tuple (nb_time_steps, nb_rows, nb_cols, nb_channels)")
+            if K.image_data_format() == 'channels_last':
+                raise Exception("channels_last: Input shape should be a tuple (nb_time_steps, nb_rows, nb_cols, nb_channels)")
+            else:
+                raise Exception("channels_first: Input shape should be a tuple (nb_time_steps, nb_channels, nb_rows, nb_cols)")
     else:
         if len(input_shape) != 3:
-            raise Exception("Input shape should be a tuple (nb_rows, nb_cols, nb_channels)")
+            if K.image_data_format() == 'channels_last':
+                raise Exception("channels_last: Input shape should be a tuple (nb_rows, nb_cols, nb_channels)")
+            else:
+                raise Exception("channels_first: Input shape should be a tuple (nb_channels, nb_rows, nb_cols)")
 
     if block == 'basic':
         block_fn = basic_block
@@ -512,10 +520,6 @@ def ResNet(input_shape=None, classes=10, block='bottleneck', residual_unit='v2',
         residual_unit = _string_to_function(residual_unit)
     else:
         residual_unit = residual_unit
-
-    # Determine proper input shape again
-    input_shape = obtain_input_shape(input_shape=input_shape, require_flatten=include_top,
-                                     time_distributed=time_distributed)
 
     # Initial
     img_input = Input(shape=input_shape, tensor=input_tensor)
