@@ -19,9 +19,6 @@ TimeDistributed adapted from: github.com/voletiv/keras-resnet
 from __future__ import division
 
 import six
-import warnings
-from keras.utils.data_utils import get_file
-from keras.utils import layer_utils
 from keras.models import Model
 from keras.layers import Input
 from keras.layers import Activation
