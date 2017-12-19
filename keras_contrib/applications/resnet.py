@@ -540,7 +540,7 @@ def ResNet(input_shape=None, classes=10, block='bottleneck', residual_unit='v2',
             transition_strides[0] = (2, 2)
         stage = i + 2  # First Conv2D is stage 1, i == 0 is stage 2
         block = _residual_block(block_fn, filters=filters,
-                                stage= i + 2, blocks=r,
+                                stage=stage, blocks=r,
                                 is_first_layer=(i == 0),
                                 dropout=dropout,
                                 transition_dilation_rates=transition_dilation_rates,
