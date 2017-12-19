@@ -13,7 +13,7 @@ from keras_contrib.applications.resnet import ResNet152
 DIM_ORDERING = {'channels_first', 'channels_last'}
 
 
-def _test_model_compile(model_fn, test_dims, time_distributed=False):
+def _test_model_compile(model_fn, test_dims, time_distributed=False, predict=False):
     if time_distributed:
         time, width, height, channels, classes = test_dims
     else:
@@ -28,17 +28,19 @@ def _test_model_compile(model_fn, test_dims, time_distributed=False):
             input_dim = (time,) + input_dim
         model = model_fn(input_dim, classes, time_distributed=time_distributed)
         model.compile(loss="categorical_crossentropy", optimizer="sgd")
-        img = np.random.random((1,) + input_dim)
-        model.predict(img)
+        # conditionally predict to reduce test runtime
+        if predict:
+            img = np.random.random((1,) + input_dim)
+            model.predict(img)
         assert True, "Failed to compile with '{}' dim ordering".format(ordering)
 
 
 def test_resnet():
     # [(width, height, channels, classes), ...]
-    test_dims = [(512, 640, 3, 100)]
+    test_dims = [(200, 224, 3, 3)]
     time_distributed = False
     for dims in test_dims:
-        _test_model_compile(ResNet18, dims, time_distributed=time_distributed)
+        _test_model_compile(ResNet18, dims, time_distributed=time_distributed, predict=True)
         _test_model_compile(ResNet34, dims, time_distributed=time_distributed)
         _test_model_compile(ResNet50, dims, time_distributed=time_distributed)
         _test_model_compile(ResNet101, dims, time_distributed=time_distributed)
@@ -47,10 +49,10 @@ def test_resnet():
 
 def test_resnet_time_distributed():
     # [(time, width, height, channels, classes), ...]
-    test_dims = [(2, 224, 224, 3, 100)]
+    test_dims = [(2, 224, 224, 3, 3)]
     time_distributed = True
     for dims in test_dims:
-        _test_model_compile(ResNet18, dims, time_distributed=time_distributed)
+        _test_model_compile(ResNet18, dims, time_distributed=time_distributed, predict=True)
         _test_model_compile(ResNet34, dims, time_distributed=time_distributed)
         _test_model_compile(ResNet50, dims, time_distributed=time_distributed)
         _test_model_compile(ResNet101, dims, time_distributed=time_distributed)
