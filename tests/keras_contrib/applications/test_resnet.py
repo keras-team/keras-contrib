@@ -27,6 +27,8 @@ def _test_model_compile(model_fn, test_dims, time_distributed=False):
             input_dim = (time,) + input_dim
         model = model_fn(input_dim, classes, time_distributed=time_distributed)
         model.compile(loss="categorical_crossentropy", optimizer="sgd")
+        img = np.random.random(input_dim)
+        model.predict(img)
         assert True, "Failed to compile with '{}' dim ordering".format(ordering)
 
 
