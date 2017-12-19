@@ -1,4 +1,5 @@
 import pytest
+import numpy as np
 from keras import backend as K
 import keras
 from keras_contrib.applications.resnet import ResNet
