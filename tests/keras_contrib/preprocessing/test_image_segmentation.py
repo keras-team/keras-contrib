@@ -1,5 +1,5 @@
 from keras.preprocessing.image import img_to_array, array_to_img
-from utils import SegDataGenerator
+from keras_contrib.utils import SegDataGenerator
 from PIL import Image as PILImage
 import numpy as np
 
@@ -46,3 +46,7 @@ test_random_crop = lambda: test_crop(SegDataGenerator.random_crop)
 test_pair_center_crop = lambda: test_pair_crop(SegDataGenerator.pair_center_crop)
 
 test_pair_random_crop = lambda: test_pair_crop(SegDataGenerator.pair_random_crop)
+
+
+def test_seg_data_generator():
+    datagen = SegDataGenerator()
