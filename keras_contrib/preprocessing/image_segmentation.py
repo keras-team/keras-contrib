@@ -4,7 +4,7 @@
 """
 from keras.preprocessing.image import *
 from keras.applications.imagenet_utils import preprocess_input
-from keras import backend as K
+from .. import backend as K
 from PIL import Image
 import numpy as np
 import os
