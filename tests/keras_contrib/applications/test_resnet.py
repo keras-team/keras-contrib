@@ -40,10 +40,10 @@ def test_resnet():
         _test_model_compile(ResNet50, dims, time_distributed=time_distributed)
         _test_model_compile(ResNet101, dims, time_distributed=time_distributed)
         _test_model_compile(ResNet152, dims, time_distributed=time_distributed)
-    # [(time, width, height, channels, classes), ...]
 
 
 def test_resnet_time_distributed():
+    # [(time, width, height, channels, classes), ...]
     test_dims = [(2, 224, 224, 3, 100)]
     time_distributed = True
     for dims in test_dims:
