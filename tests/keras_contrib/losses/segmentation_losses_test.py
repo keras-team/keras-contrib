@@ -15,6 +15,7 @@ def test_objective_shapes():
         y_a = K.variable(np.random.random(shape))
         y_b = K.variable(np.random.random(shape))
         for obj in shaped_obj:
+            print(obj.__name__)
             objective_output = obj(y_a, y_b)
             assert K.eval(objective_output).shape == shape[:-1]
 
