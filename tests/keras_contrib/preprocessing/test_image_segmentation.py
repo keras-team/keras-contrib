@@ -1,5 +1,6 @@
 from keras.preprocessing.image import img_to_array, array_to_img
-from utils import SegDataGenerator
+from keras_contrib.preprocessing.image_segmentation import SegDataGenerator
+from keras_contrib.preprocessing import image_segmentation
 from PIL import Image as PILImage
 import numpy as np
 
@@ -30,19 +31,31 @@ def test_pair_crop(crop_function):
     crop_height = img1.height / 5
 
     result1, result2 = crop_function(img_to_array(img1),
-        img_to_array(img2),
-        (crop_height, crop_width),
-        'channels_last')
+                                     img_to_array(img2),
+                                     (crop_height, crop_width),
+                                     'channels_last')
     result1 = array_to_img(result1)
     result2 = array_to_img(result2)
 
     assert result1.width == crop_width == result2.width
     assert result2.height == crop_height == result2.height
 
-test_center_crop = lambda: test_crop(SegDataGenerator.center_crop)
 
-test_random_crop = lambda: test_crop(SegDataGenerator.random_crop)
+def test_center_crop():
+    test_crop(image_segmentation.center_crop)
 
-test_pair_center_crop = lambda: test_pair_crop(SegDataGenerator.pair_center_crop)
 
-test_pair_random_crop = lambda: test_pair_crop(SegDataGenerator.pair_random_crop)
+def test_random_crop():
+    test_crop(image_segmentation.random_crop)
+
+
+def test_pair_center_crop():
+    test_pair_crop(image_segmentation.pair_center_crop)
+
+
+def test_pair_random_crop():
+    test_pair_crop(image_segmentation.pair_random_crop)
+
+
+def test_seg_data_generator():
+    datagen = SegDataGenerator()

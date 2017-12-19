@@ -1,6 +1,10 @@
+""" Preprocessing for semantic image segmentation
+
+    adapted from: https://github.com/aurora95/Keras-FCN
+"""
 from keras.preprocessing.image import *
 from keras.applications.imagenet_utils import preprocess_input
-from keras import backend as K
+from .. import backend as K
 from PIL import Image
 import numpy as np
 import os
@@ -33,11 +37,11 @@ def pair_center_crop(x, y, center_crop_size, data_format, **kwargs):
     h_start, h_end = centerh - lh, centerh + rh
     w_start, w_end = centerw - lw, centerw + rw
     if data_format == 'channels_first':
-        return x[:, h_start:h_end, w_start:w_end], \
-               y[:, h_start:h_end, w_start:w_end]
+        return (x[:, h_start:h_end, w_start:w_end],
+                y[:, h_start:h_end, w_start:w_end])
     elif data_format == 'channels_last':
-        return x[h_start:h_end, w_start:w_end, :], \
-               y[h_start:h_end, w_start:w_end, :]
+        return (x[h_start:h_end, w_start:w_end, :],
+                y[h_start:h_end, w_start:w_end, :])
 
 
 def random_crop(x, random_crop_size, data_format, sync_seed=None, **kwargs):
