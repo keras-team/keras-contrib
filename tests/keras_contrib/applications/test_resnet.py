@@ -1,5 +1,3 @@
-import sys
-sys.path.insert(0, '/Users/athundt/src/keras-contrib')
 import pytest
 from keras import backend as K
 import keras
@@ -34,7 +32,7 @@ def _test_model_compile(model_fn, test_dims, time_distributed=False):
 
 def test_resnet():
     # [(width, height, channels, classes), ...]
-    test_dims = [(224, 224, 3, 100), (512, 640, 3, 100)]
+    test_dims = [(512, 640, 3, 100)]
     time_distributed = False
     for dims in test_dims:
         _test_model_compile(ResNet18, dims, time_distributed=time_distributed)
@@ -43,7 +41,10 @@ def test_resnet():
         _test_model_compile(ResNet101, dims, time_distributed=time_distributed)
         _test_model_compile(ResNet152, dims, time_distributed=time_distributed)
     # [(time, width, height, channels, classes), ...]
-    test_dims = [(2, 224, 224, 3, 100), (2, 512, 640, 3, 100)]
+
+
+def test_resnet_time_distributed():
+    test_dims = [(2, 224, 224, 3, 100)]
     time_distributed = True
     for dims in test_dims:
         _test_model_compile(ResNet18, dims, time_distributed=time_distributed)
