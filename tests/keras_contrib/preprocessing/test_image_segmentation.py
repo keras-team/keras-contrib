@@ -1,5 +1,5 @@
 from keras.preprocessing.image import img_to_array, array_to_img
-from keras_contrib.utils import SegDataGenerator
+from keras_contrib.preprocessing.image_segmentation import SegDataGenerator
 from PIL import Image as PILImage
 import numpy as np
 
