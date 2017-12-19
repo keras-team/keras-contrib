@@ -1,3 +1,7 @@
+""" Preprocessing for semantic image segmentation
+
+    adapted from: https://github.com/aurora95/Keras-FCN
+"""
 from keras.preprocessing.image import *
 from keras.applications.imagenet_utils import preprocess_input
 from keras import backend as K
