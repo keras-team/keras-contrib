@@ -25,9 +25,7 @@ def basic_instancenorm_test():
                input_shape=(3, 4, 2))
     layer_test(normalization.InstanceNormalization,
                kwargs={'gamma_initializer': 'ones',
-                       'beta_initializer': 'ones',
-                       'moving_mean_initializer': 'zeros',
-                       'moving_variance_initializer': 'ones'},
+                       'beta_initializer': 'ones'},
                input_shape=(3, 4, 2))
     layer_test(normalization.InstanceNormalization,
                kwargs={'scale': False, 'center': False},
@@ -190,7 +188,7 @@ def test_instancenorm_perchannel_correctness():
         for channel in range(3):
             activations = out[instance, channel]
             assert abs(activations.mean()) > 1e-2
-            assert abs(activations.std() - 1.0) > 1e-2
+            assert abs(activations.std() - 1.0) > 1e-6
 
         # but values are still normalized per-instance
         activations = out[instance]
@@ -229,10 +227,11 @@ def basic_batchrenorm_test():
 
 @keras_test
 def test_batchrenorm_mode_0_or_2():
-    for training in [1, 0]:
-        model = Sequential()
-        norm_m0 = normalization.BatchRenormalization(input_shape=(10,), momentum=0.8)
-        model.add(norm_m0)
+    for training in [1, 0, None]:
+        ip = Input(shape=(10,))
+        norm_m0 = normalization.BatchRenormalization(momentum=0.8)
+        out = norm_m0(ip, training=training)
+        model = Model(ip, out)
         model.compile(loss='mse', optimizer='sgd')
 
         # centered on 5.0, variance 10.0
@@ -304,6 +303,38 @@ def test_shared_batchrenorm():
     assert len(model.updates) == 5
     new_model.compile('sgd', 'mse')
     new_model.train_on_batch(x, x)
+
+
+@keras_test
+def test_batchrenorm_clipping_schedule():
+    '''Test that the clipping schedule isn't fixed at r_max=1, d_max=0'''
+    inp = Input(shape=(10,))
+    bn = normalization.BatchRenormalization(t_delta=1.)
+    out = bn(inp)
+    model = Model(inp, out)
+    model.compile('sgd', 'mse')
+
+    x = np.random.normal(5, 10, size=(2, 10))
+    y = np.random.normal(5, 10, size=(2, 10))
+
+    r_max, d_max = K.get_value(bn.r_max), K.get_value(bn.d_max)
+    assert r_max == 1
+    assert d_max == 0
+
+    for i in range(10):
+        model.train_on_batch(x, y)
+
+    r_max, d_max = K.get_value(bn.r_max), K.get_value(bn.d_max)
+    assert_allclose([r_max, d_max], [3, 5], atol=1e-1)
+
+
+@keras_test
+def test_batchrenorm_get_config():
+    '''Test that get_config works on a model with a batchrenorm layer.'''
+    x = Input(shape=(10,))
+    y = normalization.BatchRenormalization()(x)
+    model = Model(x, y)
+    model.get_config()
 
 
 if __name__ == '__main__':

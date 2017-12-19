@@ -2,7 +2,6 @@ from __future__ import absolute_import
 from keras.optimizers import Optimizer
 from .. import backend as K
 from keras.utils.generic_utils import get_custom_objects
-from keras.legacy import interfaces
 
 
 class FTML(Optimizer):
@@ -31,7 +30,6 @@ class FTML(Optimizer):
         self.epsilon = epsilon
         self.inital_decay = decay
 
-    @interfaces.legacy_get_updates_support
     def get_updates(self, loss, params):
         grads = self.get_gradients(loss, params)
         self.updates = [K.update_add(self.iterations, 1)]
