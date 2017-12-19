@@ -18,67 +18,6 @@ else:
 
 
 @keras_test
-def test_deconvolution_3d():
-    num_samples = 6
-    num_filter = 4
-    stack_size = 2
-    kernel_dim1 = 12
-    kernel_dim2 = 10
-    kernel_dim3 = 8
-
-    for batch_size in [None, num_samples]:
-        for border_mode in _convolution_border_modes:
-            for subsample in [(1, 1, 1), (2, 2, 2)]:
-                if border_mode == 'same' and subsample != (1, 1, 1):
-                    continue
-
-                dim1 = conv_input_length(kernel_dim1, 7,
-                                         border_mode,
-                                         subsample[0])
-                dim2 = conv_input_length(kernel_dim2, 5,
-                                         border_mode,
-                                         subsample[1])
-                dim3 = conv_input_length(kernel_dim3, 3,
-                                         border_mode,
-                                         subsample[2])
-                layer_test(convolutional.Deconvolution3D,
-                           kwargs={'filters': num_filter,
-                                   'kernel_size': (7, 5, 3),
-                                   'output_shape': (batch_size, num_filter, dim1, dim2, dim3),
-                                   'padding': border_mode,
-                                   'strides': subsample,
-                                   'data_format': 'channels_first'},
-                           input_shape=(num_samples, stack_size, kernel_dim1, kernel_dim2, kernel_dim3),
-
-                           fixed_batch_size=True, tolerance=None)
-
-                layer_test(convolutional.Deconvolution3D,
-                           kwargs={'filters': num_filter,
-                                   'kernel_size': (7, 5, 3),
-                                   'output_shape': (batch_size, num_filter, dim1, dim2, dim3),
-                                   'padding': border_mode,
-                                   'strides': subsample,
-                                   'data_format': 'channels_first',
-                                   'kernel_regularizer': 'l2',
-                                   'bias_regularizer': 'l2',
-                                   'activity_regularizer': 'l2'},
-                           input_shape=(num_samples, stack_size, kernel_dim1, kernel_dim2, kernel_dim3),
-                           fixed_batch_size=True, tolerance=None)
-
-                layer_test(convolutional.Deconvolution3D,
-                           kwargs={'filters': num_filter,
-                                   'kernel_size': (7, 5, 3),
-                                   'output_shape': (num_filter, dim1, dim2, dim3),
-                                   'padding': border_mode,
-                                   'strides': subsample,
-                                   'data_format': 'channels_first',
-                                   'kernel_regularizer': 'l2',
-                                   'bias_regularizer': 'l2',
-                                   'activity_regularizer': 'l2'},
-                           input_shape=(num_samples, stack_size, kernel_dim1, kernel_dim2, kernel_dim3), tolerance=None)
-
-
-@keras_test
 def test_cosineconvolution_2d():
     num_samples = 2
     num_filter = 2
