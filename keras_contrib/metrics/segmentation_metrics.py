@@ -37,11 +37,10 @@ def mean_accuracy(y_true, y_pred):
     correct_pixels_per_class = K.sum(equal_entries, axis=1)
     n_pixels_per_class = K.sum(y_true_reshaped, axis=1)
 
-    acc = correct_pixels_per_class / n_pixels_per_class
-    acc_mask = tf.is_finite(acc)
-    acc_masked = tf.boolean_mask(acc, acc_mask)
+    # epsilon added to avoid dividing by zero
+    acc = correct_pixels_per_class / (n_pixels_per_class + K.epsilon())
 
-    return K.mean(acc_masked)
+    return K.mean(acc)
 
 
 def mean_intersection_over_union(y_true, y_pred):
@@ -59,8 +58,7 @@ def mean_intersection_over_union(y_true, y_pred):
     intersection = K.sum(equal_entries, axis=1)
     union_per_class = K.sum(y_true_reshaped, axis=1) + K.sum(y_pred_reshaped, axis=1)
 
-    iou = intersection / (union_per_class - intersection)
-    iou_mask = tf.is_finite(iou)
-    iou_masked = tf.boolean_mask(iou, iou_mask)
+    # epsilon added to avoid dividing by zero
+    iou = intersection / ((union_per_class - intersection) + K.epsilon())
 
-    return K.mean(iou_masked)
+    return K.mean(iou)
