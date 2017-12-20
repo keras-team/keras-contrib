@@ -1,12 +1,16 @@
 import pytest
+import os
 from keras import backend as K
 from keras.layers import Input, Dense
 from keras.models import Model
 from numpy.testing import assert_allclose
+from keras.utils.test_utils import keras_test
 
 from keras_contrib.utils.save_load_utils import save_all_weights, load_all_weights
 
 
+@pytest.mark.skipif(K.backend() != 'tensorflow', reason='save_all_weights and load_all_weights only supported on TensorFlow')
+@keras_test
 def test_save_and_load_all_weights():
     '''
     Test save_all_weights and load_all_weights. Save and load optimizer and model weights but not configuration.
@@ -33,15 +37,16 @@ def test_save_and_load_all_weights():
     ow1value[0, 0:3] = [4, 2, 0]
     K.set_value(ow1, ow1value)
     # save all weights
-    save_all_weights(m1, "model.h5")
+    save_all_weights(m1, 'model.h5')
     # new model
     m2 = make_model()
     # load all weights
-    load_all_weights(m2, "model.h5")
+    load_all_weights(m2, 'model.h5')
     # check weights
     assert_allclose(K.get_value(m2.layers[1].kernel)[0, 0:4], [1, 3, 3, 7])
     # check optimizer weights
     assert_allclose(K.get_value(m2.optimizer.weights[3])[0, 0:3], [4, 2, 0])
+    os.remove('model.h5')
 
 
 if __name__ == '__main__':
