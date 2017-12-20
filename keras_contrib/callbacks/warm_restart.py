@@ -3,7 +3,7 @@ from keras.callbacks import Callback
 import keras.backend as K
 
 
-class WarmRestart(Callback):
+class LearningRateWarmRestarter(Callback):
     """Warm Restart Learning rate update rule.
     # Arguments
         min_lr: lower bound on the learning rate.
@@ -16,7 +16,7 @@ class WarmRestart(Callback):
     """
 
     def __init__(self, min_lr=0., max_lr=0.1, num_restart_epochs=5, factor=1):
-        super(WarmRestart, self).__init__()
+        super(LearningRateWarmRestarter, self).__init__()
         self.min_lr = min_lr
         self.max_lr = max_lr
         self.num_restart_epochs = num_restart_epochs
