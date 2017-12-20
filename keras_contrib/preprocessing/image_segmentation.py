@@ -184,6 +184,20 @@ class SegDirectoryIterator(Iterator):
         super(SegDirectoryIterator, self).__init__(
             self.nb_sample, batch_size, shuffle, seed)
 
+    def next(self):
+        """For python 2.x.
+        # Returns
+            The next batch.
+        """
+        # Keeps under lock only the mechanism which advances
+        # the indexing of each batch.
+        with self.lock:
+            index_array = next(self.index_generator)
+        # The transformation of images is not under thread lock
+        # so it can be done in parallel
+
+        return self._get_batches_of_transformed_samples(index_array)
+
     def _get_batches_of_transformed_samples(self, index_array):
         """Gets a batch of transformed samples.
         # Arguments
