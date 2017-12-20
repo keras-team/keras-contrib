@@ -12,7 +12,7 @@ As the community contributions in Keras-Contrib are tested, used, validated, and
 For instructions on how to install Keras, see https://keras.io/#installation
 
 ```shell
-git clone https://www.github.com/farizrahman4u/keras-contrib.git
+git clone https://www.github.com/keras-team/keras-contrib.git
 cd keras-contrib
 python setup.py install
 ```
@@ -20,7 +20,7 @@ python setup.py install
 Alternatively, using pip:
 
 ```shell
-sudo pip install git+https://www.github.com/farizrahman4u/keras-contrib.git
+sudo pip install git+https://www.github.com/keras-team/keras-contrib.git
 ```
 
 For contributor guidelines see [CONTRIBUTING.md](CONTRIBUTING.md)
