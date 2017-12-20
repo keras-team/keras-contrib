@@ -1,38 +1,40 @@
 import numpy as np
 from keras.callbacks import Callback
+import keras.backend as K
+
 
 class WarmRestart(Callback):
     """Warm Restart Learning rate update rule.
     # Arguments
-        eta_min: float. min value of learning rate
-        eta_max: float. max value of learning rate
-        T_0: initial the number of epochs to restart
-        T_mult: increase scale factor of T_0.
+        min_lr: lower bound on the learning rate.
+        max_lr: upper bound on the learning rate.
+        num_restart_epochs:  restart learning rate from `max_lr` at every `num_restart_epochs`.
+        factor: factor by which the number of restart epochs will be increased. new_num_restart_epochs = num_restart_epochs*factor.
 
     # Reference
-        [SGDR: STOCHASTIC GRADIENT DESCENT WITH WARM RESTARTS](https://arxiv.org/pdf/1608.03983.pdf)
+        [SGDR: Stochastic Gradient Descent with Warm Restarts](https://arxiv.org/pdf/1608.03983.pdf)
     """
 
-    def __init__(self, eta_min=0., eta_max=0.1, T_0=5, T_mult=1):
+    def __init__(self, min_lr=0., max_lr=0.1, num_restart_epochs=5, factor=1):
         super(WarmRestart, self).__init__()
-        self.T_i = T_0
-        self.T_mult = T_mult
-        self.eta_min = eta_min
-        self.eta_max = eta_max
-        self.T_cur = 0
-        self.cum_previous_Ti = 0
+        self.min_lr = min_lr
+        self.max_lr = max_lr
+        self.num_restart_epochs = num_restart_epochs
+        self.factor = factor
+        self.cumsum_end_num_restart_epochs = 0
+
+        if factor < 1:
+            raise ValueError('"factor" must be larger than 0')
 
     def on_epoch_begin(self, epoch, logs=None):
         if not hasattr(self.model.optimizer, 'lr'):
             raise ValueError('Optimizer must have a "lr" attribute.')
 
-        T_cur = epoch - self.cum_previous_Ti
-        print(epoch, T_cur, self.cum_previous_Ti)
+        t = epoch - self.cumsum_end_num_restart_epochs
+        lr = self.min_lr + 0.5 * (self.max_lr - self.min_lr) * (1. + np.cos(t / self.num_restart_epochs * np.pi))
 
-        lr = self.eta_min + 0.5 * (self.eta_max - self.eta_min) * (1. + np.cos(T_cur / self.T_i * np.pi))
-        
-        if T_cur == self.T_i:
-            self.cum_previous_Ti += self.T_i
-            self.T_i *= self.T_mult
+        if t == self.num_restart_epochs:
+            self.cumsum_end_num_restart_epochs += self.num_restart_epochs
+            self.num_restart_epochs *= self.factor
 
         K.set_value(self.model.optimizer.lr, lr)
