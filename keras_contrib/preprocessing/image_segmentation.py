@@ -2,7 +2,7 @@
 
     adapted from: https://github.com/aurora95/Keras-FCN
 """
-from keras.preprocessing.image import *
+from keras.preprocessing.image import Iterator
 from keras.applications.imagenet_utils import preprocess_input
 from .. import backend as K
 from PIL import Image
