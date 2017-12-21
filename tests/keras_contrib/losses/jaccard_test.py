@@ -14,7 +14,7 @@ def test_jaccard_distance():
         K.variable(y_true),
         K.variable(y_pred), )
     all_right, almost_right, half_right, all_wrong = K.eval(r)
-    assert r.shape == (4, )
+    assert K.int_shape(r) == (4, )
     assert all_right == 0, 'should converge on zero'
     assert all_right < almost_right
     assert almost_right < half_right
