@@ -21,7 +21,7 @@ class LearningRateWarmRestarter(Callback):
         self.max_lr = max_lr
         self.num_restart_epochs = num_restart_epochs
         self.factor = factor
-        self.cumsum_end_num_restart_epochs = 0
+        self.next_restart_epochs = 0
 
         if factor < 1:
             raise ValueError('"factor" must be larger than 0')
@@ -30,11 +30,13 @@ class LearningRateWarmRestarter(Callback):
         if not hasattr(self.model.optimizer, 'lr'):
             raise ValueError('Optimizer must have a "lr" attribute.')
 
-        t = epoch - self.cumsum_end_num_restart_epochs
-        lr = self.min_lr + 0.5 * (self.max_lr - self.min_lr) * (1. + np.cos(t / self.num_restart_epochs * np.pi))
+        t = epoch - self.next_restart_epochs
 
+        # check whether restart or not
         if t == self.num_restart_epochs:
-            self.cumsum_end_num_restart_epochs += self.num_restart_epochs
+            self.next_restart_epochs += self.num_restart_epochs
             self.num_restart_epochs *= self.factor
+            t = 0
 
-        K.set_value(self.model.optimizer.lr, lr)
+        new_lr = self.min_lr + 0.5 * (self.max_lr - self.min_lr) * (1. + np.cos(t / self.num_restart_epochs * np.pi))
+        K.set_value(self.model.optimizer.lr, new_lr)
