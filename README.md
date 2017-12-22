@@ -1,6 +1,6 @@
 # keras-contrib : Keras community contributions
 
-[![Build Status](https://travis-ci.org/farizrahman4u/keras-contrib.svg?branch=master)](https://travis-ci.org/farizrahman4u/keras-contrib)
+[![Build Status](https://travis-ci.org/keras-team/keras-contrib.svg?branch=master)](https://travis-ci.org/farizrahman4u/keras-contrib)
 
 This library is the official extension repository for the python deep learning library [Keras](http://www.keras.io). It contains additional layers, activations, loss functions, optimizers, etc. which are not yet available within Keras itself. All of these additional modules can be used in conjunction with core Keras models and modules.
 
