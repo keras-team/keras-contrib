@@ -16,7 +16,7 @@ train_samples = 20
 test_samples = 20
 
 
-def LearningRateWarmRestarter():
+def test_LearningRateWarmRestarter():
     np.random.seed(1337)
     (X_train, y_train), (X_test, y_test) = get_test_data(num_train=train_samples,
                                                          num_test=test_samples,
