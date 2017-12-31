@@ -771,6 +771,10 @@ def __create_dense_net(nb_classes, img_input, include_top, depth=40, nb_dense_bl
             if nb_layers_per_block == -1:
                 assert (depth - 4) % 3 == 0, 'Depth must be 3 N + 4 if nb_layers_per_block == -1'
                 count = int((depth - 4) / 3)
+
+                if bottleneck:
+                    count = count // 2
+
                 nb_layers = [count for _ in range(nb_dense_block)]
                 final_nb_layer = count
             else:
