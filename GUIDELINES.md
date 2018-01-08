@@ -2,6 +2,7 @@
 
 ## Maintainers:
 Following are the users with write-access to this repository (maintainers) :
+* [athundt](https://www.github.com/athundt)
 * [bstriner](https://www.github.com/bstriner)
 * [farizrahman4u](https://www.github.com/farizrahman4u)
 * [fchollet](https://www.github.com/fchollet)
