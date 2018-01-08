@@ -89,7 +89,7 @@ def WideResidualNetwork(depth=28, width=8, dropout_rate=0.0,
                                       default_size=32,
                                       min_size=8,
                                       data_format=K.image_dim_ordering(),
-                                      include_top=include_top)
+                                      require_flatten=include_top)
 
     if input_tensor is None:
         img_input = Input(shape=input_shape)
