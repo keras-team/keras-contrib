@@ -2,7 +2,7 @@ from keras import backend as K
 
 
 def jaccard_distance(y_true, y_pred, smooth=100):
-    """Jaccard distance is an intersection-over-union loss for semantic segmentation
+    """Jaccard distance for semantic segmentation, also known as the intersection-over-union loss.
 
     This loss is useful when you have unbalanced numbers of pixels within an image
     because it gives all classes equal weight. However, it is not the defacto
