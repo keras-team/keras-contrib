@@ -90,7 +90,7 @@ def _bn_relu_conv(**conv_params):
     relu_name = conv_params.setdefault("relu_name", None)
     kernel_initializer = conv_params.setdefault("kernel_initializer", "he_normal")
     padding = conv_params.setdefault("padding", "same")
-    kernel_regularizer = conv_params.setdefault("kernel_regularizer", l2(1.e-4)
+    kernel_regularizer = conv_params.setdefault("kernel_regularizer", l2(1.e-4))
     verbose = conv_params.setdefault("verbose", False)
 
     def f(x):
@@ -470,7 +470,7 @@ def ResNet(input_shape=None, classes=10, block='bottleneck', residual_unit='v2',
             print("    classification")
         x = GlobalAveragePooling2D()(x)
         x = Dense(units=classes, activation=activation, kernel_initializer="he_normal", name='fc' + str(classes))(x)
-    
+
     elif include_top and top is 'segmentation':
         if verbose:
             print("    segmentation")
