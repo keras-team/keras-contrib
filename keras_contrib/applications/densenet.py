@@ -297,7 +297,8 @@ def DenseNet(input_shape=None,
 def DenseNetFCN(input_shape, nb_dense_block=5, growth_rate=16, nb_layers_per_block=4,
                 reduction=0.0, dropout_rate=0.0, weight_decay=1E-4, init_conv_filters=48,
                 include_top=True, weights=None, input_tensor=None, classes=1, activation='softmax',
-                upsampling_conv=128, upsampling_type='deconv'):
+                upsampling_conv=128, upsampling_type='deconv', early_transition=False,
+                pooling='max'):
     '''Instantiate the DenseNet FCN architecture.
         Note that when using TensorFlow,
         for best performance you should set
@@ -341,6 +342,9 @@ def DenseNetFCN(input_shape, nb_dense_block=5, growth_rate=16, nb_layers_per_blo
                 computation of output shape in the case of Deconvolution2D layers.
                 Parameter will be removed in next iteration of Keras, which infers
                 output shape of deconvolution layers automatically.
+            early_transition: Start with an extra initial transition down and end with an extra
+                transition up to reduce the network size.
+
         # Returns
             A Keras model instance.
     '''
@@ -402,7 +406,7 @@ def DenseNetFCN(input_shape, nb_dense_block=5, growth_rate=16, nb_layers_per_blo
     x = __create_fcn_dense_net(classes, img_input, include_top, nb_dense_block,
                                growth_rate, reduction, dropout_rate, weight_decay,
                                nb_layers_per_block, upsampling_conv, upsampling_type,
-                               init_conv_filters, input_shape, activation)
+                               init_conv_filters, input_shape, activation, early_transition)
 
     # Ensure that the model takes into account
     # any potential predecessors of `input_tensor`.
@@ -613,7 +617,7 @@ def __dense_block(x, nb_layers, nb_filter, growth_rate, bottleneck=False, dropou
             return x, nb_filter
 
 
-def __transition_block(ip, nb_filter, compression=1.0, weight_decay=1e-4, block_prefix=None):
+def __transition_block(ip, nb_filter, compression=1.0, weight_decay=1e-4, block_prefix=None, pooling='max'):
     '''
     Adds a pointwise convolution layer (with batch normalization and relu),
     and an average pooling layer. The number of output convolution filters
@@ -652,7 +656,10 @@ def __transition_block(ip, nb_filter, compression=1.0, weight_decay=1e-4, block_
         x = Activation('relu')(x)
         x = Conv2D(int(nb_filter * compression), (1, 1), kernel_initializer='he_normal', padding='same',
                    use_bias=False, kernel_regularizer=l2(weight_decay), name=name_or_none(block_prefix, '_conv2D'))(x)
-        x = AveragePooling2D((2, 2), strides=(2, 2))(x)
+        if pooling == 'avg':
+            x = AveragePooling2D((2, 2), strides=(2, 2))(x)
+        if pooling == 'max':
+            x = MaxPooling2D((2, 2), strides=(2, 2))(x)
 
         return x
 
@@ -703,7 +710,7 @@ def __transition_up_block(ip, nb_filters, type='deconv', weight_decay=1E-4, bloc
 
 def __create_dense_net(nb_classes, img_input, include_top, depth=40, nb_dense_block=3, growth_rate=12, nb_filter=-1,
                        nb_layers_per_block=-1, bottleneck=False, reduction=0.0, dropout_rate=None, weight_decay=1e-4,
-                       subsample_initial_block=False, pooling=None, activation='softmax'):
+                       subsample_initial_block=False, pooling=None, activation='softmax', transition_pooling='max'):
     ''' Build the DenseNet model
 
     # Arguments
@@ -742,6 +749,8 @@ def __create_dense_net(nb_classes, img_input, include_top, depth=40, nb_dense_bl
                 be applied.
         activation: Type of activation at the top layer. Can be one of 'softmax' or 'sigmoid'.
                 Note that if sigmoid is used, classes must be 1.
+        transition_pooling: 'max' for max pooling (default), 'avg' for average pooling,
+            None for no pooling.
 
     # Returns
         a keras tensor
@@ -811,7 +820,7 @@ def __create_dense_net(nb_classes, img_input, include_top, depth=40, nb_dense_bl
                                          block_prefix='dense_%i' % block_idx)
             # add transition_block
             x = __transition_block(x, nb_filter, compression=compression, weight_decay=weight_decay,
-                                   block_prefix='tr_%i' % block_idx)
+                                   block_prefix='tr_%i' % block_idx, pooling=transition_pooling)
             nb_filter = int(nb_filter * compression)
 
         # The last dense_block does not have a transition_block
@@ -823,7 +832,10 @@ def __create_dense_net(nb_classes, img_input, include_top, depth=40, nb_dense_bl
         x = Activation('relu')(x)
 
         if include_top:
-            x = GlobalAveragePooling2D()(x)
+            if pooling == 'avg':
+                x = GlobalAveragePooling2D()(x)
+            if pooling == 'max':
+                x = GlobalMaxPooling2D()(x)
             x = Dense(nb_classes, activation=activation)(x)
         else:
             if pooling == 'avg':
@@ -837,7 +849,8 @@ def __create_dense_net(nb_classes, img_input, include_top, depth=40, nb_dense_bl
 def __create_fcn_dense_net(nb_classes, img_input, include_top, nb_dense_block=5, growth_rate=12,
                            reduction=0.0, dropout_rate=None, weight_decay=1e-4,
                            nb_layers_per_block=4, nb_upsampling_conv=128, upsampling_type='upsampling',
-                           init_conv_filters=48, input_shape=None, activation='deconv'):
+                           init_conv_filters=48, input_shape=None, activation='deconv',
+                           early_transition=False, transition_pooling='max'):
     ''' Build the DenseNet-FCN model
 
     # Arguments
@@ -860,6 +873,10 @@ def __create_fcn_dense_net(nb_classes, img_input, include_top, nb_dense_block=5,
         input_shape: Only used for shape inference in fully convolutional networks.
         activation: Type of activation at the top layer. Can be one of 'softmax' or 'sigmoid'.
                     Note that if sigmoid is used, classes must be 1.
+        early_transition: Start with an extra initial transition down and end with an extra
+            transition up to reduce the network size.
+        transition_pooling: 'max' for max pooling (default), 'avg' for average pooling,
+            None for no pooling.
 
     # Returns
         a keras tensor
@@ -914,6 +931,10 @@ def __create_fcn_dense_net(nb_classes, img_input, include_top, nb_dense_block=5,
 
         skip_list = []
 
+        if early_transition:
+            x = __transition_block(x, nb_filter, compression=compression, weight_decay=weight_decay,
+                                   block_prefix='tr_early', pooling=transition_pooling)
+
         # Add dense blocks and transition down block
         for block_idx in range(nb_dense_block):
             x, nb_filter = __dense_block(x, nb_layers[block_idx], nb_filter, growth_rate, dropout_rate=dropout_rate,
@@ -924,7 +945,7 @@ def __create_fcn_dense_net(nb_classes, img_input, include_top, nb_dense_block=5,
 
             # add transition_block
             x = __transition_block(x, nb_filter, compression=compression, weight_decay=weight_decay,
-                                   block_prefix='tr_%i' % block_idx)
+                                   block_prefix='tr_%i' % block_idx, pooling=transition_pooling)
 
             nb_filter = int(nb_filter * compression)  # this is calculated inside transition_down_block
 
@@ -958,6 +979,9 @@ def __create_fcn_dense_net(nb_classes, img_input, include_top, nb_dense_block=5,
                                                          return_concat_list=True, grow_nb_filters=False,
                                                          block_prefix='dense_%i' % (nb_dense_block + 1 + block_idx))
 
+        if early_transition:
+            x_up = __transition_up_block(x_up, nb_filters=nb_filter, type=upsampling_type, weight_decay=weight_decay,
+                                         block_prefix='tr_up_early')
         if include_top:
             x = Conv2D(nb_classes, (1, 1), activation='linear', padding='same', use_bias=False)(x_up)
 
