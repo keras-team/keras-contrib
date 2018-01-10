@@ -188,4 +188,3 @@ def clip(x, min_value, max_value):
     max_value = _to_tensor(max_value, x.dtype.base_dtype)
     max_value = tf.maximum(min_value, max_value)
     return tf.clip_by_value(x, min_value, max_value)
-

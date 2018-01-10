@@ -21,8 +21,6 @@ from keras.backend.theano_backend import _preprocess_conv2d_input
 from keras.backend.theano_backend import _postprocess_conv2d_output
 from keras.backend.theano_backend import logsumexp
 
-
-
 py_all = all
 
 
