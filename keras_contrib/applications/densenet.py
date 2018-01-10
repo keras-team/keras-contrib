@@ -202,7 +202,7 @@ def DenseNet(input_shape=None,
                                       default_size=32,
                                       min_size=8,
                                       data_format=K.image_data_format(),
-                                      include_top=include_top)
+                                      require_flatten=include_top)
 
     if input_tensor is None:
         img_input = Input(shape=input_shape)
