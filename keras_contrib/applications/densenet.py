@@ -710,7 +710,7 @@ def __transition_up_block(ip, nb_filters, type='deconv', weight_decay=1E-4, bloc
 
 def __create_dense_net(nb_classes, img_input, include_top, depth=40, nb_dense_block=3, growth_rate=12, nb_filter=-1,
                        nb_layers_per_block=-1, bottleneck=False, reduction=0.0, dropout_rate=None, weight_decay=1e-4,
-                       subsample_initial_block=False, pooling=None, activation='softmax', transition_pooling='max'):
+                       subsample_initial_block=False, pooling=None, activation='softmax', transition_pooling='avg'):
     ''' Build the DenseNet model
 
     # Arguments
@@ -749,7 +749,7 @@ def __create_dense_net(nb_classes, img_input, include_top, depth=40, nb_dense_bl
                 be applied.
         activation: Type of activation at the top layer. Can be one of 'softmax' or 'sigmoid'.
                 Note that if sigmoid is used, classes must be 1.
-        transition_pooling: 'max' for max pooling (default), 'avg' for average pooling,
+        transition_pooling: 'avg' for average pooling(default), 'max' for max pooling,
             None for no pooling.
 
     # Returns
@@ -876,7 +876,8 @@ def __create_fcn_dense_net(nb_classes, img_input, include_top, nb_dense_block=5,
         early_transition: Start with an extra initial transition down and end with an extra
             transition up to reduce the network size.
         transition_pooling: 'max' for max pooling (default), 'avg' for average pooling,
-            None for no pooling.
+            None for no pooling. Please note that this default differs from the DenseNet
+            paper in accordance with the DenseNetFCN paper.
 
     # Returns
         a keras tensor
