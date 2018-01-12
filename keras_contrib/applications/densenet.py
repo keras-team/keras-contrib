@@ -168,8 +168,6 @@ def DenseNet(input_shape=None,
                 2D tensor.
             - `max` means that global max pooling will
                 be applied.
-        initial_kernel_size: The first Conv2D kernel might vary in size based on the
-            application, this parameter makes it configurable.
         classes: optional number of classes to classify images
             into, only to be specified if `include_top` is True, and
             if no `weights` argument is specified.
@@ -351,6 +349,8 @@ def DenseNetFCN(input_shape, nb_dense_block=5, growth_rate=16, nb_layers_per_blo
                 output shape of deconvolution layers automatically.
             early_transition: Start with an extra initial transition down and end with an extra
                 transition up to reduce the network size.
+            initial_kernel_size: The first Conv2D kernel might vary in size based on the
+                application, this parameter makes it configurable.
 
         # Returns
             A Keras model instance.
