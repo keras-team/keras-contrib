@@ -3,7 +3,6 @@
     adapted from: https://github.com/theduynguyen/Keras-FCN
 """
 import keras.backend as K
-import tensorflow as tf
 import sys
 
 
