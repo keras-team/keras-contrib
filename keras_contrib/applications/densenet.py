@@ -757,11 +757,10 @@ def __create_dense_net(nb_classes, img_input, include_top, depth=40, nb_dense_bl
                 be applied.
         activation: Type of activation at the top layer. Can be one of 'softmax' or 'sigmoid'.
                 Note that if sigmoid is used, classes must be 1.
-        transition_pooling: 'max' for max pooling (default), 'avg' for average pooling,
-            None for no pooling. Please note that this default differs from the DenseNet
-            paper in accordance with the DenseNetFCN paper.
-        initial_kernel_size: The first Conv2D kernel might vary in size based on the
-            application, this parameter makes it configurable.
+        transition_pooling: `avg` for avg pooling (default), `max` for max pooling,
+            None for no pooling during scale transition blocks. Please note that this
+            default differs from the DenseNetFCN paper in accordance with the DenseNet
+            paper.
 
     # Returns
         a keras tensor
