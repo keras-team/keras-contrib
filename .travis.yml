@@ -36,7 +36,7 @@ install:
   - pip install pep8 pytest-pep8
   - conda install mkl mkl-service
   - pip install theano
-  - pip install git+git://github.com/fchollet/keras.git
+  - pip install git+git://github.com/keras-team/keras.git
 
   # install PIL for preprocessing tests
   - if [[ "$TRAVIS_PYTHON_VERSION" == "2.7" ]]; then
