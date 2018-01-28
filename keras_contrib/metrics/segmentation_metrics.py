@@ -16,9 +16,10 @@ def pixel_accuracy(y_true, y_pred):
 
     # correctly classified
     clf_pred = K.one_hot(K.argmax(y_pred_reshaped), num_classes=true_shape[-1])
-    correct_pixels_per_class = K.cast(K.equal(clf_pred, y_true_reshaped), dtype='float32')
+    correct_pixels_per_class = K.cast(
+        K.equal(clf_pred, y_true_reshaped), dtype='float32')
 
-    return K.sum(correct_pixels_per_class) / K.cast(K.prod(true_shape), dtype='float32')
+    return K.mean(correct_pixels_per_class)
 
 
 def mean_accuracy(y_true, y_pred):
@@ -31,7 +32,8 @@ def mean_accuracy(y_true, y_pred):
 
     # correctly classified
     clf_pred = K.one_hot(K.argmax(y_pred_reshaped), num_classes=true_shape[-1])
-    equal_entries = K.cast(K.equal(clf_pred, y_true_reshaped), dtype='float32') * y_true_reshaped
+    equal_entries = K.cast(
+        K.equal(clf_pred, y_true_reshaped), dtype='float32') * y_true_reshaped
 
     correct_pixels_per_class = K.sum(equal_entries, axis=1)
     n_pixels_per_class = K.sum(y_true_reshaped, axis=1)
@@ -52,12 +54,16 @@ def mean_intersection_over_union(y_true, y_pred):
 
     # correctly classified
     clf_pred = K.one_hot(K.argmax(y_pred_reshaped), num_classes=true_shape[-1])
-    equal_entries = K.cast(K.equal(clf_pred, y_true_reshaped), dtype='float32') * y_true_reshaped
+    equal_entries = K.cast(
+        K.equal(clf_pred, y_true_reshaped), dtype='float32') * y_true_reshaped
 
     intersection = K.sum(equal_entries, axis=1)
-    union_per_class = K.sum(y_true_reshaped, axis=1) + K.sum(y_pred_reshaped, axis=1)
+    union_per_class = K.sum(
+        y_true_reshaped, axis=1) + K.sum(
+            y_pred_reshaped, axis=1)
 
     # epsilon added to avoid dividing by zero
-    iou = intersection / ((union_per_class - intersection) + K.epsilon())
+    iou = (intersection + K.epsilon()) / (
+        (union_per_class - intersection) + K.epsilon())
 
     return K.mean(iou)
