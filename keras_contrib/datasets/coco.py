@@ -340,7 +340,7 @@ def coco_image_segmentation_stats(seg_mask_output_paths, annotation_paths, seg_m
             # print('\ntarget_shape:', target_shape)
             mask_one_hot = np.zeros(target_shape, dtype=np.uint8)
 
-            # Note to only count backgroung pixels once, we define a temporary
+            # Note to only count background pixels once, we define a temporary
             # null class of 0, and shift all class category ids up by 1
             mask_one_hot[:, :, 0] = 1  # every pixel begins as background
 

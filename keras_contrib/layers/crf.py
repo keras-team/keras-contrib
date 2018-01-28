@@ -74,7 +74,7 @@ class CRF(Layer):
             which produces marginal probabilities for each time step.
         sparse_target: Boolean (default False) indicating if provided labels are one-hot or
             indices (with shape 1 at dim 3).
-        use_boundary: Boolean (default True) inidicating if trainable start-end chain energies
+        use_boundary: Boolean (default True) indicating if trainable start-end chain energies
             should be added to model.
         use_bias: Boolean, whether the layer uses a bias vector.
         kernel_initializer: Initializer for the `kernel` weights matrix,
