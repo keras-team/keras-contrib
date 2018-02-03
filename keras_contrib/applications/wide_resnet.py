@@ -14,7 +14,7 @@ import warnings
 
 from keras.models import Model
 from keras.layers.core import Dense, Dropout, Activation, Flatten
-from keras.layers.pooling import AveragePooling2D, MaxPooling2D
+from keras.layers.pooling import AveragePooling2D, MaxPooling2D, GlobalAveragePooling2D
 from keras.layers import Input, Conv2D
 from keras.layers.merge import add
 from keras.layers.normalization import BatchNormalization
