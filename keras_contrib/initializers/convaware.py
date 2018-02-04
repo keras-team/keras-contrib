@@ -9,7 +9,7 @@ class ConvolutionAware(Initializer):
     """
     Initializer that generates orthogonal convolution filters in the fourier
     space. If this initializer is passed a shape that is not 3D or 4D,
-    orthogonal intialization will be used.
+    orthogonal initialization will be used.
     # Arguments
         eps_std: Standard deviation for the random normal noise used to break
         symmetry in the inverse fourier transform.
