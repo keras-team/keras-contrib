@@ -1,4 +1,5 @@
 from keras.backend import cntk_backend as KCN
+from keras.backend.cntk_backend import logsumexp
 import cntk as C
 import numpy as np
 

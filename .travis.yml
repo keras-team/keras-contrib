@@ -30,12 +30,13 @@ install:
   # Useful for debugging any issues with conda
   - conda info -a
 
-  - conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION numpy scipy matplotlib pandas pytest h5py
+  - conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION numpy nose matplotlib pandas pytest h5py
   - source activate test-environment
   - pip install pytest-cov pytest-xdist
   - pip install pep8 pytest-pep8
   - conda install mkl mkl-service
   - pip install theano
+  - pip install scipy
   - pip install git+git://github.com/keras-team/keras.git
 
   # install PIL for preprocessing tests
@@ -75,5 +76,5 @@ script:
   - if [[ "$TEST_MODE" == "PEP8" ]]; then
        PYTHONPATH=$PWD:$PYTHONPATH py.test --pep8 -m pep8 -n0;
     else
-       PYTHONPATH=$PWD:$PYTHONPATH py.test tests/ --ignore=tests/integration_tests --ignore=tests/test_documentation.py --cov=keras tests/ --cov-report term-missing;
+       PYTHONPATH=$PWD:$PYTHONPATH py.test tests/ --ignore=tests/integration_tests --ignore=tests/test_documentation.py --ignore=tests/keras_contrib/layers/crf_test.py --cov=keras tests/ --cov-report term-missing;
     fi

@@ -43,7 +43,7 @@ def _process_data(data, vocab, pos_tags, chunk_tags, maxlen=None, onehot=False):
 
     x = pad_sequences(x, maxlen)  # left padding
 
-    y_pos = pad_sequences(y_pos, maxlen, value=-1)  # lef padded with -1. Indeed, any interger works as it will be masked
+    y_pos = pad_sequences(y_pos, maxlen, value=-1)  # lef padded with -1. Indeed, any integer works as it will be masked
     y_chunk = pad_sequences(y_chunk, maxlen, value=-1)
 
     if onehot:
