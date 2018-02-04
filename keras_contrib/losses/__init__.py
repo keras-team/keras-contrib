@@ -6,3 +6,4 @@ from . import dssim
 from .segmentation_losses import binary_crossentropy
 
 from .dssim import DSSIMObjective
+from .jaccard import jaccard_distance

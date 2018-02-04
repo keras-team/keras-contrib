@@ -10,6 +10,7 @@ from keras.backend import dtype
 from keras.backend.common import floatx
 from keras.backend.common import image_data_format
 from keras.backend.tensorflow_backend import _to_tensor
+from keras.backend.tensorflow_backend import logsumexp
 
 py_all = all
 
