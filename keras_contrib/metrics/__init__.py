@@ -2,6 +2,10 @@ from __future__ import absolute_import
 from . import segmentation_metrics
 
 # Globally-importable metrics
-from .segmentation_metrics import pixel_accuracy
+from .segmentation_metrics import categorical_pixel_accuracy
 from .segmentation_metrics import mean_accuracy
 from .segmentation_metrics import mean_intersection_over_union
+from .segmentation_metrics import binary_accuracy
+from .segmentation_metrics import categorical_accuracy
+from .segmentation_metrics import top_k_categorical_accuracy
+from .segmentation_metrics import sparse_top_k_categorical_accuracy
