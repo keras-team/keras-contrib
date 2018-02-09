@@ -493,7 +493,7 @@ def DenseNetImageNet264(input_shape=None,
                         pooling=None,
                         classes=1000,
                         activation='softmax'):
-    return DenseNet(input_shape, depth=201, nb_dense_block=4, growth_rate=32, nb_filter=64,
+    return DenseNet(input_shape, depth=264, nb_dense_block=4, growth_rate=32, nb_filter=64,
                     nb_layers_per_block=[6, 12, 64, 48], bottleneck=bottleneck, reduction=reduction,
                     dropout_rate=dropout_rate, weight_decay=weight_decay, subsample_initial_block=True,
                     include_top=include_top, weights=weights, input_tensor=input_tensor,
