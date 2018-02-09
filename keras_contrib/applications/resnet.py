@@ -132,7 +132,7 @@ def _shortcut(input_feature, residual, conv_name_base=None, bn_name_base=None):
 
 def _residual_block(block_function, filters, blocks, stage,
                     transition_strides=None, transition_dilation_rates=None,
-                    dilation_rates=(1, 1), is_first_layer=False, dropout=None,
+                    dilation_rates=None, is_first_layer=False, dropout=None,
                     residual_unit=_bn_relu_conv):
     """Builds a residual block with repeating bottleneck blocks.
 
@@ -145,6 +145,9 @@ def _residual_block(block_function, filters, blocks, stage,
         transition_dilation_rates = [(1, 1)] * blocks
     if transition_strides is None:
         transition_strides = [(1, 1)] * blocks
+    if dilation_rates is None:
+    	dilation_rates = [1] * blocks
+
 
     def f(x):
         for i in range(blocks):
@@ -167,6 +170,8 @@ def _block_name_base(stage, block):
     """
     if block < 27:
         block = '%c' % (block + 97)  # 97 is the ascii number for lowercase 'a'
+    else:
+        block = '%d' % (block - 27)
     conv_name_base = 'res' + str(stage) + block + '_branch'
     bn_name_base = 'bn' + str(stage) + block + '_branch'
     return conv_name_base, bn_name_base
