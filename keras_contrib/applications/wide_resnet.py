@@ -25,9 +25,9 @@ from keras.applications.imagenet_utils import _obtain_input_shape
 import keras.backend as K
 
 TH_WEIGHTS_PATH = 'https://github.com/titu1994/Wide-Residual-Networks/releases/download/v1.2/wrn_28_8_th_kernels_th_dim_ordering.h5'
-TF_WEIGHTS_PATH = 'https://github.com/titu1994/Wide-Residual-Networks/releases/download/v1.2/wrn_28_8_tf_kernels_tf_dim_ordering.h5'
+TF_WEIGHTS_PATH = 'https://github.com/anand-sonawane/keras-contrib/releases/download/v1/wrn_28_8_tf_kernels_tf_dim_ordering.h5'
 TH_WEIGHTS_PATH_NO_TOP = 'https://github.com/titu1994/Wide-Residual-Networks/releases/download/v1.2/wrn_28_8_th_kernels_th_dim_ordering_no_top.h5'
-TF_WEIGHTS_PATH_NO_TOP = 'https://github.com/titu1994/Wide-Residual-Networks/releases/download/v1.2/wrn_28_8_tf_kernels_tf_dim_ordering_no_top.h5'
+TF_WEIGHTS_PATH_NO_TOP = 'https://github.com/anand-sonawane/keras-contrib/releases/download/v1/wrn_28_8_tf_kernels_tf_dim_ordering_no_top.h5'
 
 
 def WideResidualNetwork(depth=28, width=8, dropout_rate=0.0,
@@ -146,7 +146,7 @@ def WideResidualNetwork(depth=28, width=8, dropout_rate=0.0,
                 else:
                     weights_path = get_file('wide_resnet_28_8_tf_dim_ordering_tf_kernels_no_top.h5',
                                             TF_WEIGHTS_PATH_NO_TOP,
-                                            cache_subdir='models')
+                                            cache_subdir='models1')
 
                 model.load_weights(weights_path)
 
