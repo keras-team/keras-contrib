@@ -53,7 +53,7 @@ NASNET_MOBILE_WEIGHT_PATH_WITH_AUXULARY_NO_TOP = "https://github.com/titu1994/Ke
 NASNET_LARGE_WEIGHT_PATH = "https://github.com/titu1994/Keras-NASNet/releases/download/v1.1/NASNet-large.h5"
 NASNET_LARGE_WEIGHT_PATH_NO_TOP = "https://github.com/titu1994/Keras-NASNet/releases/download/v1.1/NASNet-large-no-top.h5"
 NASNET_LARGE_WEIGHT_PATH_WITH_auxiliary = "https://github.com/titu1994/Keras-NASNet/releases/download/v1.1/NASNet-auxiliary-large.h5"
-NASNET_LARGE_WEIGHT_PATH_WITH_auxiliary_NO_TOP = "https://github.com/titu1994/Keras-NASNet/releases/download/v1.1/NASNet-auxiliary-large-no-top.h5"
+NASNET_LARGE_WEIGHT_PATH_WITH_auxiliary_NO_TOP = "https://github.com/titu1994/Keras-NASNet/releases/download/v1.1/NASNet-auxilary-large-no-top.h5"
 
 
 def NASNet(input_shape=None,
@@ -222,13 +222,15 @@ def NASNet(input_shape=None,
     auxiliary_x = None
     if not skip_reduction:  # imagenet / mobile mode
         if use_auxiliary_branch:
-            auxiliary_x = _add_auxiliary_head(x, classes, weight_decay, activation=activation)
+            auxiliary_x = _add_auxiliary_head(x, classes, weight_decay, include_top=include_top,
+                                              pooling=pooling, activation=activation)
 
     x, p0 = _reduction_A(x, p, filters * filters_multiplier ** 2, weight_decay, id='reduce_%d' % (2 * nb_blocks))
 
     if skip_reduction:  # CIFAR mode
         if use_auxiliary_branch:
-            auxiliary_x = _add_auxiliary_head(x, classes, weight_decay, activation=activation)
+            auxiliary_x = _add_auxiliary_head(x, classes, weight_decay, include_top=include_top,
+                                              pooling=pooling, activation=activation)
 
     p = p0 if not skip_reduction else p
 
@@ -747,7 +749,7 @@ def _reduction_A(ip, p, filters, weight_decay=5e-5, id=None):
         return x, ip
 
 
-def _add_auxiliary_head(x, classes, weight_decay, activation='softmax'):
+def _add_auxiliary_head(x, classes, weight_decay, include_top=True, pooling=None, activation='softmax'):
     '''Adds an auxiliary head for training the model
 
     From section A.7 "Training of ImageNet models" of the paper, all NASNet models are
@@ -782,7 +784,14 @@ def _add_auxiliary_head(x, classes, weight_decay, activation='softmax'):
                                          name='aux_bn_reduction')(auxiliary_x)
         auxiliary_x = Activation('relu')(auxiliary_x)
 
-        auxiliary_x = GlobalAveragePooling2D()(auxiliary_x)
-        auxiliary_x = Dense(classes, activation=activation, kernel_regularizer=l2(weight_decay),
-                            name='aux_predictions')(auxiliary_x)
+        if include_top:
+            x = GlobalAveragePooling2D()(x)
+            x = Dropout(dropout)(x)
+            x = Dense(classes, activation=activation, kernel_regularizer=l2(weight_decay), name='aux_predictions')(x)
+        else:
+            if pooling == 'avg':
+                x = GlobalAveragePooling2D()(x)
+            elif pooling == 'max':
+                x = GlobalMaxPooling2D()(x)
+
     return auxiliary_x
