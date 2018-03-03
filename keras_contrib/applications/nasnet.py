@@ -70,7 +70,8 @@ def NASNet(input_shape=None,
            input_tensor=None,
            pooling=None,
            classes=1000,
-           default_size=None):
+           default_size=None,
+           activation='softmax'):
     """Instantiates a NASNet architecture.
     Note that only TensorFlow is supported for now,
     therefore it only works with the data format
@@ -130,6 +131,8 @@ def NASNet(input_shape=None,
             into, only to be specified if `include_top` is True, and
             if no `weights` argument is specified.
         default_size: specifies the default image size of the model
+        activation: Type of activation at the top layer.
+            Can be one of 'softmax' or 'sigmoid'.
     # Returns
         A Keras model instance.
     # Raises
@@ -219,13 +222,13 @@ def NASNet(input_shape=None,
     auxiliary_x = None
     if not skip_reduction:  # imagenet / mobile mode
         if use_auxiliary_branch:
-            auxiliary_x = _add_auxiliary_head(x, classes, weight_decay)
+            auxiliary_x = _add_auxiliary_head(x, classes, weight_decay, activation=activation)
 
     x, p0 = _reduction_A(x, p, filters * filters_multiplier ** 2, weight_decay, id='reduce_%d' % (2 * nb_blocks))
 
     if skip_reduction:  # CIFAR mode
         if use_auxiliary_branch:
-            auxiliary_x = _add_auxiliary_head(x, classes, weight_decay)
+            auxiliary_x = _add_auxiliary_head(x, classes, weight_decay, activation=activation)
 
     p = p0 if not skip_reduction else p
 
@@ -237,7 +240,7 @@ def NASNet(input_shape=None,
     if include_top:
         x = GlobalAveragePooling2D()(x)
         x = Dropout(dropout)(x)
-        x = Dense(classes, activation='softmax', kernel_regularizer=l2(weight_decay), name='predictions')(x)
+        x = Dense(classes, activation=activation, kernel_regularizer=l2(weight_decay), name='predictions')(x)
     else:
         if pooling == 'avg':
             x = GlobalAveragePooling2D()(x)
@@ -314,7 +317,8 @@ def NASNetLarge(input_shape=(331, 331, 3),
                 weights='imagenet',
                 input_tensor=None,
                 pooling=None,
-                classes=1000):
+                classes=1000,
+                activation='softmax'):
     """Instantiates a NASNet architecture in ImageNet mode.
     Note that only TensorFlow is supported for now,
     therefore it only works with the data format
@@ -355,6 +359,8 @@ def NASNetLarge(input_shape=(331, 331, 3),
             into, only to be specified if `include_top` is True, and
             if no `weights` argument is specified.
         default_size: specifies the default image size of the model
+         activation: Type of activation at the top layer.
+             Can be one of 'softmax' or 'sigmoid'.
     # Returns
         A Keras model instance.
     # Raises
@@ -381,7 +387,8 @@ def NASNetLarge(input_shape=(331, 331, 3),
                   input_tensor=input_tensor,
                   pooling=pooling,
                   classes=classes,
-                  default_size=331)
+                  default_size=331,
+                  activation=activation)
 
 
 def NASNetMobile(input_shape=(224, 224, 3),
@@ -392,7 +399,8 @@ def NASNetMobile(input_shape=(224, 224, 3),
                  weights='imagenet',
                  input_tensor=None,
                  pooling=None,
-                 classes=1000):
+                 classes=1000,
+                 activation='softmax'):
     """Instantiates a NASNet architecture in Mobile ImageNet mode.
     Note that only TensorFlow is supported for now,
     therefore it only works with the data format
@@ -433,6 +441,8 @@ def NASNetMobile(input_shape=(224, 224, 3),
             into, only to be specified if `include_top` is True, and
             if no `weights` argument is specified.
         default_size: specifies the default image size of the model
+         activation: Type of activation at the top layer.
+             Can be one of 'softmax' or 'sigmoid'.
     # Returns
         A Keras model instance.
     # Raises
@@ -459,7 +469,8 @@ def NASNetMobile(input_shape=(224, 224, 3),
                   input_tensor=input_tensor,
                   pooling=pooling,
                   classes=classes,
-                  default_size=224)
+                  default_size=224,
+                  activation=activation)
 
 
 def NASNetCIFAR(input_shape=(32, 32, 3),
@@ -470,7 +481,8 @@ def NASNetCIFAR(input_shape=(32, 32, 3),
                 weights=None,
                 input_tensor=None,
                 pooling=None,
-                classes=10):
+                classes=10,
+                activation='softmax'):
     """Instantiates a NASNet architecture in CIFAR mode.
     Note that only TensorFlow is supported for now,
     therefore it only works with the data format
@@ -511,6 +523,8 @@ def NASNetCIFAR(input_shape=(32, 32, 3),
             into, only to be specified if `include_top` is True, and
             if no `weights` argument is specified.
         default_size: specifies the default image size of the model
+         activation: Type of activation at the top layer.
+             Can be one of 'softmax' or 'sigmoid'.
     # Returns
         A Keras model instance.
     # Raises
@@ -537,7 +551,8 @@ def NASNetCIFAR(input_shape=(32, 32, 3),
                   input_tensor=input_tensor,
                   pooling=pooling,
                   classes=classes,
-                  default_size=224)
+                  default_size=224,
+                  activation=activation)
 
 
 def _separable_conv_block(ip, filters, kernel_size=(3, 3), strides=(1, 1), weight_decay=5e-5, id=None):
@@ -732,7 +747,7 @@ def _reduction_A(ip, p, filters, weight_decay=5e-5, id=None):
         return x, ip
 
 
-def _add_auxiliary_head(x, classes, weight_decay):
+def _add_auxiliary_head(x, classes, weight_decay, activation='softmax'):
     '''Adds an auxiliary head for training the model
 
     From section A.7 "Training of ImageNet models" of the paper, all NASNet models are
@@ -768,6 +783,6 @@ def _add_auxiliary_head(x, classes, weight_decay):
         auxiliary_x = Activation('relu')(auxiliary_x)
 
         auxiliary_x = GlobalAveragePooling2D()(auxiliary_x)
-        auxiliary_x = Dense(classes, activation='softmax', kernel_regularizer=l2(weight_decay),
+        auxiliary_x = Dense(classes, activation=activation, kernel_regularizer=l2(weight_decay),
                             name='aux_predictions')(auxiliary_x)
     return auxiliary_x
