@@ -308,7 +308,6 @@ class ReLUs(Layer):
         To see full source-code of those architectures and other examples,
         please follow this link: https://github.com/ekholabs/DLinK
 
-
         - Deep Neural Network model example for the MNIST dataset:
 
             model = Sequential()
@@ -366,7 +365,7 @@ class ReLUs(Layer):
 
     # References:
         - ReLUs: An Alternative to the ReLU Activation Function. This function was
-        first introduced at the Codemotion Amsterdam 2018 and then at the DevDay, in Vilnius, Lithuania.
+        first introduced at the Codemotion Amsterdam 2018 and then at the DevDays, in Vilnius, Lithuania.
         It has been extensively tested with Deep Nets, CNNs, LSTMs, Residual Nets and GANs, based
         on the MNIST, Kaggle Toxicity and IMDB datasets.
     """
