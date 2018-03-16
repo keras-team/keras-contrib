@@ -284,6 +284,7 @@ class Swish(Layer):
 
 get_custom_objects().update({'Swish': Swish})
 
+
 class ReLUs(Layer):
     """Sigmoid version of the Rectified Linear Unit
 
