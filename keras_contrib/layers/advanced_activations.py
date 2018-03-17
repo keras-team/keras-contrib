@@ -301,15 +301,25 @@ class ReLUs(Layer):
     # Output shape
         Same shape as the input.
 
-    # Usage
+    # Arguments
+        epsilon: float. Hyper-parameter used to control oscilations when weights are negative.
+                 The default value, 0.0055, work better for Deep Neural Networks. When using CNNs,
+                 try something around 0.0025.
+
+    # References:
+        - ReLUs: An Alternative to the ReLU Activation Function. This function was
+        first introduced at the Codemotion Amsterdam 2018 and then at the DevDays, in Vilnius, Lithuania.
+        It has been extensively tested with Deep Nets, CNNs, LSTMs, Residual Nets and GANs, based
+        on the MNIST, Kaggle Toxicity and IMDB datasets.
+
+    # Examples
         The Advanced Activation function ReLUs have to be imported from the
         keras_contrib.layers package.
 
-        To see full source-code of those architectures and other examples,
+        To see full source-code of this architecture and other examples,
         please follow this link: https://github.com/ekholabs/DLinK
 
-        - Deep Neural Network model example for the MNIST dataset:
-
+        ```python
             model = Sequential()
             model.add(Dense(128, input_shape = (784,)))
             model.add(ReLUs(epsilon=0.0055))
@@ -324,50 +334,7 @@ class ReLUs(Layer):
             model.add(Dropout(0.5))
 
             model.add(Dense(10, activation = 'softmax'))
-
-        - Convolutional Neural Network model example for the MNIST dataset:
-
-            model = Sequential()
-
-            model.add(Conv2D(32, 7, padding = 'same', input_shape = (28, 28, 1)))
-            model.add(ReLUs(0.0025))
-            model.add(Conv2D(32, 7, padding = 'same'))
-            model.add(ReLUs(0.0025))
-            model.add(MaxPooling2D(pool_size = (2, 2)))
-            model.add(Dropout(0.20))
-
-            model.add(Conv2D(64, 3, padding = 'same'))
-            model.add(ReLUs(0.0025))
-            model.add(Conv2D(64, 3, padding = 'same'))
-            model.add(ReLUs(0.0025))
-            model.add(MaxPooling2D(pool_size = (2, 2)))
-            model.add(Dropout(0.30))
-
-            model.add(Conv2D(128, 2, padding = 'same'))
-            model.add(ReLUs(0.0025))
-            model.add(Conv2D(128, 2, padding = 'same'))
-            model.add(ReLUs(0.0025))
-            model.add(MaxPooling2D(pool_size = (2, 2)))
-            model.add(Dropout(0.40))
-
-            model.add(Flatten())
-            model.add(Dense(512))
-            model.add(ReLUs(0.0025))
-            model.add(Dropout(0.50))
-            model.add(Dense(10, activation = "softmax"))
-
-            model.summary()
-
-    # Arguments
-        epsilon: float. Hyper-parameter used to control oscilations when weights are negative.
-                 The default value, 0.0055, work better for Deep Neural Networks. When using CNNs,
-                 try something around 0.0025.
-
-    # References:
-        - ReLUs: An Alternative to the ReLU Activation Function. This function was
-        first introduced at the Codemotion Amsterdam 2018 and then at the DevDays, in Vilnius, Lithuania.
-        It has been extensively tested with Deep Nets, CNNs, LSTMs, Residual Nets and GANs, based
-        on the MNIST, Kaggle Toxicity and IMDB datasets.
+        ```
     """
 
     def __init__(self, epsilon=0.0055, **kwargs):
