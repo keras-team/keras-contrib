@@ -146,7 +146,7 @@ def _residual_block(block_function, filters, blocks, stage,
     if transition_strides is None:
         transition_strides = [(1, 1)] * blocks
     if dilation_rates is None:
-        dilation_rates = [1] * blocks    
+        dilation_rates = [1] * blocks
 
     def f(x):
         for i in range(blocks):
