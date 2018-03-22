@@ -285,8 +285,8 @@ class Swish(Layer):
 get_custom_objects().update({'Swish': Swish})
 
 
-class ReLUs(Layer):
-    """Rectified Linear Unit with Sigmoid to generate oscilations.
+class SineReLU(Layer):
+    """Sine Rectified Linear Unit to generate oscilations.
 
     It allows an oscilation in the gradients when the weights are negative.
     The oscilation can be controlled with a parameter, which makes it be close
@@ -307,13 +307,18 @@ class ReLUs(Layer):
                  try something around 0.0025.
 
     # References:
-        - ReLUs: An Alternative to the ReLU Activation Function. This function was
+        - SineReLU: An Alternative to the ReLU Activation Function. This function was
         first introduced at the Codemotion Amsterdam 2018 and then at the DevDays, in Vilnius, Lithuania.
         It has been extensively tested with Deep Nets, CNNs, LSTMs, Residual Nets and GANs, based
         on the MNIST, Kaggle Toxicity and IMDB datasets.
+        - Performance:
+          - MNIST
+            * Neural Net with 3 Hidden Layers, Dropout, Adam Optimiser
+              - SineReLU: epsilon=0.0083; Final loss: 0.0765; final accuracy: 0.9833; STD loss: 0.05375531819714868
+              - ReLU; Final loss: 0.0823, final accuracy: 0.9829 -> ReLU; STD loss => 0.05736969016884351
 
     # Examples
-        The Advanced Activation function ReLUs have to be imported from the
+        The Advanced Activation function SineReLU have to be imported from the
         keras_contrib.layers package.
 
         To see full source-code of this architecture and other examples,
@@ -322,15 +327,15 @@ class ReLUs(Layer):
         ```python
             model = Sequential()
             model.add(Dense(128, input_shape = (784,)))
-            model.add(ReLUs(epsilon=0.0055))
+            model.add(SineReLU(epsilon=0.0083))
             model.add(Dropout(0.2))
 
             model.add(Dense(256))
-            model.add(ReLUs(epsilon=0.0055))
+            model.add(SineReLU(epsilon=0.0083))
             model.add(Dropout(0.3))
 
             model.add(Dense(1024))
-            model.add(ReLUs(epsilon=0.0055))
+            model.add(SineReLU(epsilon=0.0083))
             model.add(Dropout(0.5))
 
             model.add(Dense(10, activation = 'softmax'))
@@ -338,19 +343,22 @@ class ReLUs(Layer):
     """
 
     def __init__(self, epsilon=0.0055, **kwargs):
-        super(ReLUs, self).__init__(**kwargs)
+        super(SineReLU, self).__init__(**kwargs)
         self.supports_masking = True
         self.epsilon = K.cast_to_floatx(epsilon)
 
+    def build(self, input_shape):
+        self.scale = np.exp(np.sqrt(np.pi))
+        super(SineReLU, self).build(input_shape)
+
     def call(self, Z):
-        pi = K.variable((np.pi))
-        m = self.epsilon * (K.sigmoid(K.sin(Z)) - K.sigmoid(K.cos(Z)) * K.exp(K.sqrt(pi)))
+        m = self.epsilon * (K.sigmoid(K.sin(Z)) - K.sigmoid(K.cos(Z)) * self.scale)
         A = K.maximum(m, Z)
         return A
 
     def get_config(self):
         config = {'epsilon': float(self.epsilon)}
-        base_config = super(ReLUs, self).get_config()
+        base_config = super(SineReLU, self).get_config()
         return dict(list(base_config.items()) + list(config.items()))
 
     def compute_output_shape(self, input_shape):
