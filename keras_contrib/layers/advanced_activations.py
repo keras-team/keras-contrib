@@ -312,14 +312,34 @@ class SineReLU(Layer):
         It has been extensively tested with Deep Nets, CNNs, LSTMs, Residual Nets and GANs, based
         on the MNIST, Kaggle Toxicity and IMDB datasets.
         - Performance:
-          - MNIST
-            * Neural Net with 3 Hidden Layers, Dropout, Adam Optimiser
-              - SineReLU: epsilon=0.0083; Final loss: 0.0765; final accuracy: 0.9833; STD loss: 0.05375531819714868
-              - ReLU; Final loss: 0.0823, final accuracy: 0.9829 -> ReLU; STD loss => 0.05736969016884351
+            - MNIST
+              * Neural Net with 3 Dense layers, Dropout, Adam Optimiser, 50 Epochs
+                - SineReLU: epsilon=0.0083; Final loss: 0.0765; final accuracy: 0.9833; STD loss: 0.05375531819714868
+                - ReLU: Final loss: 0.0823, final accuracy: 0.9829; STD loss: 0.05736969016884351
+              * CNN with 5 Conv layers, Dropout, Adam Optimiser, 50 Epochs
+                - SineReLU: CNN epsilon=0.0045; Dense epsilon=0.0083; Final loss: 0.0197, final accuracy: 0.9950; STD loss: 0.03690133793565328
+                - ReLU: Final loss: 0.0203, final accuracy: 0.9939; STD loss: 0.04592196838390996
+            - IMDB
+              * Neural Net with Embedding layer, 2 Dense layers, Dropout, Adam Optimiser, 5 epochs
+                - SineReLU: epsilon=0.0075; Final loss: 0.3268, final accuracy: 0.8590; ROC (AUC): 93.54; STD loss: 0.1763376755356713
+                - ReLU: Final loss: 0.3265, final accuracy: 0.8577; ROC (AUC): 93.54; STD loss: 0.17714072354980567
+              * CNN with Embedding Layer, 1 Conv1D layer, 2 Dense layers, Dropout, Adam Optimiser, 10 epochs
+                - SineReLU: CNN epsilon=0.0025; Dense epsilon=0.0083; Final loss: 0.2868, final accuracy: 0.8783; ROC (AUC): 95.09; STD loss: 0.12384455966040334
+                - ReLU: Final loss: 0.4135, final accuracy: 0.8757; 0.8755; ROC (AUC): 94.85; STD loss: 0.1633409454830405
+        - Jupyter Notebooks
+            - MNIST
+              - Neural Net: https://github.com/ekholabs/DLinK/blob/master/notebooks/keras/intermediate-net-in-keras.ipynb
+              - CNN: https://github.com/ekholabs/DLinK/blob/master/notebooks/keras/conv-net-in-keras.ipynb
+            - IMDB:
+              - Neural Net: https://github.com/ekholabs/DLinK/blob/master/notebooks/nlp/deep_net_sentiment_classifier_for_imdb.ipynb
+              - CNN: https://github.com/ekholabs/DLinK/blob/master/notebooks/nlp/conv_net_sentiment_classifier_for_imdb.ipynb
 
     # Examples
         The Advanced Activation function SineReLU have to be imported from the
         keras_contrib.layers package.
+
+        To load a saved model, add the following to the keras.models.load_model() call:
+          - custom_objects={'SineReLU': SineReLU}
 
         To see full source-code of this architecture and other examples,
         please follow this link: https://github.com/ekholabs/DLinK
