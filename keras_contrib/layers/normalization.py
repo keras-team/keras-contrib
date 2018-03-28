@@ -451,18 +451,18 @@ class GroupNormalization(Layer):
 
         if dim is None:
             raise ValueError('Axis ' + str(self.axis) + ' of '
-                                                        'input tensor should have a defined dimension '
-                                                        'but the layer received an input with shape ' +
+                             'input tensor should have a defined dimension '
+                             'but the layer received an input with shape ' +
                              str(input_shape) + '.')
 
         if dim < self.groups:
             raise ValueError('Number of groups (' + str(self.groups) + ') cannot be '
-                                                                       'more than the number of channels (' +
+                             'more than the number of channels (' +
                              str(dim) + ').')
 
         if dim % self.groups != 0:
             raise ValueError('Number of groups (' + str(self.groups) + ') must be a '
-                                                                       'multiple of the number of channels (' +
+                             'multiple of the number of channels (' +
                              str(dim) + ').')
 
         self.input_spec = InputSpec(ndim=len(input_shape),
