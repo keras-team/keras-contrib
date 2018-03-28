@@ -26,7 +26,7 @@ class CRF(Layer):
 
     This implementation has two modes for optimization:
     1. (`join mode`) optimized by maximizing join likelihood, which is optimal in theory of statistics.
-       Note that in this case, CRF mast be the output/last layer.
+       Note that in this case, CRF must be the output/last layer.
     2. (`marginal mode`) return marginal probabilities on each time step and optimized via composition
        likelihood (product of marginal likelihood), i.e., using `categorical_crossentropy` loss.
        Note that in this case, CRF can be either the last layer or an intermediate layer (though not explored).
@@ -72,9 +72,9 @@ class CRF(Layer):
             gives one-hot representation of the best path at test (prediction) time,
             while the latter is recommended and chosen as default when `learn_mode = 'marginal'`,
             which produces marginal probabilities for each time step.
-        sparse_target: Boolen (default False) indicating if provided labels are one-hot or
+        sparse_target: Boolean (default False) indicating if provided labels are one-hot or
             indices (with shape 1 at dim 3).
-        use_boundary: Boolen (default True) inidicating if trainable start-end chain energies
+        use_boundary: Boolean (default True) indicating if trainable start-end chain energies
             should be added to model.
         use_bias: Boolean, whether the layer uses a bias vector.
         kernel_initializer: Initializer for the `kernel` weights matrix,
@@ -284,12 +284,12 @@ class CRF(Layer):
     def loss_function(self):
         if self.learn_mode == 'join':
             def loss(y_true, y_pred):
-                assert self.inbound_nodes, 'CRF has not connected to any layer.'
-                assert not self.outbound_nodes, 'When learn_model="join", CRF must be the last layer.'
+                assert self._inbound_nodes, 'CRF has not connected to any layer.'
+                assert not self._outbound_nodes, 'When learn_model="join", CRF must be the last layer.'
                 if self.sparse_target:
                     y_true = K.one_hot(K.cast(y_true[:, :, 0], 'int32'), self.units)
-                X = self.inbound_nodes[0].input_tensors[0]
-                mask = self.inbound_nodes[0].input_masks[0]
+                X = self._inbound_nodes[0].input_tensors[0]
+                mask = self._inbound_nodes[0].input_masks[0]
                 nloglik = self.get_negative_log_likelihood(y_true, X, mask)
                 return nloglik
             return loss
@@ -323,8 +323,8 @@ class CRF(Layer):
     @property
     def viterbi_acc(self):
         def acc(y_true, y_pred):
-            X = self.inbound_nodes[0].input_tensors[0]
-            mask = self.inbound_nodes[0].input_masks[0]
+            X = self._inbound_nodes[0].input_tensors[0]
+            mask = self._inbound_nodes[0].input_masks[0]
             y_pred = self.viterbi_decoding(X, mask)
             return self._get_accuracy(y_true, y_pred, mask, self.sparse_target)
         acc.func_name = 'viterbi_acc'
@@ -333,8 +333,8 @@ class CRF(Layer):
     @property
     def marginal_acc(self):
         def acc(y_true, y_pred):
-            X = self.inbound_nodes[0].input_tensors[0]
-            mask = self.inbound_nodes[0].input_masks[0]
+            X = self._inbound_nodes[0].input_tensors[0]
+            mask = self._inbound_nodes[0].input_masks[0]
             y_pred = self.get_marginal_prob(X, mask)
             return self._get_accuracy(y_true, y_pred, mask, self.sparse_target)
         acc.func_name = 'marginal_acc'
@@ -372,7 +372,7 @@ class CRF(Layer):
         return energy
 
     def get_log_normalization_constant(self, input_energy, mask, **kwargs):
-        """Compute logarithm of the normalization constance Z, where
+        """Compute logarithm of the normalization constant Z, where
         Z = sum exp(-E) -> logZ = log sum exp(-E) =: -nlogZ
         """
         # should have logZ[:, i] == logZ[:, j] for any i, j
@@ -436,7 +436,7 @@ class CRF(Layer):
     def recursion(self, input_energy, mask=None, go_backwards=False, return_sequences=True, return_logZ=True, input_length=None):
         """Forward (alpha) or backward (beta) recursion
 
-        If `return_logZ = True`, compute the logZ, the normalization constance:
+        If `return_logZ = True`, compute the logZ, the normalization constant:
 
         \[ Z = \sum_{y1, y2, y3} exp(-E) # energy
           = \sum_{y1, y2, y3} exp(-(u1' y1 + y1' W y2 + u2' y2 + y2' W y3 + u3' y3))
