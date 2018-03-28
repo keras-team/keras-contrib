@@ -5,9 +5,11 @@ import numpy as np
 from keras import backend as K
 from keras.backend import theano_backend as KTH, floatx, set_floatx, variable
 from keras.backend import tensorflow_backend as KTF
+from keras.backend import cntk_backend as KCTK
 from keras_contrib import backend as KC
 import keras_contrib.backend.theano_backend as KCTH
 import keras_contrib.backend.tensorflow_backend as KCTF
+import keras_contrib.backend.cntk_backend as KCNTK
 from keras.utils.conv_utils import convert_kernel
 
 
@@ -141,6 +143,7 @@ class TestBackend(object):
 
         th_axes = [0, 2, 3]
         tf_axes = [0, 1, 2]
+        cntk_axes = [0, 1, 2]
 
         for ip in [x_0, x_1, x_random]:
             for axes in [th_axes, tf_axes]:
@@ -151,14 +154,21 @@ class TestBackend(object):
                     ip_tf = KTF.variable(ip)
                     tf_mean, tf_var = KCTF.moments(ip_tf, axes, keep_dims=keep_dims)
 
+                    ip_cntk = KCTK.variable(ip)
+                    cntk_mean, cntk_var = KCNTK.moments(ip_cntk, axes, keep_dims=keep_dims)
+
                     th_mean_val = KTH.eval(th_mean)
                     tf_mean_val = KTF.eval(tf_mean)
+                    cntk_mean_val = KCTK.eval(cntk_mean)
                     th_var_val = KTH.eval(th_var)
                     tf_var_val = KTF.eval(tf_var)
+                    cntk_var_val = KCTK.eval(cntk_var)
 
                     # absolute tolerance needed when working with zeros
                     assert_allclose(th_mean_val, tf_mean_val, rtol=1e-4, atol=1e-10)
                     assert_allclose(th_var_val, tf_var_val, rtol=1e-4, atol=1e-10)
+                    assert_allclose(th_mean_val, cntk_mean_val, rtol=1e-4, atol=1e-10)
+                    assert_allclose(th_var_val, cntk_var_val, rtol=1e-4, atol=1e-10)
 
     def test_clip(self):
         check_single_tensor_operation('clip', (4, 2), min_value=0.4, max_value=0.6)
