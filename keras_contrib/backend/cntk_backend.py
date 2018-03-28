@@ -25,3 +25,11 @@ def clip(x, min_value, max_value):
         min_value = -np.inf
     max_value = C.maximum(min_value, max_value)
     return C.clip(x, min_value, max_value)
+
+
+def moments(x, axes, shift=None, keep_dims=False):
+    ''' Calculates and returns the mean and variance of the input '''
+    mean_batch = KCN.mean(x, axis=axes, keepdims=keep_dims)
+    var_batch = KCN.var(x, axis=axes, keepdims=keep_dims)
+
+    return mean_batch, var_batch
