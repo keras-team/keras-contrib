@@ -527,11 +527,11 @@ class GroupNormalization(Layer):
         else:
             outputs = inputs
 
-            if self.scale:
-                outputs = outputs + self.beta
-
             if self.center:
                 outputs = outputs * self.gamma
+
+            if self.scale:
+                outputs = outputs + self.beta
 
         return outputs
 
