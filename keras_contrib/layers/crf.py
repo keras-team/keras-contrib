@@ -284,12 +284,12 @@ class CRF(Layer):
     def loss_function(self):
         if self.learn_mode == 'join':
             def loss(y_true, y_pred):
-                assert self.inbound_nodes, 'CRF has not connected to any layer.'
-                assert not self.outbound_nodes, 'When learn_model="join", CRF must be the last layer.'
+                assert self._inbound_nodes, 'CRF has not connected to any layer.'
+                assert not self._outbound_nodes, 'When learn_model="join", CRF must be the last layer.'
                 if self.sparse_target:
                     y_true = K.one_hot(K.cast(y_true[:, :, 0], 'int32'), self.units)
-                X = self.inbound_nodes[0].input_tensors[0]
-                mask = self.inbound_nodes[0].input_masks[0]
+                X = self._inbound_nodes[0].input_tensors[0]
+                mask = self._inbound_nodes[0].input_masks[0]
                 nloglik = self.get_negative_log_likelihood(y_true, X, mask)
                 return nloglik
             return loss
@@ -323,8 +323,8 @@ class CRF(Layer):
     @property
     def viterbi_acc(self):
         def acc(y_true, y_pred):
-            X = self.inbound_nodes[0].input_tensors[0]
-            mask = self.inbound_nodes[0].input_masks[0]
+            X = self._inbound_nodes[0].input_tensors[0]
+            mask = self._inbound_nodes[0].input_masks[0]
             y_pred = self.viterbi_decoding(X, mask)
             return self._get_accuracy(y_true, y_pred, mask, self.sparse_target)
         acc.func_name = 'viterbi_acc'
@@ -333,8 +333,8 @@ class CRF(Layer):
     @property
     def marginal_acc(self):
         def acc(y_true, y_pred):
-            X = self.inbound_nodes[0].input_tensors[0]
-            mask = self.inbound_nodes[0].input_masks[0]
+            X = self._inbound_nodes[0].input_tensors[0]
+            mask = self._inbound_nodes[0].input_masks[0]
             y_pred = self.get_marginal_prob(X, mask)
             return self._get_accuracy(y_true, y_pred, mask, self.sparse_target)
         acc.func_name = 'marginal_acc'
