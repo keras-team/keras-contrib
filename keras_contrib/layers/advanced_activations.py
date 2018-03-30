@@ -338,9 +338,6 @@ class SineReLU(Layer):
         The Advanced Activation function SineReLU have to be imported from the
         keras_contrib.layers package.
 
-        To load a saved model, add the following to the keras.models.load_model() call:
-          - custom_objects={'SineReLU': SineReLU}
-
         To see full source-code of this architecture and other examples,
         please follow this link: https://github.com/ekholabs/DLinK
 
@@ -383,3 +380,5 @@ class SineReLU(Layer):
 
     def compute_output_shape(self, input_shape):
         return input_shape
+
+get_custom_objects().update({'SineReLU': SineReLU})
