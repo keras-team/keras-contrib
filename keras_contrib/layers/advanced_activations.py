@@ -1,3 +1,4 @@
+import numpy as np
 from .. import initializers
 from .. import regularizers
 from .. import constraints
