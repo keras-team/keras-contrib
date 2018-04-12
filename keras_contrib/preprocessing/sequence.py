@@ -23,16 +23,17 @@ class TimeseriesGenerator(Sequence):
     # Arguments
         data: Indexable generator (such as list or Numpy array)
             containing consecutive data points (timesteps).
-            The data should be at least 2D, and axis 0 is expected
-            to be the time dimension.
+            The data should be convertible into a 1D numpy array,
+            if 2D or more, axis 0 is expected to be the time dimension.
         targets: Targets corresponding to timesteps in `data`.
             It should have at least the same length as `data`.
-        length: Length of the `x` output history sequences (in number of timesteps).
+        length: Efective length of the outputsub-sequences (in number of timesteps).
         sampling_rate: Period between successive individual timesteps
-            within sequences. For rate `r`, timesteps
-            `data[i - length*r]`, ..., `data[i-2*r]`, `data[i-r]`
-            are used for create a sample sequence.
-        gap: prediction gap (usually same as samplig_rate)
+            within sequences.
+        gap: prediction gap, i.e. numer of timesteps ahead (usually same as samplig_rate)            
+            For sampling rate `r`, timesteps
+            `data[i - (length-1)*r - gap]`, ..., `data[i-r-gap]`, `data[i-gap]` -> targets[i]
+            are used for create a sample sequence and target value.
         stride: Period between successive output sequences.
             For stride `s`, consecutive output samples would
             be centered around `data[i]`, `data[i+s]`, `data[i+2*s]`, etc.
@@ -53,7 +54,8 @@ class TimeseriesGenerator(Sequence):
         A [Sequence](/utils/#sequence) instance of tuples (x,y)
         where x is a numpy array of shape (batch_size, length, ...)
         and y is a numpy array of shape (batch_size, ...) if target_seq is `False`
-        or (batch_size, length, ...) if target_seq is `True`
+        or (batch_size, length, ...) if target_seq is `True`.
+        If not specified, output dtype is infered from data dtype.
         
     # Examples
     ```python
