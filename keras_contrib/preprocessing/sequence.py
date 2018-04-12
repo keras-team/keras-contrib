@@ -65,8 +65,6 @@ class TimeseriesGenerator(Sequence):
     data = np.array([[i] for i in range(50)])
     targets = np.array([[i] for i in range(50)])
     
-    
-    print "** test 1"
     data_gen = TimeseriesGenerator(data, targets,
                                    length=5, sampling_rate=2,
                                    batch_size=2, shuffle=False)
@@ -82,29 +80,6 @@ class TimeseriesGenerator(Sequence):
                                    [[39], [41], [43], [45], [47]]]))
     assert np.array_equal(y, np.array([[48], [49]]))
 
-    print "** test 2"
-    data_gen = TimeseriesGenerator(data, targets, length=10, batch_size=4)
-    assert len(data_gen) == 10
-    x, y = data_gen[0]
-    assert np.array_equal(x[1], np.array([[1], [2], [3], [4], [5], [6], [7], [8], [9], [10]]))
-    assert np.array_equal(y, np.array([[10], [11], [12], [13]]))
-
-    data_gen = TimeseriesGenerator(data, targets, length=10, reverse=True, batch_size=2)
-    x, y = data_gen[0]
-    assert np.array_equal(x[1,0], np.array([10]))
-
-    print "** test 3"
-    data_gen = TimeseriesGenerator(data, targets, length=10, sampling_rate=3, batch_size=2)
-
-    assert len(data_gen) == 10
-
-    print "** test 4 (stateful)"
-    data_gen = TimeseriesGenerator(data, targets, length=10, sampling_rate=2, batch_size=12, stateful=True)
-
-    assert data_gen.stride == 2
-    assert data_gen.batch_size == 10
-
-    print "** test 5 (text sequences seq2one)"
     txt = bytearray("Keras is simple.")
     data_gen = TimeseriesGenerator(txt, txt, length=10, batch_size=1)
 
@@ -115,7 +90,6 @@ class TimeseriesGenerator(Sequence):
     assert data_gen[-1][0].tostring() == u" is simple"
     assert data_gen[-1][1].tostring() == u"."
 
-    print "** test 6 (text sequences seq2seq)"
     data_gen = TimeseriesGenerator(txt, txt, length=10, target_seq=True)
 
     assert data_gen[-1][0].shape == (1, 10) and data_gen[-1][1].shape==(1,10,1)

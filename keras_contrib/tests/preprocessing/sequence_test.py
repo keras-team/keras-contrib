@@ -4,9 +4,7 @@ import pytest
 from keras_contrib.preprocessing.sequence import TimeseriesGenerator
 
 
-
 def test_TimeseriesGenerator():
-
 
     print "** test 0 (float types)"
 
@@ -19,51 +17,51 @@ def test_TimeseriesGenerator():
     x, y = data_gen[0]
 
     assert np.allclose(x, np.array([[[0], [2], [4], [6], [8]],
-                                   [[1], [3], [5], [7], [9]]]))
+                                    [[1], [3], [5], [7], [9]]]))
     assert np.allclose(y, np.array([[10], [11]]))
-   
 
     print "** test 1 (auto types)"
 
     data = np.array([[i] for i in range(50)], dtype=np.float)
     targets = np.array([[i] for i in range(50)], dtype=np.float)
 
-    
     data_gen = TimeseriesGenerator(data, targets,
                                    length=5, sampling_rate=2,
                                    batch_size=2, shuffle=False)
     x, y = data_gen[0]
     assert len(data_gen) == 20
     assert np.array_equal(x, np.array([[[0], [2], [4], [6], [8]],
-                                   [[1], [3], [5], [7], [9]]]))
+                                       [[1], [3], [5], [7], [9]]]))
     assert np.array_equal(y, np.array([[10], [11]]))
 
     x, y = data_gen[-1]
 
-
     assert np.array_equal(x, np.array([[[38], [40], [42], [44], [46]],
-                                   [[39], [41], [43], [45], [47]]]))
+                                       [[39], [41], [43], [45], [47]]]))
     assert np.array_equal(y, np.array([[48], [49]]))
 
     print "** test 2 (batch_size=4)"
     data_gen = TimeseriesGenerator(data, targets, length=10, batch_size=4)
     assert len(data_gen) == 10
     x, y = data_gen[0]
-    assert np.array_equal(x[1], np.array([[1], [2], [3], [4], [5], [6], [7], [8], [9], [10]]))
+    assert np.array_equal(x[1], np.array(
+        [[1], [2], [3], [4], [5], [6], [7], [8], [9], [10]]))
     assert np.array_equal(y, np.array([[10], [11], [12], [13]]))
 
-    
-    data_gen = TimeseriesGenerator(data, targets, length=10, reverse=True, batch_size=2)
+    data_gen = TimeseriesGenerator(
+        data, targets, length=10, reverse=True, batch_size=2)
     x, y = data_gen[0]
-    assert np.array_equal(x[1,0], np.array([10]))
+    assert np.array_equal(x[1, 0], np.array([10]))
 
     print "** test 3 (when sampling_rate is not a multiple of length)"
-    data_gen = TimeseriesGenerator(data, targets, length=10, sampling_rate=3, batch_size=2)
+    data_gen = TimeseriesGenerator(
+        data, targets, length=10, sampling_rate=3, batch_size=2)
 
     assert len(data_gen) == 10
 
     print "** test 4 (stateful)"
-    data_gen = TimeseriesGenerator(data, targets, length=10, sampling_rate=2, batch_size=12, stateful=True)
+    data_gen = TimeseriesGenerator(
+        data, targets, length=10, sampling_rate=2, batch_size=12, stateful=True)
 
     assert data_gen.stride == 2
     assert data_gen.batch_size == 10
@@ -72,24 +70,25 @@ def test_TimeseriesGenerator():
     txt = bytearray("Keras is simple.")
     data_gen = TimeseriesGenerator(txt, txt, length=10, batch_size=1)
 
-    #for i in range(len(data_gen)):
+    # for i in range(len(data_gen)):
     #    print data_gen[i][0].tostring(), " -> '%s'" % data_gen[i][1].tostring()
 
-    assert data_gen[-1][0].shape == (1, 10) and data_gen[-1][1].shape==(1,)
+    assert data_gen[-1][0].shape == (1, 10) and data_gen[-1][1].shape == (1,)
     assert data_gen[-1][0].tostring() == u" is simple"
     assert data_gen[-1][1].tostring() == u"."
 
     print "** test 6 (text sequences seq2seq)"
     data_gen = TimeseriesGenerator(txt, txt, length=10, target_seq=True)
 
-    assert data_gen[-1][0].shape == (1, 10) and data_gen[-1][1].shape==(1,10,1)
-    #for i in range(len(data_gen)):
+    assert data_gen[-1][0].shape == (1,
+                                     10) and data_gen[-1][1].shape == (1, 10, 1)
+    # for i in range(len(data_gen)):
     #    print data_gen[i][0].tostring(), " -> '%s'" % data_gen[i][1].tostring()
 
     assert data_gen[0][1].tostring() == u"eras is si"
 
     print "** previous tests"
-    
+
     data_gen = TimeseriesGenerator(data, targets,
                                    length=5, sampling_rate=2, reverse=True,
                                    batch_size=2)
