@@ -31,9 +31,8 @@ class TimeseriesGenerator(Sequence):
         sampling_rate: Period between successive individual timesteps
             within sequences.
         gap: prediction gap, i.e. numer of timesteps ahead (usually same as samplig_rate)            
-            For sampling rate `r`, timesteps
-            `data[i - (length-1)*r - gap]`, ..., `data[i-r-gap]`, `data[i-gap]` -> targets[i]
-            are used for create a sample sequence and target value.
+            `x=data[i - (length-1)*sampling_rate - gap:i-gap+1:sampling_rate]` and `y=targets[i]`
+            are used respectively as sample sequence `x` and target value `y`.
         stride: Period between successive output sequences.
             For stride `s`, consecutive output samples would
             be centered around `data[i]`, `data[i+s]`, `data[i+2*s]`, etc.
@@ -44,7 +43,13 @@ class TimeseriesGenerator(Sequence):
             or instead draw them in chronological order.
         reverse: Boolean: if `True`, timesteps in each output sample will be
             in reverse chronological order.
-        target_seq: Boolean: if 'True', produces full shifted sequences targets
+        target_seq: Boolean: if 'True', produces full shifted sequences targets:
+            If target_seq is set, for sampling rate `r`, timesteps
+            `data[i - (length-1)*r - gap]`, ..., `data[i-r-gap]`, `data[i-gap]` and
+            `targets[i - (length-1)*r]`, ..., `data[i-r]`, `data[i]`
+            are used respectively as sample sequence and target sequence.
+
+        
         batch_size: Number of timeseries samples in each batch
         dtype: force sample/target dtype (default is None)
         stateful: helper to set parameters for stateful learning
