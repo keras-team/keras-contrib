@@ -45,7 +45,7 @@ class TimeseriesGenerator(Sequence):
             If target_seq is set, for sampling rate `r`, timesteps
             `data[i - (length-1)*r - gap]`, ..., `data[i-r-gap]`, `data[i-gap]` and
             `targets[i - (length-1)*r]`, ..., `data[i-r]`, `data[i]`
-            are used respectively as sample sequence and target sequence.
+            are used respectively as sample sequence `x` and target sequence `y`.
 
         batch_size: Number of timeseries samples in each batch
         dtype: force sample/target dtype (default is None)
