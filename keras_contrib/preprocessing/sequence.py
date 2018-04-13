@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
 """Utilities for preprocessing sequence data.
 """
-from __future__ import absolute_import
-from __future__ import division
 from __future__ import print_function
+from __future__ import unicode_literals
+from __future__ import division
+from __future__ import absolute_import
 
 import numpy as np
 import random
@@ -49,22 +50,22 @@ class TimeseriesGenerator(Sequence):
         batch_size: Number of timeseries samples in each batch
         dtype: force sample/target dtype (default is None)
         stateful: helper to set parameters for stateful learning
-             
-        
+
+
     # Returns
         A [Sequence](/utils/#sequence) instance of tuples (x,y)
         where x is a numpy array of shape (batch_size, length, ...)
         and y is a numpy array of shape (batch_size, ...) if target_seq is `False`
         or (batch_size, length, ...) if target_seq is `True`.
         If not specified, output dtype is infered from data dtype.
-        
+
     # Examples
     ```python
     from keras.preprocessing.sequence import TimeseriesGenerator
     import numpy as np
     data = np.array([[i] for i in range(50)])
     targets = np.array([[i] for i in range(50)])
-    
+
     data_gen = TimeseriesGenerator(data, targets,
                                    length=5, sampling_rate=2,
                                    batch_size=2, shuffle=False)
@@ -80,11 +81,11 @@ class TimeseriesGenerator(Sequence):
                                    [[39], [41], [43], [45], [47]]]))
     assert np.array_equal(y, np.array([[48], [49]]))
 
-    txt = bytearray("Keras is simple.")
+    txt = bytearray("Keras is simple.", 'utf-8')
     data_gen = TimeseriesGenerator(txt, txt, length=10, batch_size=1)
 
     for i in range(len(data_gen)):
-        print data_gen[i][0].tostring(), " -> '%s'" % data_gen[i][1].tostring()
+        print(data_gen[i][0].tostring(), "->'%s'" % data_gen[i][1].tostring())
 
     assert data_gen[-1][0].shape == (1, 10) and data_gen[-1][1].shape==(1,)
     assert data_gen[-1][0].tostring() == u" is simple"
@@ -94,10 +95,10 @@ class TimeseriesGenerator(Sequence):
 
     assert data_gen[-1][0].shape == (1, 10) and data_gen[-1][1].shape==(1,10,1)
     for i in range(len(data_gen)):
-        print data_gen[i][0].tostring(), " -> '%s'" % data_gen[i][1].tostring()
+        print(data_gen[i][0].tostring(), "->'%s'" % data_gen[i][1].tostring())
 
     assert data_gen[0][1].tostring() == u"eras is si"
-    
+
 
     ```
     """
@@ -114,15 +115,15 @@ class TimeseriesGenerator(Sequence):
                  batch_size=1,
                  dtype=None,
                  stateful=False):
-        
+
         assert length > 0
         assert sampling_rate > 0
         assert batch_size > 0
         assert len(data) <= len(targets)
-        
+
         self.data = np.asarray(data)
         self.targets = np.asarray(targets)
-        
+
         # FIXME: seems required by sparse losses on integer seq output
         if target_seq and len(self.targets.shape) < 2:
             self.targets = np.expand_dims(targets, axis=-1)
@@ -151,7 +152,7 @@ class TimeseriesGenerator(Sequence):
         if gap is None:
             gap = sampling_rate
         self.gap = gap
-        
+
         self.win_size = (length - 1) * sampling_rate + gap
         self.start_index = start_index + self.win_size
         if end_index is None:
@@ -164,7 +165,8 @@ class TimeseriesGenerator(Sequence):
         assert self.start_index < self.end_index
         assert self.batch_size * self.stride > 0
         assert self.batch_size * self.stride < self.end_index - self.start_index
-        self.len = (self.end_index - self.start_index) // (self.batch_size * self.stride)
+        self.len = (self.end_index -
+                    self.start_index) // (self.batch_size * self.stride)
         assert self.len > 0
 
         self.perm = np.arange(self.start_index, self.end_index)
@@ -182,7 +184,7 @@ class TimeseriesGenerator(Sequence):
         else:
             targets_shape = [num_rows]
         targets_shape.extend(self.targets.shape[1:])
-        
+
         return np.empty(samples_shape, dtype=self.data_type), np.empty(targets_shape, dtype=self.targets_type)
 
     def __getitem__(self, index):
