@@ -25,7 +25,7 @@ class TimeseriesGenerator(Sequence):
             if 2D or more, axis 0 is expected to be the time dimension.
         targets: Targets corresponding to timesteps in `data`.
             It should have at least the same length as `data`.
-        length: Efective length of the outputsub-sequences (in number of timesteps).
+        length: Efective length of the output sub-sequences (in number of timesteps).
         sampling_rate: Period between successive individual timesteps
             within sequences.
         gap: prediction gap, i.e. numer of timesteps ahead (usually same as samplig_rate)
