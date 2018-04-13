@@ -153,11 +153,11 @@ class TimeseriesGenerator(Sequence):
             gap = sampling_rate
         self.gap = gap
 
-        self.win_size = (length - 1) * sampling_rate + gap
-        self.start_index = start_index + self.win_size
+        sliding_win_size = (length - 1) * sampling_rate + gap
+        self.start_index = start_index + sliding_win_size
         if end_index is None:
-            end_index = np.asarray(data).shape[0]
-        assert end_index <= np.asarray(data).shape[0]
+            end_index = len(data)
+        assert end_index <= len(data)
         self.end_index = end_index
         self.reverse = reverse
         self.target_seq = target_seq
