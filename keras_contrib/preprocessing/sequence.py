@@ -26,13 +26,9 @@ class TimeseriesGenerator(Sequence):
             if 2D or more, axis 0 is expected to be the time dimension.
         targets: Targets corresponding to timesteps in `data`.
             It should have at least the same length as `data`.
-        hlength: Effective "history" length of the output sub-sequences after sampling (in number of timesteps).
-        length: length of the output sub-sequence before sampling (for backward compatibility).
+        length: length of the output sub-sequence before sampling (use hlength instead).
         sampling_rate: Period between successive individual timesteps
-            within sequences.
-        gap: prediction gap, i.e. numer of timesteps ahead (usually same as samplig_rate)
-            `x=data[i - (length-1)*sampling_rate - gap:i-gap+1:sampling_rate]` and `y=targets[i]`
-            are used respectively as sample sequence `x` and target value `y`.
+            within sequences, `length` has to be a multiple of `sampling_rate`.
         stride: Period between successive output sequences.
             For stride `s`, consecutive output samples would
             be centered around `data[i]`, `data[i+s]`, `data[i+2*s]`, etc.
@@ -43,15 +39,18 @@ class TimeseriesGenerator(Sequence):
             or instead draw them in chronological order.
         reverse: Boolean: if `True`, timesteps in each output sample will be
             in reverse chronological order.
-        target_seq: Boolean: if 'True', produces full shifted sequences targets:
+        batch_size: Number of timeseries samples in each batch.
+        hlength: Effective "history" length of the output sub-sequences after sampling (in number of timesteps).
+        gap: prediction gap, i.e. numer of timesteps ahead (usually same as samplig_rate)
+            `x=data[i - (hlength-1)*sampling_rate - gap:i-gap+1:sampling_rate]` and `y=targets[i]`
+            are used respectively as sample sequence `x` and target value `y`.
+        target_seq: Boolean: if 'True', produces full shifted sequence targets:
             If target_seq is set, for sampling rate `r`, timesteps
-            `data[i - (length-1)*r - gap]`, ..., `data[i-r-gap]`, `data[i-gap]` and
-            `targets[i - (length-1)*r]`, ..., `data[i-r]`, `data[i]`
+            `data[i - (hlength-1)*r - gap]`, ..., `data[i-r-gap]`, `data[i-gap]` and
+            `targets[i - (hlength-1)*r]`, ..., `data[i-r]`, `data[i]`
             are used respectively as sample sequence `x` and target sequence `y`.
-
-        batch_size: Number of timeseries samples in each batch
         dtype: force sample/target dtype (default is None)
-        stateful: helper to set parameters for stateful learning
+        stateful: helper to set parameters for stateful learning (experimental).
 
 
     # Returns
@@ -106,20 +105,10 @@ class TimeseriesGenerator(Sequence):
     """
 
 
-def __init__(self, data, targets, length,
-             sampling_rate=1,
-             stride=1,
-             start_index=0,
-             end_index=None,
-             shuffle=False,
-             reverse=False,
-             batch_size=128):
-
     def __init__(self, data, targets, length=None,
                  sampling_rate=1,
                  stride=1,
-                 start_index=0,
-                 end_index=None,
+                 start_index=0, end_index=None,
                  shuffle=False,
                  reverse=False,
                  batch_size=32,
