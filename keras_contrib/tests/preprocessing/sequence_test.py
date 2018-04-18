@@ -16,7 +16,7 @@ def test_TimeseriesGenerator():
     targets = np.array([[float(i)] for i in range(50)])
 
     data_gen = TimeseriesGenerator(data, targets,
-                                   length=5, sampling_rate=2,
+                                   hlength=5, sampling_rate=2,
                                    batch_size=2, shuffle=False)
     x, y = data_gen[0]
 
@@ -30,7 +30,7 @@ def test_TimeseriesGenerator():
     targets = np.array([[i] for i in range(50)], dtype=np.float)
 
     data_gen = TimeseriesGenerator(data, targets,
-                                   length=5, sampling_rate=2,
+                                   hlength=5, sampling_rate=2,
                                    batch_size=2, shuffle=False)
     x, y = data_gen[0]
     assert len(data_gen) == 20
@@ -45,7 +45,7 @@ def test_TimeseriesGenerator():
     assert np.array_equal(y, np.array([[48], [49]]))
 
     print("** test 2 (batch_size=4)")
-    data_gen = TimeseriesGenerator(data, targets, length=10, batch_size=4)
+    data_gen = TimeseriesGenerator(data, targets, hlength=10, batch_size=4)
     assert len(data_gen) == 10
     x, y = data_gen[0]
     assert np.array_equal(x[1], np.array(
@@ -53,26 +53,26 @@ def test_TimeseriesGenerator():
     assert np.array_equal(y, np.array([[10], [11], [12], [13]]))
 
     data_gen = TimeseriesGenerator(
-        data, targets, length=10, reverse=True, batch_size=2)
+        data, targets, hlength=10, reverse=True, batch_size=2)
     x, y = data_gen[0]
     assert np.array_equal(x[1, 0], np.array([10]))
 
     print("** test 3 (when sampling_rate is not a multiple of length)")
     data_gen = TimeseriesGenerator(
-        data, targets, length=10, sampling_rate=3, batch_size=2)
+        data, targets, hlength=10, sampling_rate=3, batch_size=2)
 
     assert len(data_gen) == 10
 
     print("** test 4 (stateful)")
     data_gen = TimeseriesGenerator(
-        data, targets, length=10, sampling_rate=2, batch_size=12, stateful=True)
+        data, targets, hlength=10, sampling_rate=2, batch_size=12, stateful=True)
 
     assert data_gen.stride == 2
     assert data_gen.batch_size == 10
 
     print("** test 5 (text sequences seq2one)")
     txt = bytearray("Keras is simple.", 'utf-8')
-    data_gen = TimeseriesGenerator(txt, txt, length=10, batch_size=1)
+    data_gen = TimeseriesGenerator(txt, txt, hlength=10, batch_size=1)
 
     # for i in range(len(data_gen)):
     #    print(data_gen[i][0].tostring(), "->'%s'" % data_gen[i][1].tostring())
@@ -82,7 +82,7 @@ def test_TimeseriesGenerator():
     assert data_gen[-1][1].tostring() == u"."
 
     print("** test 6 (text sequences seq2seq)")
-    data_gen = TimeseriesGenerator(txt, txt, length=10, target_seq=True)
+    data_gen = TimeseriesGenerator(txt, txt, hlength=10, target_seq=True)
 
     assert data_gen[-1][0].shape == (1,
                                      10) and data_gen[-1][1].shape == (1, 10, 1)
@@ -91,10 +91,10 @@ def test_TimeseriesGenerator():
 
     assert data_gen[0][1].tostring() == u"eras is si"
 
-    print("** previous tests (modified for new length semantic)")
+    print("** previous tests")
 
     data_gen = TimeseriesGenerator(data, targets,
-                                   length=5, sampling_rate=2, reverse=True,
+                                   length=10, sampling_rate=2, reverse=True,
                                    batch_size=2)
     assert len(data_gen) == 20
     assert (np.allclose(data_gen[0][0],
@@ -104,7 +104,7 @@ def test_TimeseriesGenerator():
                         np.array([[10], [11]])))
 
     data_gen = TimeseriesGenerator(data, targets,
-                                   length=5, sampling_rate=2, shuffle=True,
+                                   length=10, sampling_rate=2, shuffle=True,
                                    batch_size=1)
     batch = data_gen[0]
     r = batch[1][0][0]
@@ -117,7 +117,7 @@ def test_TimeseriesGenerator():
     assert (np.allclose(batch[1], np.array([[r], ])))
 
     data_gen = TimeseriesGenerator(data, targets,
-                                   length=5, sampling_rate=2, stride=2,
+                                   length=10, sampling_rate=2, stride=2,
                                    batch_size=2)
     assert len(data_gen) == 10
     assert (np.allclose(data_gen[1][0],
@@ -127,7 +127,7 @@ def test_TimeseriesGenerator():
                         np.array([[14], [16]])))
 
     data_gen = TimeseriesGenerator(data, targets,
-                                   length=5, sampling_rate=2,
+                                   length=10, sampling_rate=2,
                                    start_index=10, end_index=30,
                                    batch_size=2)
     assert len(data_gen) == 5
@@ -140,7 +140,7 @@ def test_TimeseriesGenerator():
     data = np.array([np.random.random_sample((1, 2, 3, 4)) for i in range(50)])
     targets = np.array([np.random.random_sample((3, 2, 1)) for i in range(50)])
     data_gen = TimeseriesGenerator(data, targets,
-                                   length=5, sampling_rate=2,
+                                   length=10, sampling_rate=2,
                                    start_index=10, end_index=30,
                                    batch_size=2)
 

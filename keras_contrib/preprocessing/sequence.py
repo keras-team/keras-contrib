@@ -10,6 +10,7 @@ import numpy as np
 import random
 from six.moves import range
 from keras.utils.data_utils import Sequence
+import warning
 
 
 class TimeseriesGenerator(Sequence):
@@ -25,7 +26,8 @@ class TimeseriesGenerator(Sequence):
             if 2D or more, axis 0 is expected to be the time dimension.
         targets: Targets corresponding to timesteps in `data`.
             It should have at least the same length as `data`.
-        length: Efective length of the output sub-sequences (in number of timesteps).
+        hlength: Effective "history" length of the output sub-sequences after sampling (in number of timesteps).
+        length: length of the output sub-sequence before sampling (for backward compatibility).
         sampling_rate: Period between successive individual timesteps
             within sequences.
         gap: prediction gap, i.e. numer of timesteps ahead (usually same as samplig_rate)
@@ -103,30 +105,53 @@ class TimeseriesGenerator(Sequence):
     ```
     """
 
-    def __init__(self, data, targets, length,
+
+def __init__(self, data, targets, length,
+             sampling_rate=1,
+             stride=1,
+             start_index=0,
+             end_index=None,
+             shuffle=False,
+             reverse=False,
+             batch_size=128):
+
+    def __init__(self, data, targets, length=None,
                  sampling_rate=1,
                  stride=1,
-                 gap=None,
                  start_index=0,
                  end_index=None,
                  shuffle=False,
                  reverse=False,
+                 batch_size=32,
+                 hlength=None,
                  target_seq=False,
-                 batch_size=1,
+                 gap=None,
                  dtype=None,
                  stateful=False):
 
-        assert length > 0
+        # Sanity check
         assert sampling_rate > 0
         assert batch_size > 0
         assert len(data) <= len(targets)
 
+        if hlength is None:
+            warning.warn(
+                '`length` parameter is depreciated, use `hlength` instead.', DeprecationWarning)
+            if length % sampling_rate is not 0:
+                raise RuntimeError(
+                    'length must be a multiple of sampling_rate')
+            hlength = length // sampling_rate
+
+        self.hlength = hlength
+        assert self.hlength > 0
+
         self.data = np.asarray(data)
         self.targets = np.asarray(targets)
 
-        # FIXME: seems required by sparse losses on integer seq output
+        # FIXME: targets must be 2D, seems required by sparse losses on integer seq output
         if target_seq and len(self.targets.shape) < 2:
-            self.targets = np.expand_dims(targets, axis=-1)
+            self.targets = np.expand_dims(self.targets, axis=-1)
+
         if dtype is None:
             self.data_type = self.data.dtype
             self.targets_type = self.targets.dtype
@@ -139,12 +164,11 @@ class TimeseriesGenerator(Sequence):
             shuffle = False
             gap = sampling_rate
             b = batch_size
-            while length % b > 0:
+            while self.hlength % b > 0:
                 b -= 1
             batch_size = b
-            stride = (length // batch_size) * sampling_rate
+            stride = (self.hlength // batch_size) * sampling_rate
 
-        self.length = length
         self.sampling_rate = sampling_rate
         self.batch_size = batch_size
         assert stride > 0
@@ -153,7 +177,7 @@ class TimeseriesGenerator(Sequence):
             gap = sampling_rate
         self.gap = gap
 
-        sliding_win_size = (length - 1) * sampling_rate + gap
+        sliding_win_size = (self.hlength - 1) * sampling_rate + gap
         self.start_index = start_index + sliding_win_size
         if end_index is None:
             end_index = len(data)
@@ -177,10 +201,10 @@ class TimeseriesGenerator(Sequence):
         return self.len
 
     def _empty_batch(self, num_rows):
-        samples_shape = [num_rows, self.length]
+        samples_shape = [num_rows, self.hlength]
         samples_shape.extend(self.data.shape[1:])
         if self.target_seq:
-            targets_shape = [num_rows, self.length]
+            targets_shape = [num_rows, self.hlength]
         else:
             targets_shape = [num_rows]
         targets_shape.extend(self.targets.shape[1:])
@@ -198,7 +222,7 @@ class TimeseriesGenerator(Sequence):
 
         samples, targets = self._empty_batch(len(rows))
         for j, row in enumerate(rows):
-            indices = range(rows[j] - self.gap - (self.length - 1) * self.sampling_rate,
+            indices = range(rows[j] - self.gap - (self.hlength - 1) * self.sampling_rate,
                             rows[j] - self.gap + 1, self.sampling_rate)
             samples[j] = self.data[indices]
             if self.target_seq:
