@@ -104,7 +104,6 @@ class TimeseriesGenerator(Sequence):
     ```
     """
 
-
     def __init__(self, data, targets, length=None,
                  sampling_rate=1,
                  stride=1,
