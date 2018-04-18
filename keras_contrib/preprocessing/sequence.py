@@ -55,9 +55,9 @@ class TimeseriesGenerator(Sequence):
 
     # Returns
         A [Sequence](/utils/#sequence) instance of tuples (x,y)
-        where x is a numpy array of shape (batch_size, length, ...)
+        where x is a numpy array of shape (batch_size, hlength, ...)
         and y is a numpy array of shape (batch_size, ...) if target_seq is `False`
-        or (batch_size, length, ...) if target_seq is `True`.
+        or (batch_size, hlength, ...) if target_seq is `True`.
         If not specified, output dtype is infered from data dtype.
 
     # Examples
