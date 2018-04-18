@@ -57,11 +57,13 @@ def test_TimeseriesGenerator():
     x, y = data_gen[0]
     assert np.array_equal(x[1, 0], np.array([10]))
 
-    print("** test 3 (when sampling_rate is not a multiple of length)")
+    print("** test 3 (when sampling_rate is not a multiple of hlength)")
     data_gen = TimeseriesGenerator(
         data, targets, hlength=10, sampling_rate=3, batch_size=2)
 
     assert len(data_gen) == 10
+
+      
 
     print("** test 4 (stateful)")
     data_gen = TimeseriesGenerator(
@@ -82,7 +84,7 @@ def test_TimeseriesGenerator():
     assert data_gen[-1][1].tostring() == u"."
 
     print("** test 6 (text sequences seq2seq)")
-    data_gen = TimeseriesGenerator(txt, txt, hlength=10, target_seq=True)
+    data_gen = TimeseriesGenerator(txt, txt, hlength=10, target_seq=True, batch_size=1)
 
     assert data_gen[-1][0].shape == (1,
                                      10) and data_gen[-1][1].shape == (1, 10, 1)
@@ -151,5 +153,21 @@ def test_TimeseriesGenerator():
                         np.array([targets[20], targets[21]])))
 
 
+
+@pytest.mark.xfail(strict=True)
+def test_TimeseriesGenerator_fail():
+
+    data = np.array([[i] for i in range(50)], dtype=np.float)
+    targets = np.array([[float(i)] for i in range(50)])
+
+    print("** test 3 bis (when sampling_rate is not a multiple of length)")
+    data_gen = TimeseriesGenerator(
+        data, targets, length=10, sampling_rate=3, batch_size=2)
+    
+    print(data_gen[0])
+    
+
+
 if __name__ == '__main__':
     test_TimeseriesGenerator()
+    test_TimeseriesGenerator_fail()

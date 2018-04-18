@@ -10,7 +10,7 @@ import numpy as np
 import random
 from six.moves import range
 from keras.utils.data_utils import Sequence
-import warning
+import warnings
 
 
 class TimeseriesGenerator(Sequence):
@@ -124,7 +124,7 @@ class TimeseriesGenerator(Sequence):
         assert len(data) <= len(targets)
 
         if hlength is None:
-            warning.warn(
+            warnings.warn(
                 '`length` parameter is depreciated, use `hlength` instead.', DeprecationWarning)
             if length % sampling_rate is not 0:
                 raise RuntimeError(
@@ -215,7 +215,7 @@ class TimeseriesGenerator(Sequence):
                             rows[j] - self.gap + 1, self.sampling_rate)
             samples[j] = self.data[indices]
             if self.target_seq:
-                shifted_indices = range(rows[j] - (self.length - 1) * self.sampling_rate,
+                shifted_indices = range(rows[j] - (self.hlength - 1) * self.sampling_rate,
                                         rows[j] + 1, self.sampling_rate)
                 targets[j] = self.targets[shifted_indices]
             else:
