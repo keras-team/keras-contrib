@@ -48,7 +48,7 @@ class SeparableFC(Layer):
     def build(self, input_shape):
         import numpy as np
         self.original_length = input_shape[1]
-        if self.symmetric if False:
+        if self.symmetric is False:
             self.length = input_shape[1]
         else:
             self.odd_input_length = input_shape[1] % 2.0 == 1
