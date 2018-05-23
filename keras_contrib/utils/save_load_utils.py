@@ -3,7 +3,7 @@ import warnings
 import h5py
 import keras.backend as K
 from keras import optimizers
-from keras.engine import topology
+from keras.engine import saving
 from keras.legacy import models as legacy_models
 
 
@@ -32,7 +32,7 @@ def save_all_weights(model, filepath, include_optimizer=True):
             model_layers = legacy_models.legacy_sequential_layers(model)
         else:
             model_layers = model.layers
-        topology.save_weights_to_hdf5_group(model_weights_group, model_layers)
+        saving.save_weights_to_hdf5_group(model_weights_group, model_layers)
 
         if include_optimizer and hasattr(model, 'optimizer') and model.optimizer:
             if isinstance(model.optimizer, optimizers.TFOptimizer):
@@ -97,7 +97,7 @@ def load_all_weights(model, filepath, include_optimizer=True):
 
     with h5py.File(filepath, mode='r') as f:
         # set weights
-        topology.load_weights_from_hdf5_group(f['model_weights'], model.layers)
+        saving.load_weights_from_hdf5_group(f['model_weights'], model.layers)
         # Set optimizer weights.
         if include_optimizer and 'optimizer_weights' in f and hasattr(model, 'optimizer') and model.optimizer:
             optimizer_weights_group = f['optimizer_weights']
