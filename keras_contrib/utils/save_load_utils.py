@@ -28,10 +28,7 @@ def save_all_weights(model, filepath, include_optimizer=True):
 
     with h5py.File(filepath, 'w') as f:
         model_weights_group = f.create_group('model_weights')
-        if legacy_models.needs_legacy_support(model):
-            model_layers = legacy_models.legacy_sequential_layers(model)
-        else:
-            model_layers = model.layers
+        model_layers = model.layers
         saving.save_weights_to_hdf5_group(model_weights_group, model_layers)
 
         if include_optimizer and hasattr(model, 'optimizer') and model.optimizer:
