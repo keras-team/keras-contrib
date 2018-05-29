@@ -4,7 +4,6 @@ import h5py
 import keras.backend as K
 from keras import optimizers
 from keras.engine import saving
-from keras.legacy import models as legacy_models
 
 
 def save_all_weights(model, filepath, include_optimizer=True):
