@@ -201,7 +201,7 @@ def test_DeadDeadReluDetector_activation():
         np.array([[1]]),
         epochs=1,
         validation_data=(np.array([[1]]), np.array([[1]])),
-        callbacks=[DeadReluDetector(np.array([[1]]))]
+        callbacks=[callbacks.DeadReluDetector(np.array([[1]]))]
     )
 
 
