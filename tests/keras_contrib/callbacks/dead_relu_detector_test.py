@@ -8,8 +8,8 @@ else:
     from StringIO import StringIO
 
 from keras_contrib import callbacks
-from keras.models import Sequential
-from keras.layers import Dense, Conv2D, Flatten
+from keras.models import Sequential, Model
+from keras.layers import Input, Dense, Conv2D, Flatten, Activation
 from keras import backend as K
 
 n_out = 11  # with 1 neuron dead, 1/11 is just below the threshold of 10% with verbose = False
@@ -186,6 +186,23 @@ def test_DeadDeadReluDetector_conv():
     do_test(weights_bias_1_dead, verbose=False, expected_warnings=0)
     do_test(weights_bias_2_dead, verbose=True, expected_warnings=1, nr_dead=2, perc_dead=2. / n_out)
     # do_test(weights_bias_all_dead, verbose=True, expected_warnings=1, nr_dead=n_out, perc_dead=1.)
+
+
+def test_DeadDeadReluDetector_activation():
+    """
+    Tests that using "Activation" layer does not throw error
+    """
+    input_data = Input(shape=(1,))
+    output_data = Activation('relu')(input_data)
+    model = Model(input_data, output_data)
+    model.compile(optimizer='adadelta', loss='binary_crossentropy')
+    model.fit(
+        np.array([[1]]),
+        np.array([[1]]),
+        epochs=1,
+        validation_data=(np.array([[1]]), np.array([[1]])),
+        callbacks=[DeadReluDetector(np.array([[1]]))]
+    )
 
 
 if __name__ == '__main__':
