@@ -291,8 +291,8 @@ class SineReLU(Layer):
 
     It allows an oscilation in the gradients when the weights are negative.
     The oscilation can be controlled with a parameter, which makes it be close
-    or equal to zero. So, not all neurons are deactivated and it allows differentiability
-    in more parts of the function.
+    or equal to zero. The functional is diferentiable at any point due to its derivative.
+    For instance, at 0, the derivative of 'sin(0) - cos(0)' is 'cos(0) + sin(0)' which is 1.
 
     # Input shape
         Arbitrary. Use the keyword argument `input_shape`
@@ -303,9 +303,9 @@ class SineReLU(Layer):
         Same shape as the input.
 
     # Arguments
-        epsilon: float. Hyper-parameter used to control oscilations when weights are negative.
-                 The default value, 0.0055, work better for Deep Neural Networks. When using CNNs,
-                 try something around 0.0025.
+        epsilon: float. Hyper-parameter used to control the amplitude of the sinusoidal wave when weights are negative.
+                 The default value, 0.0025, since it works better for CNN layers and those are the most used layers nowadays.
+                 When using Dense Networks, try something around 0.0055.
 
     # References:
         - SineReLU: An Alternative to the ReLU Activation Function. This function was
@@ -314,12 +314,12 @@ class SineReLU(Layer):
         on the MNIST, Kaggle Toxicity and IMDB datasets.
         - Performance:
             - MNIST
-              * Neural Net with 3 Dense layers, Dropout, Adam Optimiser, 50 Epochs
-                - SineReLU: epsilon=0.0083; Final loss: 0.0765; final accuracy: 0.9833; STD loss: 0.05375531819714868
-                - ReLU: Final loss: 0.0823, final accuracy: 0.9829; STD loss: 0.05736969016884351
+              * Neural Net with 3 Dense layers, Dropout, Adam Optimiser, 40 Epochs
+                - SineReLU: epsilon=0.0055; Final loss: 0.0593; final accuracy: 0.9859; STD loss: 0.06083421864087177
+                - ReLU: Final loss: 0.0623, final accuracy: 0.9851; STD loss: 0.060961214946358235
               * CNN with 5 Conv layers, Dropout, Adam Optimiser, 50 Epochs
-                - SineReLU: CNN epsilon=0.0045; Dense epsilon=0.0083; Final loss: 0.0197, final accuracy: 0.9950; STD loss: 0.03690133793565328
-                - ReLU: Final loss: 0.0203, final accuracy: 0.9939; STD loss: 0.04592196838390996
+                - SineReLU: CNN epsilon=0.0025; Dense epsilon=0.025; Final loss: 0.0165, final accuracy: 0.9955; STD loss: 0.031123579642053544
+                - ReLU: Final loss: 0.0198, final accuracy: 0.9953; STD loss: 0.0513015402055947
             - IMDB
               * Neural Net with Embedding layer, 2 Dense layers, Dropout, Adam Optimiser, 5 epochs
                 - SineReLU: epsilon=0.0075; Final loss: 0.3268, final accuracy: 0.8590; ROC (AUC): 93.54; STD loss: 0.1763376755356713
@@ -345,32 +345,28 @@ class SineReLU(Layer):
         ```python
             model = Sequential()
             model.add(Dense(128, input_shape = (784,)))
-            model.add(SineReLU(epsilon=0.0083))
+            model.add(SineReLU())
             model.add(Dropout(0.2))
 
             model.add(Dense(256))
-            model.add(SineReLU(epsilon=0.0083))
+            model.add(SineReLU())
             model.add(Dropout(0.3))
 
             model.add(Dense(1024))
-            model.add(SineReLU(epsilon=0.0083))
+            model.add(SineReLU())
             model.add(Dropout(0.5))
 
             model.add(Dense(10, activation = 'softmax'))
         ```
     """
 
-    def __init__(self, epsilon=0.0055, **kwargs):
+    def __init__(self, epsilon=0.0025, **kwargs):
         super(SineReLU, self).__init__(**kwargs)
         self.supports_masking = True
         self.epsilon = K.cast_to_floatx(epsilon)
 
-    def build(self, input_shape):
-        self.scale = np.exp(np.sqrt(np.pi))
-        super(SineReLU, self).build(input_shape)
-
     def call(self, Z):
-        m = self.epsilon * (K.sigmoid(K.sin(Z)) - K.sigmoid(K.cos(Z)) * self.scale)
+        m = self.epsilon * (K.sin(Z) - K.cos(Z))
         A = K.maximum(m, Z)
         return A
 
