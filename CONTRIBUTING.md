@@ -4,7 +4,7 @@ Found a bug? Want to contribute changes to the codebase? Make sure to read this 
 
 ## Update Your Environment
 
-To easily update Keras: `pip install git+https://www.github.com/fchollet/keras.git --upgrade`
+To easily update Keras: `pip install git+https://www.github.com/keras-team/keras.git --upgrade`
 
 To easily update Keras-Contrib: `pip install git+https://www.github.com/keras-team/keras-contrib.git --upgrade`
 
