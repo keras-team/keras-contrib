@@ -6,6 +6,8 @@ from .. import activations
 from .. import initializers
 from .. import regularizers
 from .. import constraints
+from ..losses import crf_loss
+from ..metrics import crf_accuracy, crf_marginal_accuracy, crf_viterbi_accuracy
 from keras.engine import Layer
 from keras.engine import InputSpec
 from keras.objectives import categorical_crossentropy
@@ -211,7 +213,7 @@ class CRF(Layer):
                                         regularizer=self.bias_regularizer,
                                         constraint=self.bias_constraint)
         else:
-            self.bias = None
+            self.bias = 0
 
         if self.use_boundary:
             self.left_boundary = self.add_weight((self.units,),
@@ -282,63 +284,19 @@ class CRF(Layer):
 
     @property
     def loss_function(self):
-        if self.learn_mode == 'join':
-            def loss(y_true, y_pred):
-                assert self._inbound_nodes, 'CRF has not connected to any layer.'
-                assert not self._outbound_nodes, 'When learn_model="join", CRF must be the last layer.'
-                if self.sparse_target:
-                    y_true = K.one_hot(K.cast(y_true[:, :, 0], 'int32'), self.units)
-                X = self._inbound_nodes[0].input_tensors[0]
-                mask = self._inbound_nodes[0].input_masks[0]
-                nloglik = self.get_negative_log_likelihood(y_true, X, mask)
-                return nloglik
-            return loss
-        else:
-            if self.sparse_target:
-                return sparse_categorical_crossentropy
-            else:
-                return categorical_crossentropy
+        return crf_loss
 
     @property
     def accuracy(self):
-        if self.test_mode == 'viterbi':
-            return self.viterbi_acc
-        else:
-            return self.marginal_acc
-
-    @staticmethod
-    def _get_accuracy(y_true, y_pred, mask, sparse_target=False):
-        y_pred = K.argmax(y_pred, -1)
-        if sparse_target:
-            y_true = K.cast(y_true[:, :, 0], K.dtype(y_pred))
-        else:
-            y_true = K.argmax(y_true, -1)
-        judge = K.cast(K.equal(y_pred, y_true), K.floatx())
-        if mask is None:
-            return K.mean(judge)
-        else:
-            mask = K.cast(mask, K.floatx())
-            return K.sum(judge * mask) / K.sum(mask)
+        return crf_accuracy
 
     @property
     def viterbi_acc(self):
-        def acc(y_true, y_pred):
-            X = self._inbound_nodes[0].input_tensors[0]
-            mask = self._inbound_nodes[0].input_masks[0]
-            y_pred = self.viterbi_decoding(X, mask)
-            return self._get_accuracy(y_true, y_pred, mask, self.sparse_target)
-        acc.func_name = 'viterbi_acc'
-        return acc
+        return crf_viterbi_accuracy
 
     @property
     def marginal_acc(self):
-        def acc(y_true, y_pred):
-            X = self._inbound_nodes[0].input_tensors[0]
-            mask = self._inbound_nodes[0].input_masks[0]
-            y_pred = self.get_marginal_prob(X, mask)
-            return self._get_accuracy(y_true, y_pred, mask, self.sparse_target)
-        acc.func_name = 'marginal_acc'
-        return acc
+        return crf_marginal_accuracy
 
     @staticmethod
     def softmaxNd(x, axis=-1):
