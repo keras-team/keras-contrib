@@ -6,7 +6,7 @@ Found a bug? Want to contribute changes to the codebase? Make sure to read this 
 
 To easily update Keras: `pip install git+https://www.github.com/fchollet/keras.git --upgrade`
 
-To easily update Keras-Contrib: `pip install git+https://www.github.com/farizrahman4u/keras-contrib.git --upgrade`
+To easily update Keras-Contrib: `pip install git+https://www.github.com/keras-team/keras-contrib.git --upgrade`
 
 To easily update Theano: `pip install git+git://github.com/Theano/Theano.git --upgrade`
 
@@ -18,7 +18,7 @@ Your code doesn't work, **and you have determined that the issue lies with Keras
 
 1. Your bug may already be fixed. Make sure to update to the current Keras master branch and Keras-Contrib master branch, as well as the latest Theano/TensorFlow master branch.
 
-2. [Search for similar issues](https://github.com/farizrahman4u/keras-contrib/issues?utf8=%E2%9C%93&q=is%3Aissue). It's possible somebody has encountered this bug already. Still having a problem? Open an issue on Github to let us know.
+2. [Search for similar issues](https://github.com/keras-team/keras-contrib/issues?utf8=%E2%9C%93&q=is%3Aissue). It's possible somebody has encountered this bug already. Still having a problem? Open an issue on Github to let us know.
 
 3. Make sure you provide us with useful information about your configuration: what OS are you using? What Keras backend are you using? Are you running on GPU? If so, what is your version of Cuda, of cuDNN? What is your GPU?
 
