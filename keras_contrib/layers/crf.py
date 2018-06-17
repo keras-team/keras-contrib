@@ -6,12 +6,9 @@ from .. import activations
 from .. import initializers
 from .. import regularizers
 from .. import constraints
-from ..losses import crf_loss
-from ..metrics import crf_accuracy, crf_marginal_accuracy, crf_viterbi_accuracy
 from keras.engine import Layer
 from keras.engine import InputSpec
-from keras.objectives import categorical_crossentropy
-from keras.objectives import sparse_categorical_crossentropy
+from keras.objectives import categorical_crossentropy, sparse_categorical_crossentropy
 
 
 class CRF(Layer):
@@ -37,7 +34,7 @@ class CRF(Layer):
     probabilities if probabilities are needed. However, if one chooses *join mode* for training,
     Viterbi output is typically better than marginal output, but the marginal output will still perform
     reasonably close, while if *marginal mode* is used for training, marginal output usually performs
-    much better. The default behavior is set according to this observation.
+    much better. The default behavior and `metrics.crf_accuracy` is set according to this observation.
 
     In addition, this implementation supports masking and accepts either onehot or sparse target.
 
@@ -45,6 +42,8 @@ class CRF(Layer):
     # Examples
 
     ```python
+        from keras_contrib.losses import crf_loss
+        from keras_contrib.metrics import crf_viterbi_accuracy
         model = Sequential()
         model.add(Embedding(3001, 300, mask_zero=True)(X)
 
@@ -52,9 +51,9 @@ class CRF(Layer):
         crf = CRF(10, sparse_target=True)
         model.add(crf)
 
-        # crf.accuracy is default to Viterbi acc if using join-mode (default).
+        # crf_accuracy is default to Viterbi acc if using join-mode (default).
         # One can add crf.marginal_acc if interested, but may slow down learning
-        model.compile('adam', loss=crf.loss_function, metrics=[crf.accuracy])
+        model.compile('adam', loss=crf_loss, metrics=[crf_viterbi_accuracy])
 
         # y must be label indices (with shape 1 at dim 3) here, since `sparse_target=True`
         model.fit(x, y)
@@ -69,11 +68,17 @@ class CRF(Layer):
         learn_mode: Either 'join' or 'marginal'.
             The former train the model by maximizing join likelihood while the latter
             maximize the product of marginal likelihood over all time steps.
+            One should use `losses.crf_nll` for 'join' mode and `losses.categorical_crossentropy` or
+            `losses.sparse_categorical_crossentropy` for `marginal` mode.  For convenience, simply
+            use `losses.crf_loss`, which will decide the proper loss as described.
         test_mode: Either 'viterbi' or 'marginal'.
             The former is recommended and as default when `learn_mode = 'join'` and
             gives one-hot representation of the best path at test (prediction) time,
             while the latter is recommended and chosen as default when `learn_mode = 'marginal'`,
             which produces marginal probabilities for each time step.
+            For evaluating metrics, one should use `metrics.crf_viterbi_accuracy` for 'viterbi' mode and
+            'metrics.crf_marginal_accuracy' for 'marginal' mode, or simply use `metrics.crf_accuracy` for
+            both which automatically decides it as described. One can also use both for evaluation at training.
         sparse_target: Boolean (default False) indicating if provided labels are one-hot or
             indices (with shape 1 at dim 3).
         use_boundary: Boolean (default True) indicating if trainable start-end chain energies
@@ -284,19 +289,19 @@ class CRF(Layer):
 
     @property
     def loss_function(self):
-        return crf_loss
+        raise AttributeError('"CRF.loss_function" is depreciated. Please use "losses.crf_loss".')
 
     @property
     def accuracy(self):
-        return crf_accuracy
+        raise AttributeError('"CRF.accuracy" is depreciated. Please use "metrics.crf_accuracy".')
 
     @property
     def viterbi_acc(self):
-        return crf_viterbi_accuracy
+        raise AttributeError('"CRF.viterbi_acc" is depreciated. Please use "metrics.crf_viterbi_accuracy".')
 
     @property
     def marginal_acc(self):
-        return crf_marginal_accuracy
+        raise AttributeError('"CRF.marginal_acc" is depreciated. Please use "metrics.crf_marginal_accuracy".')
 
     @staticmethod
     def softmaxNd(x, axis=-1):

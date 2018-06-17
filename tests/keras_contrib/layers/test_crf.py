@@ -4,8 +4,12 @@ from numpy.testing import assert_allclose
 
 from keras.utils.test_utils import keras_test
 from keras.layers import Embedding
+from keras.models import Sequential, model_from_json, load_model
+from keras.models import load_model
+from keras_contrib.losses import crf_loss
+from keras_contrib.metrics import crf_accuracy, crf_marginal_accuracy, crf_viterbi_accuracy
 from keras_contrib.layers import CRF
-from keras.models import Sequential, model_from_json
+from keras_contrib import *
 
 nb_samples, timesteps, embedding_dim, output_dim = 2, 10, 4, 5
 embedding_num = 12
@@ -26,16 +30,19 @@ def test_CRF():
     model.add(Embedding(embedding_num, embedding_dim, input_length=timesteps))
     crf = CRF(output_dim)
     model.add(crf)
-    model.compile(optimizer='rmsprop', loss=crf.loss_function)
+    model.compile(optimizer='rmsprop', loss=crf_loss)
     model.fit(x, y_onehot, epochs=1, batch_size=10)
+    model.save('./test_saving_crf_model.h5')
+    # load_model has trouble to find `CRF` layer
+    # crf_loaded = load_model('./test_saving_crf_model.h5')
 
-    # test with masking, sparse target, dynamic length; test crf.viterbi_acc, crf.marginal_acc
+    # test with masking, sparse target, dynamic length; test crf_viterbi_accuracy, crf_marginal_accuracy
 
     model = Sequential()
     model.add(Embedding(embedding_num, embedding_dim, mask_zero=True))
     crf = CRF(output_dim, sparse_target=True)
     model.add(crf)
-    model.compile(optimizer='rmsprop', loss=crf.loss_function, metrics=[crf.viterbi_acc, crf.marginal_acc])
+    model.compile(optimizer='rmsprop', loss=crf_loss, metrics=[crf_viterbi_accuracy, crf_marginal_accuracy])
     model.fit(x, y, epochs=1, batch_size=10)
 
     # check mask
@@ -46,6 +53,7 @@ def test_CRF():
     # test `viterbi_acc
     _, v_acc, _ = model.evaluate(x, y)
     np_acc = (y_pred[x > 0] == y[:, :, 0][x > 0]).astype('float32').mean()
+    print(v_acc, np_acc)
     assert np.abs(v_acc - np_acc) < 1e-4
 
     # test config
@@ -57,7 +65,7 @@ def test_CRF():
     model.add(Embedding(embedding_num, embedding_dim, input_length=timesteps, mask_zero=True))
     crf = CRF(output_dim, learn_mode='marginal', unroll=True)
     model.add(crf)
-    model.compile(optimizer='rmsprop', loss=crf.loss_function)
+    model.compile(optimizer='rmsprop', loss=crf_loss)
     model.fit(x, y_onehot, epochs=1, batch_size=10)
 
     # check mask (marginal output)
@@ -70,7 +78,7 @@ def test_CRF():
     model.add(Embedding(embedding_num, embedding_dim, input_length=timesteps, mask_zero=True))
     crf = CRF(output_dim, learn_mode='marginal', test_mode='viterbi')
     model.add(crf)
-    model.compile(optimizer='rmsprop', loss=crf.loss_function, metrics=[crf.accuracy])
+    model.compile(optimizer='rmsprop', loss=crf_loss, metrics=[crf_accuracy])
     model.fit(x, y_onehot, epochs=1, batch_size=10)
 
     y_pred = model.predict(x)

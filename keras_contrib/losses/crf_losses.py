@@ -4,7 +4,7 @@ from keras.objectives import sparse_categorical_crossentropy
 
 
 def crf_nll(y_true, y_pred):
-    '''Usual Linear Chain CRF negative log likelihood. Used for CRF "join" mode. '''
+    '''Usual Linear Chain CRF negative log likelihood. Used for CRF "join" mode. See `layers.CRF` for usage.'''
     crf, idx = y_pred._keras_history[:2]
     assert not crf._outbound_nodes, 'When learn_model="join", CRF must be the last layer.'
     if crf.sparse_target:
