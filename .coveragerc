@@ -29,5 +29,4 @@ exclude_lines =
     # Don't complain if legacy support codes are not performed:
     if original_keras_version == '1':
 
-fail_under = 20
 show_missing = True
