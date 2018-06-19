@@ -65,17 +65,6 @@ install:
   # install pydot for visualization tests
   - conda install pydot graphviz
 
-  # exclude different backends to measure a coverage for the designated backend only
-  - if [[ "$KERAS_BACKEND" != "tensorflow" ]]; then
-      echo '    keras_contrib/backend/tensorflow_backend.py' >> .coveragerc;
-    fi
-  - if [[ "$KERAS_BACKEND" != "theano" ]]; then
-      echo '    keras_contrib/backend/theano_backend.py' >> .coveragerc;
-    fi
-  - if [[ "$KERAS_BACKEND" != "cntk" ]]; then
-      echo '    keras_contrib/backend/cntk_backend.py' >> .coveragerc;
-    fi
-
   # detect whether core files are changed or not
   - export CORE_CHANGED=False;
   - for entry in `git diff --name-only HEAD~1`; do if [[ "$entry" == "keras/backend/"* ]] || [[ "$entry" == "keras/engine/"* ]] || [[ "$entry" == "keras/layers/"* ]]; then export CORE_CHANGED=True; fi; done
