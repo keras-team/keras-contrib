@@ -7,25 +7,6 @@ exclude_lines =
     raise ImportError
     raise NotImplementedError
 
-    # ignore keras imports
-    from keras.activations
-    from keras.applications
-    from keras.backend
-    from keras.callbacks
-    from keras.constraints
-    from keras.datasets
-    from keras.engine
-    from keras.layers
-    from keras.wrappers
-    from keras.losses
-    from keras.metrics
-    from keras.models
-    from keras.objectives
-    from keras.optimizers
-    from keras.preprocessing
-    from keras.regularizers
-    from keras.utils
-
     # Don't complain if legacy support codes are not performed:
     if original_keras_version == '1':
 
