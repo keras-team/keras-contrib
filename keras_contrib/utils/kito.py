@@ -14,11 +14,16 @@ tested on all Keras models zoo. See comparison table and full description by lin
 https://github.com/ZFTurbo/Keras-inference-time-optimizer
 '''
 
-DEBUG = False
 import numpy as np
 
 
-def get_input_layers_ids(model, layer):
+def get_keras_sub_version():
+    from keras import __version__
+    type = int(__version__.split('.')[1])
+    return type
+
+
+def get_input_layers_ids(model, layer, verbose):
     res = dict()
     for i, l in enumerate(model.layers):
         layer_id = str(id(l))
@@ -28,14 +33,18 @@ def get_input_layers_ids(model, layer):
     layer_id = str(id(layer))
     for i, node in enumerate(layer._inbound_nodes):
         node_key = layer.name + '_ib-' + str(i)
-        if node_key in model._container_nodes:
+        if get_keras_sub_version() == 1:
+            network_nodes = model._container_nodes
+        else:
+            network_nodes = model._network_nodes
+        if node_key in network_nodes:
             for inbound_layer in node.inbound_layers:
                 inbound_layer_id = str(id(inbound_layer))
                 inbound_layers.append(res[inbound_layer_id])
     return inbound_layers
 
 
-def get_output_layers_ids(model, layer):
+def get_output_layers_ids(model, layer, verbose):
     res = dict()
     for i, l in enumerate(model.layers):
         layer_id = str(id(l))
@@ -45,14 +54,24 @@ def get_output_layers_ids(model, layer):
     layer_id = str(id(layer))
     for i, node in enumerate(layer._outbound_nodes):
         node_key = layer.name + '_ib-' + str(i)
-        if node_key in model._container_nodes:
+        if get_keras_sub_version() == 1:
+            network_nodes = model._container_nodes
+        else:
+            network_nodes = model._network_nodes
+        if node_key in network_nodes:
             outbound_layer_id = str(id(node.outbound_layer))
-            outbound_layers.append(res[outbound_layer_id])
+            if outbound_layer_id in res:
+                outbound_layers.append(res[outbound_layer_id])
+            else:
+                print('Warning, some problem with outbound node on layer {}!'.format(layer.name))
     return outbound_layers
 
 
-def get_copy_of_layer(layer):
-    from keras.applications.mobilenet import relu6
+def get_copy_of_layer(layer, verbose):
+    if get_keras_sub_version() == 1:
+        from keras.applications.mobilenet import relu6
+    else:
+        from keras_applications.mobilenet import relu6
     from keras.layers.core import Activation
     from keras import layers
     config = layer.get_config()
@@ -74,20 +93,20 @@ def get_copy_of_layer(layer):
     return layer_copy
 
 
-def get_layers_without_output(model):
+def get_layers_without_output(model, verbose):
     output_tensor = []
     output_names = []
     for level_id in range(len(model.layers)):
-        output_layers = get_output_layers_ids(model, model.layers[level_id])
+        output_layers = get_output_layers_ids(model, model.layers[level_id], verbose)
         if len(output_layers) == 0:
             output_tensor.append(model.layers[level_id].output)
             output_names.append(model.layers[level_id].name)
-    if DEBUG:
+    if verbose:
         print('Outputs [{}]: {}'.format(len(output_tensor), output_names))
     return output_tensor, output_names
 
 
-def copy_keras_model_low_level(model):
+def copy_keras_model_low_level(model, verbose):
     from keras.models import Model
 
     x = None
@@ -96,16 +115,17 @@ def copy_keras_model_low_level(model):
     for level_id in range(len(model.layers)):
         layer = model.layers[level_id]
         layer_type = layer.__class__.__name__
-        input_layers = get_input_layers_ids(model, layer)
-        output_layers = get_output_layers_ids(model, layer)
-        print('Go for {}: {} ({}). Input layers: {} Output layers: {}'.format(level_id, layer_type, layer.name,
+        input_layers = get_input_layers_ids(model, layer, verbose)
+        output_layers = get_output_layers_ids(model, layer, verbose)
+        if verbose:
+            print('Go for {}: {} ({}). Input layers: {} Output layers: {}'.format(level_id, layer_type, layer.name,
                                                                               input_layers, output_layers))
         if x is None:
-            input = get_copy_of_layer(layer)
+            input = get_copy_of_layer(layer, verbose)
             x = input
             tmp_model = Model(inputs=input.output, outputs=x.output)
         else:
-            new_layer = get_copy_of_layer(layer)
+            new_layer = get_copy_of_layer(layer, verbose)
 
             prev_layer = []
             for i in range(len(input_layers)):
@@ -114,7 +134,7 @@ def copy_keras_model_low_level(model):
             if len(prev_layer) == 1:
                 prev_layer = prev_layer[0]
 
-            output_tensor, output_names = get_layers_without_output(tmp_model)
+            output_tensor, output_names = get_layers_without_output(tmp_model, verbose)
             x = new_layer(prev_layer)
             if layer.name not in output_names:
                 output_tensor.append(x)
@@ -127,7 +147,7 @@ def copy_keras_model_low_level(model):
     return model
 
 
-def optimize_conv2d_batchnorm_block(m, initial_model, input_layers, conv, bn):
+def optimize_conv2d_batchnorm_block(m, initial_model, input_layers, conv, bn, verbose):
     from keras import layers
     from keras.models import Model
 
@@ -144,7 +164,7 @@ def optimize_conv2d_batchnorm_block(m, initial_model, input_layers, conv, bn):
     layer_copy.name = bn.name # We use batch norm name here to find it later
 
     # Create new model to initialize layer. We need to store other output tensors as well
-    output_tensor, output_names = get_layers_without_output(m)
+    output_tensor, output_names = get_layers_without_output(m, verbose)
     input_layer_name = initial_model.layers[input_layers[0]].name
     prev_layer = m.get_layer(name=input_layer_name)
     x = layer_copy(prev_layer.output)
@@ -189,7 +209,7 @@ def optimize_conv2d_batchnorm_block(m, initial_model, input_layers, conv, bn):
     return tmp_model
 
 
-def optimize_separableconv2d_batchnorm_block(m, initial_model, input_layers, conv, bn):
+def optimize_separableconv2d_batchnorm_block(m, initial_model, input_layers, conv, bn, verbose=False):
     from keras import layers
     from keras.models import Model
 
@@ -204,7 +224,7 @@ def optimize_separableconv2d_batchnorm_block(m, initial_model, input_layers, con
     layer_copy.name = bn.name # We use batch norm name here to find it later
 
     # Create new model to initialize layer. We need to store other output tensors as well
-    output_tensor, output_names = get_layers_without_output(m)
+    output_tensor, output_names = get_layers_without_output(m, verbose)
     input_layer_name = initial_model.layers[input_layers[0]].name
     prev_layer = m.get_layer(name=input_layer_name)
     x = layer_copy(prev_layer.output)
@@ -247,26 +267,27 @@ def optimize_separableconv2d_batchnorm_block(m, initial_model, input_layers, con
     return tmp_model
 
 
-def reduce_keras_model(model, debug=False):
-    global DEBUG
+def reduce_keras_model(model, verbose=False):
     from keras.models import Model
 
     x = None
     input = None
     tmp_model = None
     skip_layers = []
-    DEBUG = debug
+    keras_sub_version = get_keras_sub_version()
+    if verbose:
+        print('Keras sub version: {}'.format(keras_sub_version))
 
     for level_id in range(len(model.layers)):
         layer = model.layers[level_id]
         layer_type = layer.__class__.__name__
-        input_layers = get_input_layers_ids(model, layer)
-        output_layers = get_output_layers_ids(model, layer)
-        if DEBUG:
+        input_layers = get_input_layers_ids(model, layer, verbose)
+        output_layers = get_output_layers_ids(model, layer, verbose)
+        if verbose:
             print('Go for {}: {} ({}). Input layers: {} Output layers: {}'.format(level_id, layer_type, layer.name, input_layers, output_layers))
 
         if level_id in skip_layers:
-            if DEBUG:
+            if verbose:
                 print('Skip layer because it was removed during optimization!')
             continue
 
@@ -275,21 +296,23 @@ def reduce_keras_model(model, debug=False):
             next_layer = model.layers[output_layers[0]]
             next_layer_type = next_layer.__class__.__name__
             if layer_type in ['Conv2D', 'DepthwiseConv2D'] and next_layer_type == 'BatchNormalization':
-                tmp_model = optimize_conv2d_batchnorm_block(tmp_model, model, input_layers, layer, next_layer)
+                tmp_model = optimize_conv2d_batchnorm_block(tmp_model, model, input_layers, layer, next_layer, verbose)
+                x = tmp_model.layers[-1].output
                 skip_layers.append(output_layers[0])
                 continue
 
             if layer_type in ['SeparableConv2D'] and next_layer_type == 'BatchNormalization':
-                tmp_model = optimize_separableconv2d_batchnorm_block(tmp_model, model, input_layers, layer, next_layer)
+                tmp_model = optimize_separableconv2d_batchnorm_block(tmp_model, model, input_layers, layer, next_layer, verbose)
+                x = tmp_model.layers[-1].output
                 skip_layers.append(output_layers[0])
                 continue
 
         if x is None:
-            input = get_copy_of_layer(layer)
+            input = get_copy_of_layer(layer, verbose)
             x = input
             tmp_model = Model(inputs=input.output, outputs=x.output)
         else:
-            new_layer = get_copy_of_layer(layer)
+            new_layer = get_copy_of_layer(layer, verbose)
 
             prev_layer = []
             for i in range(len(input_layers)):
@@ -298,7 +321,7 @@ def reduce_keras_model(model, debug=False):
             if len(prev_layer) == 1:
                 prev_layer = prev_layer[0]
 
-            output_tensor, output_names = get_layers_without_output(tmp_model)
+            output_tensor, output_names = get_layers_without_output(tmp_model, verbose)
             x = new_layer(prev_layer)
             if layer.name not in output_names:
                 output_tensor.append(x)
