@@ -36,6 +36,7 @@ from keras.regularizers import l2
 from keras import backend as K
 from keras_applications.imagenet_utils import _obtain_input_shape
 
+
 def _bn_relu(x, bn_name=None, relu_name=None):
     """Helper to build a BN -> relu block
     """
