@@ -40,7 +40,7 @@ def compare_two_models_results(m1, m2, test_number=10000, max_batch=10000):
 
     print("Initial model prediction time for {} random images: {:.2f} seconds".format(test_number, t1))
     print("Reduced model prediction time for {} same random images: {:.2f} seconds".format(test_number, t2))
-    print('Models raw max difference: {} (Avg difference: {})'.format(max_error, avg_error/count))
+    print('Models raw max difference: {} (Avg difference: {})'.format(max_error, avg_error / count))
     return max_error
 
 
@@ -113,7 +113,7 @@ def test_kito_NN_Reduction():
             max_error = compare_two_models_results(model, model_reduced, test_number=1000, max_batch=1000)
         else:
             max_error = compare_two_models_results(model, model_reduced, test_number=10000, max_batch=10000)
-        K.clear_session()
+        # K.clear_session()
         assert max_error < 1e-04
 
 
