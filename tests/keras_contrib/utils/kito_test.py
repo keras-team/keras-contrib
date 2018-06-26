@@ -88,7 +88,7 @@ def get_neural_net(type):
     return model
 
 
-def test_MobileNet_Reduction():
+def test_kito_NN_Reduction():
     import keras.backend as K
     models_to_test = ['mobilenet_small', 'mobilenet', 'resnet50', 'inception_v3', 'inception_resnet_v2', 'xception',
                       'densenet121', 'densenet169', 'densenet201',
