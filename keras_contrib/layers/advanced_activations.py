@@ -305,35 +305,39 @@ class SineReLU(Layer):
     # Arguments
         epsilon: float. Hyper-parameter used to control the amplitude of the sinusoidal wave when weights are negative.
                  The default value, 0.0025, since it works better for CNN layers and those are the most used layers nowadays.
-                 When using Dense Networks, try something around 0.0055.
+                 When using Dense Networks, try something around 0.006.
 
     # References:
         - SineReLU: An Alternative to the ReLU Activation Function. This function was
         first introduced at the Codemotion Amsterdam 2018 and then at the DevDays, in Vilnius, Lithuania.
         It has been extensively tested with Deep Nets, CNNs, LSTMs, Residual Nets and GANs, based
         on the MNIST, Kaggle Toxicity and IMDB datasets.
-        - Performance:
-            - MNIST
-              * Neural Net with 3 Dense layers, Dropout, Adam Optimiser, 40 Epochs
-                - SineReLU: epsilon=0.0055; Final loss: 0.0593; final accuracy: 0.9859; STD loss: 0.06083421864087177
-                - ReLU: Final loss: 0.0623, final accuracy: 0.9851; STD loss: 0.060961214946358235
-              * CNN with 5 Conv layers, Dropout, Adam Optimiser, 50 Epochs
-                - SineReLU: CNN epsilon=0.0025; Dense epsilon=0.025; Final loss: 0.0165, final accuracy: 0.9955; STD loss: 0.031123579642053544
-                - ReLU: Final loss: 0.0198, final accuracy: 0.9953; STD loss: 0.0513015402055947
-            - IMDB
-              * Neural Net with Embedding layer, 2 Dense layers, Dropout, Adam Optimiser, 5 epochs
-                - SineReLU: epsilon=0.0075; Final loss: 0.3268, final accuracy: 0.8590; ROC (AUC): 93.54; STD loss: 0.1763376755356713
-                - ReLU: Final loss: 0.3265, final accuracy: 0.8577; ROC (AUC): 93.54; STD loss: 0.17714072354980567
-              * CNN with Embedding Layer, 1 Conv1D layer, 2 Dense layers, Dropout, Adam Optimiser, 10 epochs
-                - SineReLU: CNN epsilon=0.0025; Dense epsilon=0.0083; Final loss: 0.2868, final accuracy: 0.8783; ROC (AUC): 95.09; STD loss: 0.12384455966040334
-                - ReLU: Final loss: 0.4135, final accuracy: 0.8757; 0.8755; ROC (AUC): 94.85; STD loss: 0.1633409454830405
-        - Jupyter Notebooks
-            - MNIST
-              - Neural Net: https://github.com/ekholabs/DLinK/blob/master/notebooks/keras/intermediate-net-in-keras.ipynb
-              - CNN: https://github.com/ekholabs/DLinK/blob/master/notebooks/keras/conv-net-in-keras.ipynb
-            - IMDB:
-              - Neural Net: https://github.com/ekholabs/DLinK/blob/master/notebooks/nlp/deep_net_sentiment_classifier_for_imdb.ipynb
-              - CNN: https://github.com/ekholabs/DLinK/blob/master/notebooks/nlp/conv_net_sentiment_classifier_for_imdb.ipynb
+
+    # Performance:
+
+        - Fashion MNIST
+          * Mean of 6 runs per Activation Function
+            * Fully Connection Network
+              - SineReLU: loss mean -> 0.3522; accuracy mean -> 89.18; mean of std loss -> 0.08375204467435822
+              - LeakyReLU: loss mean-> 0.3553; accuracy mean -> 88.98; mean of std loss -> 0.0831161868455245
+              - ReLU: loss mean -> 0.3519; accuracy mean -> 88.84; mean of std loss -> 0.08358816501301362
+            * Convolutional Neural Network
+              - SineReLU: loss mean -> 0.2180; accuracy mean -> 92.49; mean of std loss -> 0.0781155784858847
+              - LeakyReLU: loss mean -> 0.2205; accuracy mean -> 92.37; mean of std loss -> 0.09273670474788205
+              - ReLU: loss mean -> 0.2144; accuracy mean -> 92.45; mean of std loss -> 0.09396114585977
+        - MNIST
+          * Mean of 6 runs per Activation Function
+            * Fully Connection Network
+              - SineReLU: loss mean -> 0.0623; accuracy mean -> 98.53; mean of std loss -> 0.06012015231824904
+              - LeakyReLU: loss mean-> 0.0623; accuracy mean -> 98.50; mean of std loss -> 0.06052147632835356
+              - ReLU: loss mean -> 0.0605; accuracy mean -> 98.49; mean of std loss -> 0.059599885665016096
+            * Convolutional Neural Network
+              - SineReLU: loss mean -> 0.0198; accuracy mean -> 99.51; mean of std loss -> 0.0425338329550847
+              - LeakyReLU: loss mean -> 0.0216; accuracy mean -> 99.40; mean of std loss -> 0.04834468835196667
+              - ReLU: loss mean -> 0.0185; accuracy mean -> 99.49; mean of std loss -> 0.05503719489690131
+
+    # Jupyter Notebooks
+        - https://github.com/ekholabs/DLinK/blob/master/notebooks/keras
 
     # Examples
         The Advanced Activation function SineReLU have to be imported from the
