@@ -519,8 +519,6 @@ class GroupNormalization(Layer):
         inputs = K.reshape(inputs, group_shape)
 
         group_reduction_axes = list(range(len(group_axes)))
-        group_reduction_axes = group_reduction_axes[2:]
-
         mean, variance = K.moments(inputs, group_reduction_axes[2:], keep_dims=True)
         inputs = (inputs - mean) / (K.sqrt(variance + self.epsilon))
 
