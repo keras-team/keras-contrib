@@ -316,7 +316,7 @@ class BatchRenormalization(Layer):
 
         # explicit update to moving mean and standard deviation
         self.add_update([K.moving_average_update(self.running_mean, mean_batch, self.momentum),
-                         K.moving_average_update(self.running_variance, std_batch ** 2, self.momentum)], inputs)
+                         K.moving_average_update(self.running_variance, var_batch, self.momentum)], inputs)
 
         # update r_max and d_max
         r_val = self.r_max_value / (1 + (self.r_max_value - 1) * K.exp(-self.t))
