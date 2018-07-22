@@ -44,7 +44,7 @@ class CyclicLR(Callback):
         cycle iteration.
     For more detail, please see paper.
 
-    # Example
+    # Example for CIFAR-10 w/ batch size 100:
         ```python
             clr = CyclicLR(base_lr=0.001, max_lr=0.006,
                                 step_size=2000., mode='triangular')
