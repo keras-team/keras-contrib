@@ -17,6 +17,7 @@ from keras_contrib.callbacks import CyclicLR
 import os
 
 batch_size = 100
+epochs = 50
 num_classes = 10
 data_augmentation = True
 num_predictions = 20
