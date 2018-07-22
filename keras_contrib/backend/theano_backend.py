@@ -1,5 +1,6 @@
 from theano import tensor as T
 from theano.sandbox.neighbours import images2neibs
+import numpy as np
 
 try:
     import theano.sparse as th_sparse_module
@@ -18,7 +19,7 @@ from keras.backend.theano_backend import _preprocess_padding
 from keras.backend.theano_backend import _postprocess_conv3d_output
 from keras.backend.theano_backend import _preprocess_conv2d_input
 from keras.backend.theano_backend import _postprocess_conv2d_output
-
+from keras.backend.theano_backend import logsumexp
 
 py_all = all
 
@@ -85,56 +86,6 @@ def conv2d(x, kernel, strides=(1, 1), padding='valid', data_format='channels_fir
     return conv_out
 
 
-def deconv3d(x, kernel, output_shape, strides=(1, 1, 1),
-             padding='valid',
-             data_format=None, filter_shape=None):
-    '''3D deconvolution (transposed convolution).
-
-    # Arguments
-        kernel: kernel tensor.
-        output_shape: desired dimensions of output.
-        strides: strides tuple.
-        padding: string, "same" or "valid".
-        data_format: "channels_last" or "channels_first".
-            Whether to use Theano or TensorFlow dimension ordering
-        in inputs/kernels/ouputs.
-    '''
-    flip_filters = False
-    if data_format is None:
-        data_format = image_data_format()
-    if data_format not in {'channels_first', 'channels_last'}:
-        raise ValueError('Unknown data_format: ' + str(data_format))
-
-    if data_format == 'channels_last':
-        output_shape = (output_shape[0], output_shape[4], output_shape[1],
-                        output_shape[2], output_shape[3])
-
-    x = _preprocess_conv3d_input(x, data_format)
-    kernel = _preprocess_conv3d_kernel(kernel, data_format)
-    kernel = kernel.dimshuffle((1, 0, 2, 3, 4))
-    th_padding = _preprocess_padding(padding)
-
-    if hasattr(kernel, '_keras_shape'):
-        kernel_shape = kernel._keras_shape
-    else:
-        # Will only work if `kernel` is a shared variable.
-        kernel_shape = kernel.eval().shape
-
-    filter_shape = _preprocess_conv3d_filter_shape(filter_shape, data_format)
-    filter_shape = tuple(filter_shape[i] for i in (1, 0, 2, 3, 4))
-
-    conv_out = T.nnet.abstract_conv.conv3d_grad_wrt_inputs(
-        x, kernel, output_shape,
-        filter_shape=filter_shape,
-        border_mode=th_padding,
-        subsample=strides,
-        filter_flip=not flip_filters)
-
-    conv_out = _postprocess_conv3d_output(conv_out, x, padding,
-                                          kernel_shape, strides, data_format)
-    return conv_out
-
-
 def extract_image_patches(X, ksizes, strides, padding='valid', data_format='channels_first'):
     '''
     Extract the patches from an image
@@ -197,3 +148,26 @@ def moments(x, axes, shift=None, keep_dims=False):
     var_batch = KTH.var(x, axis=axes, keepdims=keep_dims)
 
     return mean_batch, var_batch
+
+
+def clip(x, min_value, max_value):
+    """Element-wise value clipping.
+
+    If min_value > max_value, clipping range is [min_value,min_value].
+
+    # Arguments
+        x: Tensor or variable.
+        min_value: Tensor, float, int, or None.
+            If min_value is None, defaults to -infinity.
+        max_value: Tensor, float, int, or None.
+            If max_value is None, defaults to infinity.
+
+    # Returns
+        A tensor.
+    """
+    if max_value is None:
+        max_value = np.inf
+    if min_value is None:
+        min_value = -np.inf
+    max_value = T.maximum(min_value, max_value)
+    return T.clip(x, min_value, max_value)

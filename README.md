@@ -1,6 +1,6 @@
 # keras-contrib : Keras community contributions
 
-[![Build Status](https://travis-ci.org/farizrahman4u/keras-contrib.svg?branch=master)](https://travis-ci.org/farizrahman4u/keras-contrib)
+[![Build Status](https://travis-ci.org/keras-team/keras-contrib.svg?branch=master)](https://travis-ci.org/keras-team/keras-contrib)
 
 This library is the official extension repository for the python deep learning library [Keras](http://www.keras.io). It contains additional layers, activations, loss functions, optimizers, etc. which are not yet available within Keras itself. All of these additional modules can be used in conjunction with core Keras models and modules.
 
@@ -12,7 +12,7 @@ As the community contributions in Keras-Contrib are tested, used, validated, and
 For instructions on how to install Keras, see https://keras.io/#installation
 
 ```shell
-git clone https://www.github.com/farizrahman4u/keras-contrib.git
+git clone https://www.github.com/keras-team/keras-contrib.git
 cd keras-contrib
 python setup.py install
 ```
@@ -20,7 +20,7 @@ python setup.py install
 Alternatively, using pip:
 
 ```shell
-sudo pip install git+https://www.github.com/farizrahman4u/keras-contrib.git
+sudo pip install git+https://www.github.com/keras-team/keras-contrib.git
 ```
 
 For contributor guidelines see [CONTRIBUTING.md](CONTRIBUTING.md)
