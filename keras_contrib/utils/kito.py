@@ -195,7 +195,7 @@ def optimize_conv2d_batchnorm_block(m, initial_model, input_layers, conv, bn, ve
     A = gamma / np.sqrt(run_std + eps)
 
     if conv.get_config()['use_bias']:
-        B = conv_bias + beta - ((gamma * run_mean) / np.sqrt(run_std + eps))
+        B = beta + (gamma * (conv_bias - run_mean) / np.sqrt(run_std + eps))
     else:
         B = beta - ((gamma * run_mean) / np.sqrt(run_std + eps))
 
@@ -256,7 +256,7 @@ def optimize_separableconv2d_batchnorm_block(m, initial_model, input_layers, con
     A = gamma / np.sqrt(run_std + eps)
 
     if conv.get_config()['use_bias']:
-        B = conv_bias + beta - ((gamma * run_mean) / np.sqrt(run_std + eps))
+        B = beta + (gamma * (conv_bias - run_mean) / np.sqrt(run_std + eps))
     else:
         B = beta - ((gamma * run_mean) / np.sqrt(run_std + eps))
 
