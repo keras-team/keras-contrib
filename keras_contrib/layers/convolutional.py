@@ -12,7 +12,6 @@ from keras.engine import InputSpec
 from keras.layers.convolutional import Convolution3D
 from keras.utils.generic_utils import get_custom_objects
 from keras.utils.conv_utils import conv_output_length
-from keras.utils.conv_utils import normalize_data_format
 import numpy as np
 
 
@@ -110,7 +109,7 @@ class CosineConvolution2D(Layer):
         self.activation = activations.get(activation)
         self.padding = padding
         self.strides = tuple(strides)
-        self.data_format = normalize_data_format(data_format)
+        self.data_format = K.normalize_data_format(data_format)
         self.kernel_regularizer = regularizers.get(kernel_regularizer)
         self.bias_regularizer = regularizers.get(bias_regularizer)
         self.activity_regularizer = regularizers.get(activity_regularizer)
@@ -297,7 +296,7 @@ class SubPixelUpscaling(Layer):
         super(SubPixelUpscaling, self).__init__(**kwargs)
 
         self.scale_factor = scale_factor
-        self.data_format = normalize_data_format(data_format)
+        self.data_format = K.normalize_data_format(data_format)
 
     def build(self, input_shape):
         pass
