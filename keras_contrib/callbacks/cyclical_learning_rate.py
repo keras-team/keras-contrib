@@ -59,6 +59,10 @@ class CyclicLR(Callback):
                                 scale_mode='cycle')
             model.fit(X_train, Y_train, callbacks=[clr])
         ```
+
+    # References
+
+      - [Cyclical Learning Rates for Training Neural Networks](https://arxiv.org/abs/1506.01186)
     """
 
     def __init__(
