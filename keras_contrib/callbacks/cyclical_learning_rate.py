@@ -148,3 +148,7 @@ class CyclicLR(Callback):
 
         for k, v in logs.items():
             self.history.setdefault(k, []).append(v)
+
+    def on_epoch_end(self, epoch, logs=None):
+        logs = logs or {}
+        logs['lr'] = K.get_value(self.model.optimizer.lr)
