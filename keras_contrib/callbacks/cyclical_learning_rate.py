@@ -59,6 +59,10 @@ class CyclicLR(Callback):
                                 scale_mode='cycle')
             model.fit(X_train, Y_train, callbacks=[clr])
         ```
+
+    # References
+
+      - [Cyclical Learning Rates for Training Neural Networks](https://arxiv.org/abs/1506.01186)
     """
 
     def __init__(
@@ -144,3 +148,7 @@ class CyclicLR(Callback):
 
         for k, v in logs.items():
             self.history.setdefault(k, []).append(v)
+
+    def on_epoch_end(self, epoch, logs=None):
+        logs = logs or {}
+        logs['lr'] = K.get_value(self.model.optimizer.lr)
