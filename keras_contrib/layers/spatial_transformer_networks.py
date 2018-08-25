@@ -3,6 +3,7 @@ from keras.engine import Layer
 
 if K.backend() == 'tensorflow':
     import tensorflow as tf
+
     def K_arange(start, stop=None, step=1, dtype='int32'):
         result = tf.range(start, limit=stop, delta=step, name='arange')
         if dtype != 'int32':
@@ -10,13 +11,15 @@ if K.backend() == 'tensorflow':
         return result
 
     def K_meshgrid(start1, end1, num1, start2, end2, num2):
-        return tf.meshgrid(tf.linspace(start1, end1, num1), tf.linspace(start2, end2, num2))
+        return tf.meshgrid(tf.linspace(start1, end1, num1),
+                           tf.linspace(start2, end2, num2))
 
     def K_matmul(x, y):
         return tf.matmul(x, y)
 
 elif K.backend() == 'theano':
     from theano import tensor as T
+
     def K_arange(start, stop=None, step=1, dtype='int32'):
         return T.arange(start, stop=stop, step=step, dtype=dtype)
 
@@ -63,14 +66,14 @@ class SpatialTransformer(Layer):
         width = K.shape(image)[2]
         num_channels = K.shape(image)[3]
 
-        x = K.cast(x , dtype='float32')
-        y = K.cast(y , dtype='float32')
+        x = K.cast(x, dtype='float32')
+        y = K.cast(y, dtype='float32')
 
         height_float = K.cast(height, dtype='float32')
         width_float = K.cast(width, dtype='float32')
 
         output_height = output_size[0]
-        output_width  = output_size[1]
+        output_width = output_size[1]
 
         x = .5 * (x + 1.0) * (width_float)
         y = .5 * (y + 1.0) * (height_float)
@@ -87,12 +90,12 @@ class SpatialTransformer(Layer):
         y0 = K.clip(y0, 0, max_y)
         y1 = K.clip(y1, 0, max_y)
 
-        flat_image_dimensions = width*height
-        pixels_batch = K_arange(batch_size)*flat_image_dimensions
-        flat_output_dimensions = output_height*output_width
+        flat_image_dimensions = width * height
+        pixels_batch = K_arange(batch_size) * flat_image_dimensions
+        flat_output_dimensions = output_height * output_width
         base = self._repeat(pixels_batch, flat_output_dimensions)
-        base_y0 = base + y0*width
-        base_y1 = base + y1*width
+        base_y0 = base + y0 * width
+        base_y1 = base + y1 * width
         indices_a = base_y0 + x0
         indices_b = base_y1 + x0
         indices_c = base_y0 + x1
@@ -124,7 +127,8 @@ class SpatialTransformer(Layer):
         return output
 
     def _meshgrid(self, height, width):
-        x_coordinates, y_coordinates = K_meshgrid(-1., 1., width, -1., 1., height)
+        x_coordinates, y_coordinates = K_meshgrid(-1., 1., width,
+                                                  -1., 1., height)
         x_coordinates = K.reshape(x_coordinates, [-1])
         y_coordinates = K.reshape(y_coordinates, [-1])
         ones = K.ones_like(x_coordinates)
@@ -138,7 +142,7 @@ class SpatialTransformer(Layer):
         num_channels = K.shape(input_shape)[3]
 
         affine_transformation = K.reshape(affine_transformation,
-                                        shape=(batch_size, 2, 3))
+                                          shape=(batch_size, 2, 3))
 
         affine_transformation = K.cast(affine_transformation, 'float32')
 
