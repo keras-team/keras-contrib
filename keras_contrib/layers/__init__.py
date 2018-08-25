@@ -11,3 +11,4 @@ from .advanced_activations import *
 from .wrappers import *
 from .convolutional_recurrent import *
 from .crf import *
+from .spatial_transformer_networks import *
