@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from .. import backend as K
 from keras.engine import Layer
 
@@ -33,6 +34,59 @@ elif K.backend() == 'theano':
 
 
 class SpatialTransformer(Layer):
+    """Spatial Transformer Network results in models which learn invariance to
+    translation, scale, rotation and more generic warping,
+    https://arxiv.org/pdf/1506.02025.pdf
+
+    # Examples
+    ```python
+        # Create a localisation network for extracting the important features.
+        b = np.zeros((2, 3))
+        b[0, 0] = 1
+        b[1, 1] = 1
+        b = b.flatten()
+
+        W = np.zeros((50, 6))
+        weights = [W, b]
+        localisation_network = Sequential()
+
+        localisation_network.add(MaxPooling2D(pool_size=(2, 2),
+                                              input_shape=x_train.shape[1:]))
+        localisation_network.add(Conv2D(20, (5, 5)))
+        localisation_network.add(MaxPooling2D(pool_size=(2, 2)))
+        localisation_network.add(Conv2D(20, (5, 5)))
+
+        localisation_network.add(Flatten())
+        localisation_network.add(Dense(50))
+        localisation_network.add(Activation('relu'))
+
+        # the last layer MUST have 6 units.
+        localisation_network.add(Dense(6, weights=weights))
+
+        # The actual model starts from here
+        model = Sequential()
+        model.add(SpatialTransformer(localisation_network=localisation_network,
+                                    output_dim=(30, 30),
+                                    input_shape=x_train.shape[1:]))
+        #.
+        #.
+        #.
+
+    ```
+    # Arguments
+        localisation_network: A seperate neural network which localizes the
+            important features of the input image. The output of this network
+            must be a flattened tensor with shape at axis=-1 of 6.
+        output_dim: The expected dimensions of the output. The output will be
+        a cropped "attended" version of the input image.
+
+    # Input shape
+        4D tensor with shape:
+        `(samples, rows, cols, channels)`
+    # Output shape
+        4D tensor with shape:
+        `(samples, output_dim[0], output_dim[1], channels)`
+    """
 
     def __init__(self, localisation_network, output_dim, **kwargs):
         self.locnet = localisation_network
