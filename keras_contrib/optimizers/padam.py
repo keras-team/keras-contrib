@@ -88,6 +88,7 @@ class Padam(Optimizer):
                   'beta_2': float(K.get_value(self.beta_2)),
                   'decay': float(K.get_value(self.decay)),
                   'epsilon': self.epsilon,
-                  'amsgrad': self.amsgrad}
+                  'amsgrad': self.amsgrad,
+                  "partial": self.partial}
         base_config = super(Padam, self).get_config()
         return dict(list(base_config.items()) + list(config.items()))
