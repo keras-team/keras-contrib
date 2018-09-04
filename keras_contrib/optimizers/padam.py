@@ -4,7 +4,7 @@ from keras.optimizers import Optimizer
 
 class Padam(Optimizer):
     def __init__(self, lr=1e-1, beta_1=0.9, beta_2=0.999,
-                 epsilon=1e-8, decay=0., amsgrad=False, partial=1. / 4., **kwargs):
+                 epsilon=1e-8, decay=0., amsgrad=False, partial=1. / 8., **kwargs):
         """ Partially adaptive momentum estimation optimizer.
 
         # Arguments
