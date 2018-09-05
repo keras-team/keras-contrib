@@ -115,6 +115,14 @@ class SpatialTransformer(Layer):
         return K.reshape(x, [-1])
 
     def _interpolate(self, image, x, y, output_size):
+        """
+        Performs bilinear interpolation of the input images according to
+        the normalized coordinates provided by the sampling grid. This is
+        done to interpolate the remaining pixels of the transformed image
+        which could not be assigned a value during transformation.
+
+        Reference - https://en.wikipedia.org/wiki/Bilinear_interpolation
+        """
         batch_size = K.shape(image)[0]
         height = K.shape(image)[1]
         width = K.shape(image)[2]
@@ -190,6 +198,13 @@ class SpatialTransformer(Layer):
         return indices_grid
 
     def _transform(self, affine_transformation, input_shape, output_size):
+        """
+        Given a 6 parameter affine transformation matrix, this function
+        actually performs the transformation (warping) of the original
+        localised image.
+
+        Reference- http://www.imageprocessingbasics.com/geometric-transforms
+        """
         batch_size = K.shape(input_shape)[0]
         height = K.shape(input_shape)[1]
         width = K.shape(input_shape)[2]
