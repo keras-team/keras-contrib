@@ -71,9 +71,7 @@ class Padam(Optimizer):
             self.updates.append(K.update(v, v_t))
 
             # Partial momentum adaption.
-            p_t = p - (lr_t * (m_t / (denom ** (self.partial * 2))))
-
-            new_p = p_t
+            new_p = p - (lr_t * (m_t / (denom ** (self.partial * 2))))
 
             # Apply constraints.
             if getattr(p, 'constraint', None) is not None:
