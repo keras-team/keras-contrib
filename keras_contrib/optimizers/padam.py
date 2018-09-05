@@ -1,5 +1,6 @@
 from keras import backend as K
 from keras.optimizers import Optimizer
+from keras.utils.generic_utils import get_custom_objects
 
 
 class Padam(Optimizer):
@@ -97,3 +98,6 @@ class Padam(Optimizer):
                   'partial': self.partial}
         base_config = super(Padam, self).get_config()
         return dict(list(base_config.items()) + list(config.items()))
+
+
+get_custom_objects().update({'Padam': Padam})
