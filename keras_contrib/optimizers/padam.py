@@ -16,12 +16,19 @@ class Padam(Optimizer):
             amsgrad: boolean. Whether to apply the AMSGrad variant of this
                 algorithm from the paper "On the Convergence of Adam and
                 Beyond".
-            partial: float >=0. Parameter controlling partial momentum adaption.
+            partial: float, 0 <= partial <= 0.5 . Parameter controlling partial momentum adaption. For `partial=0`, this optimizer behaves like SGD, for `partial=0.5`
+            it behaves like AMSGrad.
 
         # References
             - [Closing the Generalization Gap of Adaptive Gradient Methods in Training Deep Neural Networks](https://arxiv.org/pdf/1806.06763.pdf)
 
         """
+        if partial < 0 or partial > 0.5:
+            raise ValueError(
+                "Padam: 'partial' must be a positive float with a maximum "
+                "value of `0.5`, since higher values will cause divergence "
+                "during training."
+            )
         super(Padam, self).__init__(**kwargs)
         with K.name_scope(self.__class__.__name__):
             self.iterations = K.variable(0, dtype='int64', name='iterations')
