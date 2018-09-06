@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import
 import functools
+import warnings
 
 from .. import backend as K
 from keras import activations
@@ -13,8 +14,15 @@ from keras.layers.convolutional import Convolution3D
 from keras.utils.generic_utils import get_custom_objects
 from keras.utils.conv_utils import conv_output_length
 import keras.utils.conv_utils
+# The conditions about `import normalize_data_format` were implemented
+# to keep compatibility both keras2.2.1+ and its earlier.
+# This is a temporary exception dealing to avoid confusing.
+# So it will be removed when releasing keras 2.3 or 2.4.
 if hasattr(keras.utils.conv_utils, 'normalize_data_format'):
     from keras.utils.conv_utils import normalize_data_format
+    warnings.warn(('The keras installing in your environment seems not latest version.'
+                   'The keras-contrib has compatibility for keras with latest version.'
+                   'So immediately recommended you to update keras.'))
 else:
     from keras.backend.common import normalize_data_format
 import numpy as np
