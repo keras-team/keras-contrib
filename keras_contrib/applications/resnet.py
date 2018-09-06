@@ -17,6 +17,7 @@ Implementation Adapted from: github.com/raghakot/keras-resnet
 from __future__ import division
 
 import six
+import warnings
 from keras.models import Model
 from keras.layers import Input
 from keras.layers import Activation
@@ -34,7 +35,18 @@ from keras.layers.merge import add
 from keras.layers.normalization import BatchNormalization
 from keras.regularizers import l2
 from keras import backend as K
-from keras_applications.imagenet_utils import _obtain_input_shape
+from keras.applications.imagenet_utils import _obtain_input_shape
+# This `try-except` about `import keras_applications` were implemented
+# to keep compatibility both keras2.2+ and its earlier.
+# This is a temporary and exceptionaly dealing to avoid confusing.
+# So it will be removed when releasing keras 2.3 or 2.4.
+try:
+    from keras_applications.imagenet_utils import _obtain_input_shape
+except (ImportError):
+    from keras.applications.imagenet_utils import _obtain_input_shape
+    warnings.warn(('The keras installing in your environment seems not latest version.'
+                   'The keras-contrib has compatibility for keras with latest version.'
+                   'So immediately recommended you to update keras.'))
 
 
 def _bn_relu(x, bn_name=None, relu_name=None):

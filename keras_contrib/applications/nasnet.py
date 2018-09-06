@@ -39,7 +39,18 @@ from keras.layers import add
 from keras.regularizers import l2
 from keras.utils.data_utils import get_file
 from keras.engine.topology import get_source_inputs
-from keras_applications.imagenet_utils import _obtain_input_shape
+# This `try-except` about `import keras_applications` were implemented
+# to keep compatibility both keras2.2+ and its earlier.
+# This is a temporary and exceptionaly dealing to avoid confusing.
+# So it will be removed when releasing keras 2.3 or 2.4.
+try:
+    from keras_applications.imagenet_utils import _obtain_input_shape
+except (ImportError):
+    from keras.applications.imagenet_utils import _obtain_input_shape
+    warnings.warn(('The keras installing in your environment seems not latest version.'
+                   'The keras-contrib has compatibility for keras with latest version.'
+                   'So immediately recommended you to update keras.'))
+from keras.applications.imagenet_utils import _obtain_input_shape
 from keras.applications.inception_v3 import preprocess_input
 from keras.applications.imagenet_utils import decode_predictions
 from keras import backend as K
