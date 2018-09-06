@@ -36,7 +36,7 @@ install:
 
   - conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION pytest pandas
   - source activate test-environment
-  - pip install --upgrade --ignore-installed numpy
+  - pip install --upgrade --ignore-installed numpy==1.14.5
   - pip install nose scipy matplotlib h5py theano
   - pip install keras_applications keras_preprocessing
   - conda install mkl mkl-service
@@ -54,7 +54,7 @@ install:
   - pip install -e .[tests]
 
   # install TensorFlow (CPU version).
-  - pip install tensorflow==1.9.0
+  - pip install tensorflow==1.10.1
 
   # install cntk
   - if [[ "$TRAVIS_PYTHON_VERSION" == "2.7" ]]; then
