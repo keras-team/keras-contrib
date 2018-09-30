@@ -162,11 +162,11 @@ def modify_model_arch(json_mod_pack, model_mod_pack):
     new_params = modify_model_params(
         model_params_file,
         current_layer,
-     next_layer,
-     new_weights,
-     new_biases,
-     new_next_layer_weights,
-     make_copy)
+        next_layer,
+        new_weights,
+        new_biases,
+        new_next_layer_weights,
+        make_copy)
     return (new_json, new_params)
 
 
