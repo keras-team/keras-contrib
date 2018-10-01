@@ -2,6 +2,7 @@ import numpy as np
 
 from keras.callbacks import Callback
 from keras import backend as K
+from keras.layers import Input
 
 
 class DeadReluDetector(Callback):
@@ -33,7 +34,12 @@ class DeadReluDetector(Callback):
         if not is_multi_input:
             model_input = [model_input]
 
-        funcs = [K.function(model_input + [K.learning_phase()], [layer.output]) for layer in self.model.layers]
+        funcs = {}
+        for index, layer in enumerate(self.model.layers):
+            if not layer.get_weights():
+                continue
+            funcs[index] = K.function(model_input + [K.learning_phase()], [layer.output])
+
         if is_multi_input:
             list_inputs = []
             list_inputs.extend(self.x_train)
@@ -41,15 +47,21 @@ class DeadReluDetector(Callback):
         else:
             list_inputs = [self.x_train, 1.]
 
-        layer_outputs = [func(list_inputs)[0] for func in funcs]
-        for layer_index, layer_activations in enumerate(layer_outputs):
+        layer_outputs = {index: func(list_inputs)[0] for index, func in funcs.items()}
+        for layer_index, layer_activations in layer_outputs.items():
             if self.is_relu_layer(self.model.layers[layer_index]):
                 layer_name = self.model.layers[layer_index].name
                 # layer_weight is a list [W] (+ [b])
                 layer_weight = self.model.layers[layer_index].get_weights()
+
                 # with kernel and bias, the weights are saved as a list [W, b]. If only weights, it is [W]
                 if type(layer_weight) is not list:
                     raise ValueError("'Layer_weight' should be a list, but was {}".format(type(layer_weight)))
+
+                # there are no weights for current layer; skip it
+                # this is only legitimate if layer is "Activation"
+                if len(layer_weight) == 0:
+                    continue
 
                 layer_weight_shape = np.shape(layer_weight[0])
                 yield [layer_index, layer_activations, layer_name, layer_weight_shape]
