@@ -1,6 +1,8 @@
 from __future__ import absolute_import
 from __future__ import division
 
+import warnings
+
 from .. import backend as K
 from .. import activations
 from .. import initializers
@@ -9,6 +11,10 @@ from .. import constraints
 from keras.engine import Layer
 from keras.engine import InputSpec
 from keras.objectives import categorical_crossentropy, sparse_categorical_crossentropy
+
+from keras_contrib.losses import crf_loss
+from keras_contrib.metrics import crf_marginal_accuracy
+from keras_contrib.metrics import crf_viterbi_accuracy
 
 
 class CRF(Layer):
@@ -289,19 +295,30 @@ class CRF(Layer):
 
     @property
     def loss_function(self):
-        raise AttributeError('"CRF.loss_function" is depreciated. Please use "losses.crf_loss".')
+        warnings.warn('CRF.loss_function is deprecated and it might be removed in the future. Please '
+                      'use losses.crf_loss instead.')
+        return crf_loss
 
     @property
     def accuracy(self):
-        raise AttributeError('"CRF.accuracy" is depreciated. Please use "metrics.crf_accuracy".')
+        warnings.warn('CRF.accuracy is deprecated and it might be removed in the future. Please '
+                      'use losses.viterbi_acc or marginal_acc instead.')
+        if self.test_mode == 'viterbi':
+            return crf_viterbi_accuracy
+        else:
+            return crf_marginal_accuracy
 
     @property
     def viterbi_acc(self):
-        raise AttributeError('"CRF.viterbi_acc" is depreciated. Please use "metrics.crf_viterbi_accuracy".')
+        warnings.warn('CRF.viterbi_acc is deprecated and it might be removed in the future. Please '
+                      'use losses.viterbi_acc instead.')
+        return crf_viterbi_accuracy
 
     @property
     def marginal_acc(self):
-        raise AttributeError('"CRF.marginal_acc" is depreciated. Please use "metrics.crf_marginal_accuracy".')
+        warnings.warn('CRF.moarginal_acc is deprecated and it might be removed in the future. Please '
+                      'use losses.marginal_acc instead.')
+        return crf_marginal_accuracy
 
     @staticmethod
     def softmaxNd(x, axis=-1):

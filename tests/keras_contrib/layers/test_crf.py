@@ -4,12 +4,15 @@ from numpy.testing import assert_allclose
 
 from keras.utils.test_utils import keras_test
 from keras.layers import Embedding
-from keras.models import Sequential, model_from_json, load_model
+from keras.models import Sequential
+from keras.models import model_from_json
+from keras.models import load_model
 from keras.models import load_model
 from keras_contrib.losses import crf_loss
-from keras_contrib.metrics import crf_accuracy, crf_marginal_accuracy, crf_viterbi_accuracy
+from keras_contrib.metrics import crf_accuracy
+from keras_contrib.metrics import crf_marginal_accuracy
+from keras_contrib.metrics import crf_viterbi_accuracy
 from keras_contrib.layers import CRF
-from keras_contrib import *
 
 nb_samples, timesteps, embedding_dim, output_dim = 2, 10, 4, 5
 embedding_num = 12
@@ -33,8 +36,10 @@ def test_CRF():
     model.compile(optimizer='rmsprop', loss=crf_loss)
     model.fit(x, y_onehot, epochs=1, batch_size=10)
     model.save('./test_saving_crf_model.h5')
-    # load_model has trouble to find `CRF` layer
-    # crf_loaded = load_model('./test_saving_crf_model.h5')
+    crf_loaded = load_model('./test_saving_crf_model.h5',
+			     custom_objects={'CRF': CRF,
+                                             'crf_loss': crf_loss,
+ 					     'crf_viterbi_accuracy': crf_viterbi_accuracy})
 
     # test with masking, sparse target, dynamic length; test crf_viterbi_accuracy, crf_marginal_accuracy
 
