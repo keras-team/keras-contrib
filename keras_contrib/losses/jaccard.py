@@ -37,4 +37,4 @@ def jaccard_distance(y_true, y_pred, smooth=None, axis=-1):
 
 
 def binary_jaccard_distance(y_true, y_pred, smooth=None, axis=-1):
-    return jaccard_distance(K.round(y_pred), y_pred, smooth, axis)
+    return jaccard_distance(y_true, K.round(y_pred), smooth, axis)
