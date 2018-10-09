@@ -1,7 +1,7 @@
 from keras import backend as K
 
 
-def jaccard_distance(y_true, y_pred, smooth=100):
+def jaccard_distance(y_true, y_pred, smooth=None, axis=-1):
     """Jaccard distance for semantic segmentation, also known as the intersection-over-union loss.
 
     This loss is useful when you have unbalanced numbers of pixels within an image
@@ -28,7 +28,13 @@ def jaccard_distance(y_true, y_pred, smooth=100):
     https://en.wikipedia.org/wiki/Jaccard_index
 
     """
-    intersection = K.sum(K.abs(y_true * y_pred), axis=-1)
-    sum_ = K.sum(K.abs(y_true) + K.abs(y_pred), axis=-1)
+    if smooth is None:
+        smooth = K.epsilon()
+    intersection = K.sum(K.abs(y_true * y_pred), axis=axis)
+    sum_ = K.sum(K.abs(y_true) + K.abs(y_pred), axis=axis)
     jac = (intersection + smooth) / (sum_ - intersection + smooth)
     return (1 - jac) * smooth
+
+
+def binary_jaccard_distance(y_true, y_pred, smooth=None, axis=-1):
+    return jaccard_distance(y_true, K.round(y_pred), smooth, axis)
