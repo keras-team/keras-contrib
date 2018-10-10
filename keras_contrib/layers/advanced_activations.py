@@ -12,7 +12,7 @@ class PTReLU(Layer):
     """Parametric Tan Hyperbolic Linear Unit.
     It follows:
     `f(x) = x for x > 0`,
-    `f(x) = alphas * tanh(betas*x) for x <= 0`,
+    `f(x) = alphas * tanh(betas * x) for x <= 0`,
     where `alphas` & `betas` are non-negative learned arrays with the same shape as x.
     # Input shape
         Arbitrary. Use the keyword argument `input_shape`
@@ -33,7 +33,8 @@ class PTReLU(Layer):
             so that each filter only has one set of parameters,
             set `shared_axes=[1, 2]`.
     # References
-        - [Parametric Tan Hyperbolic Linear Unit Activation for Deep Neural Networks](http://openaccess.thecvf.com/content_ICCV_2017_workshops/papers/w18/Duggal_P-TELU_Parametric_Tan_ICCV_2017_paper.pdf)
+        - [Parametric Tan Hyperbolic Linear Unit Activation for Deep Neural Networks]
+          (http://openaccess.thecvf.com/content_ICCV_2017_workshops/papers/w18/Duggal_P-TELU_Parametric_Tan_ICCV_2017_paper.pdf)
     """
 
     def __init__(self, alpha_initializer='ones',
@@ -92,9 +93,10 @@ class PTReLU(Layer):
     def call(self, x, mask=None):
         pos = K.relu(x)
         if K.backend() == 'theano':
-            neg = (K.pattern_broadcast(self.alpha, self.param_broadcast) * K.tanh((K.pattern_broadcast(self.beta, self.param_broadcast) * (x - K.abs(x)) * 0.5)))
+            neg = (K.pattern_broadcast(self.alpha, self.param_broadcast) *
+                   K.tanh((K.pattern_broadcast(self.beta, self.param_broadcast) * (x - K.abs(x)) * 0.5)))
         else:
-            neg = self.alpha * K.tanh( self.beta * (-K.relu(-x)) )
+            neg = self.alpha * K.tanh(self.beta * (-K.relu(-x)))
         return neg + pos
 
     def get_config(self):

@@ -97,3 +97,6 @@ ENV/
 .idea
 
 *.DS_Store
+/tests/keras_contrib/preprocessing/test_recurrent.py
+/.vs/keras-contrib/v15/.suo
+/.vs/VSWorkspaceState.json
