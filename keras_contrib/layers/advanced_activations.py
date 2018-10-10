@@ -8,6 +8,111 @@ from .. import backend as K
 from keras.utils.generic_utils import get_custom_objects
 
 
+class PTReLU(Layer):
+    """Parametric Tan Hyperbolic Linear Unit.
+    It follows:
+    `f(x) = x for x > 0`,
+    `f(x) = alphas * tanh(betas*x) for x <= 0`,
+    where `alphas` & `betas` are non-negative learned arrays with the same shape as x.
+    # Input shape
+        Arbitrary. Use the keyword argument `input_shape`
+        (tuple of integers, does not include the samples axis)
+        when using this layer as the first layer in a model.
+    # Output shape
+        Same shape as the input.
+    # Arguments
+        alphas_initializer: initialization function for the alpha variable weights.
+        betas_initializer: initialization function for the beta variable weights.
+        weights: initial weights, as a list of a single Numpy array.
+        shared_axes: the axes along which to share learnable
+            parameters for the activation function.
+            For example, if the incoming feature maps
+            are from a 2D convolution
+            with output shape `(batch, height, width, channels)`,
+            and you wish to share parameters across space
+            so that each filter only has one set of parameters,
+            set `shared_axes=[1, 2]`.
+    # References
+        - [Parametric Tan Hyperbolic Linear Unit Activation for Deep Neural Networks](http://openaccess.thecvf.com/content_ICCV_2017_workshops/papers/w18/Duggal_P-TELU_Parametric_Tan_ICCV_2017_paper.pdf)
+    """
+
+    def __init__(self, alpha_initializer='ones',
+                 alpha_regularizer=None,
+                 alpha_constraint=constraints.non_neg(),
+                 beta_initializer='ones',
+                 beta_regularizer=None,
+                 beta_constraint=constraints.non_neg(),
+                 shared_axes=None,
+                 **kwargs):
+        super(PTReLU, self).__init__(**kwargs)
+        self.supports_masking = True
+        self.alpha_initializer = initializers.get(alpha_initializer)
+        self.alpha_regularizer = regularizers.get(alpha_regularizer)
+        self.alpha_constraint = constraints.get(alpha_constraint)
+        self.beta_initializer = initializers.get(beta_initializer)
+        self.beta_regularizer = regularizers.get(beta_regularizer)
+        self.beta_constraint = constraints.get(beta_constraint)
+        if shared_axes is None:
+            self.shared_axes = None
+        elif not isinstance(shared_axes, (list, tuple)):
+            self.shared_axes = [shared_axes]
+        else:
+            self.shared_axes = list(shared_axes)
+
+    def build(self, input_shape):
+        param_shape = list(input_shape[1:])
+        self.param_broadcast = [False] * len(param_shape)
+        if self.shared_axes is not None:
+            for i in self.shared_axes:
+                param_shape[i - 1] = 1
+                self.param_broadcast[i - 1] = True
+
+        param_shape = tuple(param_shape)
+        # Initialised as ones to emulate the default TReLU
+        self.alpha = self.add_weight(param_shape,
+                                     name='alpha',
+                                     initializer=self.alpha_initializer,
+                                     regularizer=self.alpha_regularizer,
+                                     constraint=self.alpha_constraint)
+        self.beta = self.add_weight(param_shape,
+                                    name='beta',
+                                    initializer=self.beta_initializer,
+                                    regularizer=self.beta_regularizer,
+                                    constraint=self.beta_constraint)
+
+        # Set input spec
+        axes = {}
+        if self.shared_axes:
+            for i in range(1, len(input_shape)):
+                if i not in self.shared_axes:
+                    axes[i] = input_shape[i]
+        self.input_spec = InputSpec(ndim=len(input_shape), axes=axes)
+        self.built = True
+
+    def call(self, x, mask=None):
+        pos = K.relu(x)
+        if K.backend() == 'theano':
+            neg = (K.pattern_broadcast(self.alpha, self.param_broadcast) * K.tanh((K.pattern_broadcast(self.beta, self.param_broadcast) * (x - K.abs(x)) * 0.5)))
+        else:
+            neg = self.alpha * K.tanh( self.beta * (-K.relu(-x)) )
+        return neg + pos
+
+    def get_config(self):
+        config = {
+            'alpha_initializer': initializers.serialize(self.alpha_initializer),
+            'alpha_regularizer': regularizers.serialize(self.alpha_regularizer),
+            'alpha_constraint': constraints.serialize(self.alpha_constraint),
+            'beta_initializer': initializers.serialize(self.beta_initializer),
+            'beta_regularizer': regularizers.serialize(self.beta_regularizer),
+            'beta_constraint': constraints.serialize(self.beta_constraint),
+            'shared_axes': self.shared_axes
+        }
+        base_config = super(PTReLU, self).get_config()
+        return dict(list(base_config.items()) + list(config.items()))
+
+get_custom_objects().update({'PTReLU': PTReLU})
+
+
 class PELU(Layer):
     """Parametric Exponential Linear Unit.
     It follows:
