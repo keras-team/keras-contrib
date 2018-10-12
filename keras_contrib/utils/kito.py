@@ -84,12 +84,6 @@ def get_copy_of_layer(layer, verbose=False):
             layer_copy = Activation(relu6, name=layer.name)
             return layer_copy
 
-    # DeepLabV3+ non-standard layer
-    if layer.__class__.__name__ == 'BilinearUpsampling':
-        from neural_nets.deeplab_v3_plus_model import BilinearUpsampling
-        layer_copy = BilinearUpsampling(upsampling=config['upsampling'], output_size=config['output_size'], name=layer.name)
-        return layer_copy
-
     layer_copy = layers.deserialize({'class_name': layer.__class__.__name__, 'config': config})
     layer_copy.name = layer.name
     return layer_copy
@@ -99,10 +93,23 @@ def get_layers_without_output(model, verbose=False):
     output_tensor = []
     output_names = []
     for level_id in range(len(model.layers)):
-        output_layers = get_output_layers_ids(model, model.layers[level_id], verbose)
+        layer = model.layers[level_id]
+        output_layers = get_output_layers_ids(model, layer, verbose)
         if len(output_layers) == 0:
-            output_tensor.append(model.layers[level_id].output)
-            output_names.append(model.layers[level_id].name)
+            try:
+                if type(layer.output) is list:
+                    output_tensor += layer.output
+                else:
+                    output_tensor.append(layer.output)
+                output_names.append(layer.name)
+            except:
+                # Ugly need to check for correctness
+                for node in layer._inbound_nodes:
+                    for i in range(len(node.inbound_layers)):
+                        outbound_layer = node.inbound_layers[i].name
+                        outbound_tensor_index = node.tensor_indices[i]
+                        output_tensor.append(node.output_tensors[outbound_tensor_index])
+                        output_names.append(outbound_layer)
     if verbose:
         print('Outputs [{}]: {}'.format(len(output_tensor), output_names))
     return output_tensor, output_names
@@ -232,6 +239,7 @@ def optimize_separableconv2d_batchnorm_block(m, initial_model, input_layers, con
 
 def reduce_keras_model(model, verbose=False):
     from keras.models import Model
+    from keras.models import clone_model
 
     x = []
     input = []
@@ -284,21 +292,49 @@ def reduce_keras_model(model, verbose=False):
                 skip_layers.append(output_layers[0])
                 continue
 
-        new_layer = get_copy_of_layer(layer, verbose)
+        if layer_type == 'Model':
+            new_layer = clone_model(layer)
+            new_layer.set_weights(layer.get_weights())
+        else:
+            new_layer = get_copy_of_layer(layer, verbose)
 
         prev_layer = []
-        for i in range(len(input_layers)):
-            tens = tmp_model.get_layer(name=model.layers[input_layers[i]].name).output
-            prev_layer.append(tens)
+        for i in range(len(set(input_layers))):
+            search_layer = tmp_model.get_layer(name=model.layers[input_layers[i]].name)
+            try:
+                tens = search_layer.output
+                prev_layer.append(tens)
+            except:
+                # Ugly need to check for correctness
+                for node in search_layer._inbound_nodes:
+                    for i in range(len(node.inbound_layers)):
+                        outbound_tensor_index = node.tensor_indices[i]
+                        prev_layer.append(node.output_tensors[outbound_tensor_index])
+
         if len(prev_layer) == 1:
             prev_layer = prev_layer[0]
 
         output_tensor, output_names = get_layers_without_output(tmp_model, verbose)
-        x = new_layer(prev_layer)
-        if layer.name not in output_names:
-            output_tensor.append(x)
+        if layer_type == 'Model':
+            for f in prev_layer:
+                x = new_layer(f)
+                if f in output_tensor:
+                    output_tensor.remove(f)
+                output_tensor.append(x)
         else:
-            output_tensor = x
+            x = new_layer(prev_layer)
+            if type(prev_layer) is list:
+                for f in prev_layer:
+                    if f in output_tensor:
+                        output_tensor.remove(f)
+            else:
+                if prev_layer in output_tensor:
+                    output_tensor.remove(prev_layer)
+            if type(x) is list:
+                output_tensor += x
+            else:
+                output_tensor.append(x)
+
         tmp_model = Model(inputs=input, outputs=output_tensor)
         tmp_model.get_layer(name=layer.name).set_weights(layer.get_weights())
 
