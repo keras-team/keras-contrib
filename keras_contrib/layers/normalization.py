@@ -284,6 +284,7 @@ class BatchRenormalization(Layer):
     def call(self, inputs, training=None):
         assert self.built, 'Layer must be built before being called'
         input_shape = K.int_shape(inputs)
+        ndim = len(input_shape)
 
         reduction_axes = list(range(len(input_shape)))
         del reduction_axes[self.axis]
@@ -330,7 +331,7 @@ class BatchRenormalization(Layer):
             return x_normed
         else:
             def normalize_inference():
-                if sorted(reduction_axes) == range(K.ndim(inputs))[:-1]:
+                if (sorted(reduction_axes) == list(range(ndim))[:-1]):
                     x_normed_running = K.batch_normalization(
                         inputs, self.running_mean, self.running_variance,
                         self.beta, self.gamma,
