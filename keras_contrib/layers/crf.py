@@ -302,7 +302,7 @@ class CRF(Layer):
     @property
     def accuracy(self):
         warnings.warn('CRF.accuracy is deprecated and it might be removed in the future. Please '
-                      'use losses.viterbi_acc or marginal_acc instead.')
+                      'use metrics.crf_accuracy')
         if self.test_mode == 'viterbi':
             return crf_viterbi_accuracy
         else:
@@ -311,13 +311,13 @@ class CRF(Layer):
     @property
     def viterbi_acc(self):
         warnings.warn('CRF.viterbi_acc is deprecated and it might be removed in the future. Please '
-                      'use losses.viterbi_acc instead.')
+                      'use metrics.viterbi_acc instead.')
         return crf_viterbi_accuracy
 
     @property
     def marginal_acc(self):
         warnings.warn('CRF.moarginal_acc is deprecated and it might be removed in the future. Please '
-                      'use losses.marginal_acc instead.')
+                      'use metrics.marginal_acc instead.')
         return crf_marginal_accuracy
 
     @staticmethod
