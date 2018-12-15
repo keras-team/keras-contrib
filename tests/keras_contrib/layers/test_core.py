@@ -1,34 +1,27 @@
 import pytest
 import numpy as np
 
+from keras import regularizers
+from keras import constraints
+from keras.models import Sequential
 from keras import backend as K
-from keras_contrib import backend as KC
 from keras_contrib.layers import core
 from keras.utils.test_utils import layer_test
 from numpy.testing import assert_allclose
 
 
-def test_cosinedense():
-    from keras import regularizers
-    from keras import constraints
-    from keras.models import Sequential
+@pytest.mark.parametrize('input_shape', [(3, 2),
+                                         (3, 4, 2),
+                                         (None, None, 2),
+                                         (3, 4, 5, 2)])
+def test_cosinedense(input_shape):
 
     layer_test(core.CosineDense,
                kwargs={'units': 3},
-               input_shape=(3, 2))
+               input_shape=input_shape)
 
-    layer_test(core.CosineDense,
-               kwargs={'units': 3},
-               input_shape=(3, 4, 2))
 
-    layer_test(core.CosineDense,
-               kwargs={'units': 3},
-               input_shape=(None, None, 2))
-
-    layer_test(core.CosineDense,
-               kwargs={'units': 3},
-               input_shape=(3, 4, 5, 2))
-
+def test_cosinedense_reg_constraint():
     layer_test(core.CosineDense,
                kwargs={'units': 3,
                        'kernel_regularizer': regularizers.l2(0.01),
@@ -38,6 +31,8 @@ def test_cosinedense():
                        'bias_constraint': constraints.MaxNorm(1)},
                input_shape=(3, 2))
 
+
+def test_cosinedense_correctness():
     X = np.random.randn(1, 20)
     model = Sequential()
     model.add(core.CosineDense(1, use_bias=True, input_shape=(20,)))
