@@ -1,0 +1,10 @@
+Sync travis.yml with keras.
+# Please enter the commit message for your changes. Lines starting
+# with '#' will be ignored, and an empty message aborts the commit.
+#
+# On branch sync_travis
+# Changes to be committed:
+#	modified:   .coveragerc
+#	modified:   .travis.yml
+#	new file:   .travis/install_cntk.sh
+#
