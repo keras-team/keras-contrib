@@ -1,5 +1,5 @@
 set -e
-pip install cntk
+pip install cntk --progress-bar off
 
 # open mpi is needed for cntk
 rm -rf ~/mpi
