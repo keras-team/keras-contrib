@@ -9,7 +9,7 @@ from numpy.testing import assert_allclose
 def test_CyclicalLearningRate():
     def build_model():
         model = Sequential([
-            Dense(10, activation='relu', input_shape=(10,)),
+            Dense(2, activation='relu', input_shape=(2,)),
             Dense(1, activation='sigmoid')
         ])
         return model
@@ -102,7 +102,7 @@ def test_CyclicalLearningRate():
 
         assert_allclose(clr.history['lr'], np.array(custom_range))
 
-    X = np.random.rand(4000, 10)
+    X = np.random.rand(4000, 2)
     y = np.random.rand(4000).reshape(-1, 1)
 
     triangular_1_test(X, y)
