@@ -330,7 +330,7 @@ class BatchRenormalization(Layer):
             return x_normed
         else:
             def normalize_inference():
-                if sorted(reduction_axes) == range(K.ndim(inputs))[:-1]:
+                if sorted(reduction_axes) == list(range(K.ndim(inputs)))[:-1]:
                     x_normed_running = K.batch_normalization(
                         inputs, self.running_mean, self.running_variance,
                         self.beta, self.gamma,
