@@ -11,3 +11,7 @@ exclude_lines =
     if original_keras_version == '1':
 
 show_missing = True
+omit =
+    keras_contrib/backend/theano_backend.py
+    keras_contrib/backend/tensorflow_backend.py
+    keras_contrib/backend/cntk_backend.py
