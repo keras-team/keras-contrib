@@ -4,7 +4,7 @@ from numpy.testing import assert_allclose
 
 from keras.layers import Dense, Activation, Input
 from keras import regularizers
-from keras.utils.test_utils import layer_test, keras_test
+from keras.utils.test_utils import layer_test
 from keras_contrib.layers import normalization
 from keras.models import Sequential, Model
 from keras import backend as K
@@ -16,7 +16,6 @@ input_3 = np.ones((10))
 input_shapes = [np.ones((10, 10)), np.ones((10, 10, 10))]
 
 
-@keras_test
 def basic_instancenorm_test():
     from keras import regularizers
     layer_test(normalization.InstanceNormalization,
@@ -33,7 +32,6 @@ def basic_instancenorm_test():
                input_shape=(3, 3))
 
 
-@keras_test
 def test_instancenorm_correctness_rank2():
     model = Sequential()
     norm = normalization.InstanceNormalization(input_shape=(10, 1), axis=-1)
@@ -51,7 +49,6 @@ def test_instancenorm_correctness_rank2():
     assert_allclose(out.std(), 1.0, atol=1e-1)
 
 
-@keras_test
 def test_instancenorm_correctness_rank1():
     # make sure it works with rank1 input tensor (batched)
     model = Sequential()
@@ -70,7 +67,6 @@ def test_instancenorm_correctness_rank1():
     assert_allclose(out.std(), 1.0, atol=1e-1)
 
 
-@keras_test
 def test_instancenorm_training_argument():
     bn1 = normalization.InstanceNormalization(input_shape=(10,))
     x1 = Input(shape=(10,))
@@ -93,7 +89,6 @@ def test_instancenorm_training_argument():
     bn2(x2, training=False)
 
 
-@keras_test
 def test_instancenorm_convnet():
     model = Sequential()
     norm = normalization.InstanceNormalization(axis=1, input_shape=(3, 4, 4))
@@ -111,7 +106,6 @@ def test_instancenorm_convnet():
     assert_allclose(np.std(out, axis=(0, 2, 3)), 1.0, atol=1e-1)
 
 
-@keras_test
 def test_shared_instancenorm():
     '''Test that a IN layer can be shared
     across different data streams.
@@ -137,7 +131,6 @@ def test_shared_instancenorm():
     new_model.train_on_batch(x, x)
 
 
-@keras_test
 def test_instancenorm_perinstancecorrectness():
     model = Sequential()
     norm = normalization.InstanceNormalization(input_shape=(10,))
@@ -165,7 +158,6 @@ def test_instancenorm_perinstancecorrectness():
     assert_allclose(out.std(), 1.0, atol=1e-1)
 
 
-@keras_test
 def test_instancenorm_perchannel_correctness():
 
     # have each channel with a different average and std
@@ -213,7 +205,6 @@ def test_instancenorm_perchannel_correctness():
             assert_allclose(activations.std(), 1.0, atol=1e-1)
 
 
-@keras_test
 def basic_batchrenorm_test():
     from keras import regularizers
 
@@ -226,7 +217,6 @@ def basic_batchrenorm_test():
                input_shape=(3, 4, 2))
 
 
-@keras_test
 def test_batchrenorm_mode_0_or_2():
     for training in [1, 0, None]:
         ip = Input(shape=(10,))
@@ -246,7 +236,6 @@ def test_batchrenorm_mode_0_or_2():
         assert_allclose(out.std(), 1.0, atol=1e-1)
 
 
-@keras_test
 def test_batchrenorm_mode_0_or_2_twice():
     # This is a regression test for issue #4881 with the old
     # batch normalization functions in the Theano backend.
@@ -260,7 +249,6 @@ def test_batchrenorm_mode_0_or_2_twice():
     model.predict(X)
 
 
-@keras_test
 def test_batchrenorm_mode_0_convnet():
     model = Sequential()
     norm_m0 = normalization.BatchRenormalization(axis=1, input_shape=(3, 4, 4), momentum=0.8)
@@ -278,7 +266,6 @@ def test_batchrenorm_mode_0_convnet():
     assert_allclose(np.std(out, axis=(0, 2, 3)), 1.0, atol=1e-1)
 
 
-@keras_test
 def test_shared_batchrenorm():
     '''Test that a BN layer can be shared
     across different data streams.
@@ -306,7 +293,6 @@ def test_shared_batchrenorm():
     new_model.train_on_batch(x, x)
 
 
-@keras_test
 def test_batchrenorm_clipping_schedule():
     '''Test that the clipping schedule isn't fixed at r_max=1, d_max=0'''
     inp = Input(shape=(10,))
@@ -329,7 +315,6 @@ def test_batchrenorm_clipping_schedule():
     assert_allclose([r_max, d_max], [3, 5], atol=1e-1)
 
 
-@keras_test
 def test_batchrenorm_get_config():
     '''Test that get_config works on a model with a batchrenorm layer.'''
     x = Input(shape=(10,))
@@ -338,7 +323,6 @@ def test_batchrenorm_get_config():
     model.get_config()
 
 
-@keras_test
 def test_basic_groupnorm():
     layer_test(normalization.GroupNormalization,
                kwargs={'groups': 2,
@@ -365,7 +349,6 @@ def test_basic_groupnorm():
                    input_shape=(3, 4, 2, 4))
 
 
-@keras_test
 def test_groupnorm_correctness_1d():
     model = Sequential()
     norm = normalization.GroupNormalization(input_shape=(10,), groups=2)
@@ -383,7 +366,6 @@ def test_groupnorm_correctness_1d():
     assert_allclose(out.std(), 1.0, atol=1e-1)
 
 
-@keras_test
 def test_groupnorm_correctness_2d():
     model = Sequential()
     norm = normalization.GroupNormalization(axis=1, input_shape=(10, 6), groups=2)
@@ -401,7 +383,6 @@ def test_groupnorm_correctness_2d():
     assert_allclose(out.std(axis=(0, 2)), 1.0, atol=1.1e-1)
 
 
-@keras_test
 def test_groupnorm_correctness_2d_different_groups():
     norm1 = normalization.GroupNormalization(axis=1, input_shape=(10, 6), groups=2)
     norm2 = normalization.GroupNormalization(axis=1, input_shape=(10, 6), groups=1)
@@ -450,7 +431,6 @@ def test_groupnorm_correctness_2d_different_groups():
     assert_allclose(out.std(axis=(0, 2)), 1.0, atol=1.1e-1)
 
 
-@keras_test
 def test_groupnorm_mode_twice():
     # This is a regression test for issue #4881 with the old
     # batch normalization functions in the Theano backend.
@@ -464,7 +444,6 @@ def test_groupnorm_mode_twice():
     model.predict(x)
 
 
-@keras_test
 def test_groupnorm_convnet():
     model = Sequential()
     norm = normalization.GroupNormalization(axis=1, input_shape=(3, 4, 4), groups=3)
@@ -482,7 +461,6 @@ def test_groupnorm_convnet():
     assert_allclose(np.std(out, axis=(0, 2, 3)), 1.0, atol=1e-1)
 
 
-@keras_test
 @pytest.mark.skipif((K.backend() == 'theano'),
                     reason='Bug with theano backend')
 def test_groupnorm_convnet_no_center_no_scale():
@@ -501,7 +479,6 @@ def test_groupnorm_convnet_no_center_no_scale():
     assert_allclose(np.std(out, axis=(0, 2, 3)), 1.0, atol=1e-1)
 
 
-@keras_test
 def test_shared_groupnorm():
     '''Test that a GN layer can be shared
     across different data streams.
@@ -529,7 +506,6 @@ def test_shared_groupnorm():
     new_model.train_on_batch(x, x)
 
 
-@keras_test
 def test_that_trainable_disables_updates():
     val_a = np.random.random((10, 4))
     val_out = np.random.random((10, 4))
