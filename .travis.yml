@@ -46,7 +46,7 @@ install:
   - export LD_LIBRARY_PATH=$HOME/miniconda/envs/test-environment/lib/:$LD_LIBRARY_PATH
 
   - if [[ "$KERAS_BACKEND" == "theano" ]]; then
-      travis_retry conda install -q mkl mkl-service
+      travis_retry conda install -q mkl mkl-service;
     fi
 
   - pip install -e .[tests] --progress-bar off
@@ -55,9 +55,7 @@ install:
   - pip install tensorflow==1.9 --progress-bar off
   
   # install cntk
-  - if [[ "$KERAS_BACKEND" == "cntk" ]] || [[ "$TEST_MODE" == "PEP8" ]]; then
-      ./.travis/install_cntk.sh;
-    fi
+  - ./.travis/install_cntk.sh
 
   # Remove the current backend from the coverage exclusion.
   - sed -i "\/keras\/backend\/${KERAS_BACKEND}_backend.py/d" .coveragerc
