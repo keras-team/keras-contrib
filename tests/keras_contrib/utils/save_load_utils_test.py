@@ -4,13 +4,11 @@ from keras import backend as K
 from keras.layers import Input, Dense
 from keras.models import Model
 from numpy.testing import assert_allclose
-from keras.utils.test_utils import keras_test
 
 from keras_contrib.utils.save_load_utils import save_all_weights, load_all_weights
 
 
 @pytest.mark.skipif(K.backend() != 'tensorflow', reason='save_all_weights and load_all_weights only supported on TensorFlow')
-@keras_test
 def test_save_and_load_all_weights():
     '''
     Test save_all_weights and load_all_weights. Save and load optimizer and model weights but not configuration.

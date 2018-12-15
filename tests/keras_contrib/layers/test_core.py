@@ -4,11 +4,10 @@ import numpy as np
 from keras import backend as K
 from keras_contrib import backend as KC
 from keras_contrib.layers import core
-from keras.utils.test_utils import layer_test, keras_test
+from keras.utils.test_utils import layer_test
 from numpy.testing import assert_allclose
 
 
-@keras_test
 def test_cosinedense():
     from keras import regularizers
     from keras import constraints

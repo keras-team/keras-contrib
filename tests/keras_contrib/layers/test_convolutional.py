@@ -3,7 +3,7 @@ import numpy as np
 import itertools
 from numpy.testing import assert_allclose
 
-from keras_contrib.utils.test_utils import layer_test, keras_test
+from keras_contrib.utils.test_utils import layer_test
 from keras.utils.conv_utils import conv_input_length
 from keras import backend as K
 from keras_contrib import backend as KC
@@ -17,7 +17,6 @@ else:
     _convolution_border_modes = ['valid', 'same']
 
 
-@keras_test
 def test_cosineconvolution_2d():
     num_samples = 2
     num_filter = 2
@@ -90,7 +89,6 @@ def test_cosineconvolution_2d():
     assert_allclose(out, -np.ones((1, 1, 1, 1), dtype=K.floatx()), atol=1e-5)
 
 
-@keras_test
 def test_sub_pixel_upscaling():
     num_samples = 2
     num_row = 16
