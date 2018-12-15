@@ -10,10 +10,10 @@ from keras.utils.test_utils import layer_test
 from numpy.testing import assert_allclose
 
 
-@pytest.mark.parametrize('input_shape',[(3, 2),
-                                        (3, 4, 2),
-                                        (None, None, 2),
-                                        (3, 4, 5, 2)])
+@pytest.mark.parametrize('input_shape', [(3, 2),
+                                         (3, 4, 2),
+                                         (None, None, 2),
+                                         (3, 4, 5, 2)])
 def test_cosinedense(input_shape):
 
     layer_test(core.CosineDense,
