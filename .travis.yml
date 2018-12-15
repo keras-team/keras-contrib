@@ -46,7 +46,7 @@ install:
   - export LD_LIBRARY_PATH=$HOME/miniconda/envs/test-environment/lib/:$LD_LIBRARY_PATH
 
   - if [[ "$KERAS_BACKEND" == "theano" ]]; then
-      travis_retry conda install -q mkl mkl-service
+      travis_retry conda install -q mkl mkl-service;
     fi
 
   - pip install -e .[tests] --progress-bar off
