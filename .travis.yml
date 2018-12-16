@@ -7,7 +7,7 @@ cache:
 matrix:
     include:
         - python: 3.6
-          env: KERAS_BACKEND=tensorflow TEST_MODE=PEP8
+          env: KERAS_BACKEND=tensorflow TEST_MODE=PEP8_DOC
         - python: 2.7
           env: KERAS_BACKEND=tensorflow
         - python: 3.6
@@ -53,7 +53,7 @@ install:
 
   # install TensorFlow (CPU version).
   - pip install tensorflow==1.9 --progress-bar off
-  
+
   # install cntk
   - ./.travis/install_cntk.sh
 
@@ -77,8 +77,8 @@ script:
   # set up keras backend
   - sed -i -e 's/"backend":[[:space:]]*"[^"]*/"backend":\ "'$KERAS_BACKEND'/g' ~/.keras/keras.json;
   - echo -e "Running tests with the following config:\n$(cat ~/.keras/keras.json)"
-  - if [[ "$TEST_MODE" == "PEP8" ]]; then
-      PYTHONPATH=$PWD:$PYTHONPATH py.test --pep8 -m pep8 -n0;
+  - if [[ "$TEST_MODE" == "PEP8_DOC" ]]; then
+      PYTHONPATH=$PWD:$PYTHONPATH py.test --pep8 -m pep8 -n0 && py.test tests/test_documentation.py;
     else
       PYTHONPATH=$PWD:$PYTHONPATH py.test tests/ --cov-config .coveragerc --cov=keras_contrib tests/;
     fi
