@@ -154,10 +154,10 @@ def handle_module(mod):
 
 
 @pytest.mark.skipif(sys.version_info < (3, 3), reason="requires python3.3")
-def test_doc():
-    for module in modules:
-        mod = importlib.import_module(module)
-        handle_module(mod)
+@pytest.mark.parametrize('module', modules)
+def test_doc(module):
+    mod = importlib.import_module(module)
+    handle_module(mod)
 
 
 if __name__ == '__main__':
