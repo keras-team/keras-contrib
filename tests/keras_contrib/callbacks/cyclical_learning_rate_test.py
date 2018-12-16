@@ -85,8 +85,7 @@ def test_cyclic_lr_exp_range():
     exp_range = []
 
     def scale_fn(i):
-        return 0.001 + (0.006 - 0.001) * \
-               np.maximum(0, (1 - x(i))) * (0.9996 ** (i))
+        return 0.001 + (0.006 - 0.001) * np.maximum(0, (1 - x(i))) * (0.9996 ** i)
 
     for i in range(8000):
         exp_range.append(scale_fn(i + 1))
@@ -114,8 +113,8 @@ def test_cyclic_lr_custom_fn_test():
     custom_range = []
 
     def scale_fn(i):
-        return 0.001 + (0.006 - 0.001) * \
-               np.maximum(0, (1 - x(i))) * 1 / (5 ** (i * 0.0001))
+        c = 0.006 - 0.001
+        return 0.001 + c * np.maximum(0, (1 - x(i))) * 1 / (5 ** (i * 0.0001))
 
     for i in range(8000):
         custom_range.append(scale_fn(i + 1))
