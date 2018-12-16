@@ -36,20 +36,19 @@ def test_cosineconvolution_2d(border_mode,
     if border_mode == 'same' and subsample != (1, 1):
         return
 
+    kwargs = {'filters': num_filter,
+              'kernel_size': (3, 3),
+              'padding': border_mode,
+              'strides': subsample,
+              'use_bias': use_bias_mode,
+              'data_format': data_format}
     if use_regularizer:
-        additional_kwargs = {'kernel_regularizer': 'l2',
-                             'bias_regularizer': 'l2',
-                             'activity_regularizer': 'l2'}
-    else:
-        additional_kwargs = {}
+        kwargs.update({'kernel_regularizer': 'l2',
+                       'bias_regularizer': 'l2',
+                       'activity_regularizer': 'l2'})
 
     layer_test(convolutional.CosineConvolution2D,
-               kwargs={'filters': num_filter,
-                       'kernel_size': (3, 3),
-                       'padding': border_mode,
-                       'strides': subsample,
-                       'use_bias': use_bias_mode,
-                       'data_format': data_format}.update(additional_kwargs),
+               kwargs=kwargs,
                input_shape=(num_samples, num_row, num_col, stack_size))
 
 
