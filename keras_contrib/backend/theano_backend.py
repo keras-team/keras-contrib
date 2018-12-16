@@ -23,69 +23,6 @@ from keras.backend.theano_backend import logsumexp
 
 py_all = all
 
-
-def conv2d(x, kernel, strides=(1, 1), padding='valid', data_format='channels_first',
-           image_shape=None, filter_shape=None):
-    '''
-    padding: string, "same" or "valid".
-    '''
-    if data_format not in {'channels_first', 'channels_last'}:
-        raise Exception('Unknown data_format ' + str(data_format))
-
-    if data_format == 'channels_last':
-        # TF uses the last dimension as channel dimension,
-        # instead of the 2nd one.
-        # TH input shape: (samples, input_depth, rows, cols)
-        # TF input shape: (samples, rows, cols, input_depth)
-        # TH kernel shape: (depth, input_depth, rows, cols)
-        # TF kernel shape: (rows, cols, input_depth, depth)
-        x = x.dimshuffle((0, 3, 1, 2))
-        kernel = kernel.dimshuffle((3, 2, 0, 1))
-        if image_shape:
-            image_shape = (image_shape[0], image_shape[3],
-                           image_shape[1], image_shape[2])
-        if filter_shape:
-            filter_shape = (filter_shape[3], filter_shape[2],
-                            filter_shape[0], filter_shape[1])
-
-    if padding == 'same':
-        th_padding = 'half'
-        np_kernel = kernel.eval()
-    elif padding == 'valid':
-        th_padding = 'valid'
-    else:
-        raise Exception('Border mode not supported: ' + str(padding))
-
-    # Theano might not accept long type
-    def int_or_none(value):
-        try:
-            return int(value)
-        except TypeError:
-            return None
-
-    if image_shape is not None:
-        image_shape = tuple(int_or_none(v) for v in image_shape)
-
-    if filter_shape is not None:
-        filter_shape = tuple(int_or_none(v) for v in filter_shape)
-
-    conv_out = T.nnet.conv2d(x, kernel,
-                             border_mode=th_padding,
-                             subsample=strides,
-                             input_shape=image_shape,
-                             filter_shape=filter_shape)
-
-    if padding == 'same':
-        if np_kernel.shape[2] % 2 == 0:
-            conv_out = conv_out[:, :, :(x.shape[2] + strides[0] - 1) // strides[0], :]
-        if np_kernel.shape[3] % 2 == 0:
-            conv_out = conv_out[:, :, :, :(x.shape[3] + strides[1] - 1) // strides[1]]
-
-    if data_format == 'channels_last':
-        conv_out = conv_out.dimshuffle((0, 2, 3, 1))
-    return conv_out
-
-
 def extract_image_patches(X, ksizes, strides, padding='valid', data_format='channels_first'):
     '''
     Extract the patches from an image

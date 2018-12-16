@@ -69,51 +69,6 @@ def _preprocess_padding(padding):
     return padding
 
 
-def conv2d(x, kernel, strides=(1, 1), padding='valid', data_format='channels_first',
-           image_shape=None, filter_shape=None):
-    '''2D convolution.
-    # Arguments
-        kernel: kernel tensor.
-        strides: strides tuple.
-        padding: string, "same" or "valid".
-        data_format: "tf" or "th". Whether to use Theano or TensorFlow dimension ordering
-        in inputs/kernels/ouputs.
-    '''
-    if padding == 'same':
-        padding = 'SAME'
-    elif padding == 'valid':
-        padding = 'VALID'
-    else:
-        raise Exception('Invalid border mode: ' + str(padding))
-
-    strides = (1,) + strides + (1,)
-
-    if floatx() == 'float64':
-        # tf conv2d only supports float32
-        x = tf.cast(x, 'float32')
-        kernel = tf.cast(kernel, 'float32')
-
-    if data_format == 'channels_first':
-        # TF uses the last dimension as channel dimension,
-        # instead of the 2nd one.
-        # TH input shape: (samples, input_depth, rows, cols)
-        # TF input shape: (samples, rows, cols, input_depth)
-        # TH kernel shape: (depth, input_depth, rows, cols)
-        # TF kernel shape: (rows, cols, input_depth, depth)
-        x = tf.transpose(x, (0, 2, 3, 1))
-        kernel = tf.transpose(kernel, (2, 3, 1, 0))
-        x = tf.nn.conv2d(x, kernel, strides, padding=padding)
-        x = tf.transpose(x, (0, 3, 1, 2))
-    elif data_format == 'channels_last':
-        x = tf.nn.conv2d(x, kernel, strides, padding=padding)
-    else:
-        raise Exception('Unknown data_format: ' + str(data_format))
-
-    if floatx() == 'float64':
-        x = tf.cast(x, 'float64')
-    return x
-
-
 def extract_image_patches(x, ksizes, ssizes, padding='same',
                           data_format='channels_last'):
     '''

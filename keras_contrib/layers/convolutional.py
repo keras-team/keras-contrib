@@ -192,15 +192,13 @@ class CosineConvolution2D(Layer):
         Wnorm = K.sqrt(K.sum(K.square(self.W), axis=kernel_sum_axes, keepdims=True) + K.square(b) + K.epsilon())
         xnorm = K.sqrt(K.conv2d(K.square(x), self.kernel_norm, strides=self.strides,
                                 padding=self.padding,
-                                data_format=self.data_format,
-                                filter_shape=self.kernel_norm_shape) + xb + K.epsilon())
+                                data_format=self.data_format) + xb + K.epsilon())
 
         W = self.W / Wnorm
 
         output = K.conv2d(x, W, strides=self.strides,
                           padding=self.padding,
-                          data_format=self.data_format,
-                          filter_shape=self.kernel_shape)
+                          data_format=self.data_format)
 
         if K.backend() == 'theano':
             xnorm = K.pattern_broadcast(xnorm, [False, True, False, False])
