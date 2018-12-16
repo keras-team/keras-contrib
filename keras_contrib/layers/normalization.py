@@ -209,6 +209,10 @@ class BatchRenormalization(Layer):
                  gamma_initializer='one', moving_mean_initializer='zeros',
                  moving_variance_initializer='ones', gamma_regularizer=None, beta_regularizer=None,
                  beta_constraint=None, gamma_constraint=None, **kwargs):
+        if axis != -1 and K.backend() == 'tensorflow':
+            raise NotImplementedError('There is currently a bug '
+                                      'when using batch renormalisation and '
+                                      'the TensorFlow backend.')
         self.supports_masking = True
         self.axis = axis
         self.epsilon = epsilon
