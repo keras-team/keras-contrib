@@ -83,11 +83,13 @@ class CosineDense(Layer):
                  activation=None, weights=None,
                  kernel_regularizer=None, bias_regularizer=None, activity_regularizer=None,
                  kernel_constraint=None, bias_constraint=None,
-                 use_bias=True, input_dim=None, **kwargs):
+                 use_bias=True, **kwargs):
+        if 'input_shape' not in kwargs and 'input_dim' in kwargs:
+            kwargs['input_shape'] = (kwargs.pop('input_dim'),)
+
         self.kernel_initializer = initializers.get(kernel_initializer)
         self.activation = activations.get(activation)
         self.units = units
-        self.input_dim = input_dim
 
         self.kernel_regularizer = regularizers.get(kernel_regularizer)
         self.bias_regularizer = regularizers.get(bias_regularizer)
@@ -98,9 +100,6 @@ class CosineDense(Layer):
 
         self.use_bias = use_bias
         self.initial_weights = weights
-
-        if self.input_dim:
-            kwargs['input_shape'] = (self.input_dim,)
         super(CosineDense, self).__init__(**kwargs)
 
     def build(self, input_shape):
@@ -147,8 +146,9 @@ class CosineDense(Layer):
         return self.activation(output)
 
     def compute_output_shape(self, input_shape):
-        assert input_shape and len(input_shape) >= 2
-        assert input_shape[-1] and input_shape[-1] == self.input_dim
+        assert input_shape
+        assert len(input_shape) >= 2
+        assert input_shape[-1]
         output_shape = list(input_shape)
         output_shape[-1] = self.units
         return tuple(output_shape)
@@ -162,8 +162,7 @@ class CosineDense(Layer):
                   'activity_regularizer': regularizers.serialize(self.activity_regularizer),
                   'kernel_constraint': constraints.serialize(self.kernel_constraint),
                   'bias_constraint': constraints.serialize(self.bias_constraint),
-                  'use_bias': self.use_bias,
-                  'input_dim': self.input_dim}
+                  'use_bias': self.use_bias}
         base_config = super(CosineDense, self).get_config()
         return dict(list(base_config.items()) + list(config.items()))
 
