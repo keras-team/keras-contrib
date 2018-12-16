@@ -2,7 +2,6 @@ from keras.engine import Layer, InputSpec
 from .. import initializers, regularizers, constraints
 from .. import backend as K
 from keras.utils.generic_utils import get_custom_objects
-
 import numpy as np
 
 

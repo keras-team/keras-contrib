@@ -163,28 +163,3 @@ def moments(x, axes, shift=None, keep_dims=False):
     ''' Wrapper over tensorflow backend call '''
 
     return tf.nn.moments(x, axes, shift=shift, keep_dims=keep_dims)
-
-
-def clip(x, min_value, max_value):
-    """Element-wise value clipping.
-
-    If min_value > max_value, clipping range is [min_value,min_value].
-
-    # Arguments
-        x: Tensor or variable.
-        min_value: Tensor, float, int, or None.
-            If min_value is None, defaults to -infinity.
-        max_value: Tensor, float, int, or None.
-            If max_value is None, defaults to infinity.
-
-    # Returns
-        A tensor.
-    """
-    if max_value is None:
-        max_value = np.inf
-    if min_value is None:
-        min_value = -np.inf
-    min_value = _to_tensor(min_value, x.dtype.base_dtype)
-    max_value = _to_tensor(max_value, x.dtype.base_dtype)
-    max_value = tf.maximum(min_value, max_value)
-    return tf.clip_by_value(x, min_value, max_value)
