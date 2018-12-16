@@ -78,14 +78,25 @@ def _preprocess_padding(padding):
 
 def conv2d(x, kernel, strides=(1, 1), padding='valid', data_format='channels_first',
            image_shape=None, filter_shape=None):
-    '''2D convolution.
+    """2D convolution.
+
     # Arguments
+        x: Input tensor
         kernel: kernel tensor.
         strides: strides tuple.
         padding: string, "same" or "valid".
-        data_format: "tf" or "th". Whether to use Theano or TensorFlow dimension ordering
-        in inputs/kernels/ouputs.
-    '''
+        data_format: 'channels_first' or 'channels_last'.
+            Whether to use Theano or TensorFlow dimension
+            ordering in inputs/kernels/ouputs.
+        image_shape: Optional, the input tensor shape
+        filter_shape: Optional, the kernel shape.
+
+    # Returns
+        x convolved with the kernel.
+
+    # Raises
+        Exception: In case of invalid border mode or data format.
+    """
     if padding == 'same':
         padding = 'SAME'
     elif padding == 'valid':
@@ -123,21 +134,20 @@ def conv2d(x, kernel, strides=(1, 1), padding='valid', data_format='channels_fir
 
 def extract_image_patches(x, ksizes, ssizes, padding='same',
                           data_format='channels_last'):
-    '''
-    Extract the patches from an image
-    # Parameters
+    """Extract the patches from an image.
 
-        x : The input image
-        ksizes : 2-d tuple with the kernel size
-        ssizes : 2-d tuple with the strides size
-        padding : 'same' or 'valid'
-        data_format : 'channels_last' or 'channels_first'
+    # Arguments
+        x: The input image
+        ksizes: 2-d tuple with the kernel size
+        ssizes: 2-d tuple with the strides size
+        padding: 'same' or 'valid'
+        data_format: 'channels_last' or 'channels_first'
 
     # Returns
         The (k_w,k_h) patches extracted
         TF ==> (batch_size,w,h,k_w,k_h,c)
         TH ==> (batch_size,w,h,c,k_w,k_h)
-    '''
+    """
     kernel = [1, ksizes[0], ksizes[1], 1]
     strides = [1, ssizes[0], ssizes[1], 1]
     padding = _preprocess_padding(padding)
@@ -156,7 +166,18 @@ def extract_image_patches(x, ksizes, ssizes, padding='same',
 
 
 def depth_to_space(input, scale, data_format=None):
-    ''' Uses phase shift algorithm to convert channels/depth for spatial resolution '''
+    """ Uses phase shift algorithm to convert channels/depth for spatial resolution.
+
+    # Arguments
+        input: Input tensor
+        scale: n `int` that is `>= 2`. The size of the spatial block.
+        data_format: 'channels_first' or 'channels_last'.
+            Whether to use Theano or TensorFlow dimension
+            ordering in inputs/kernels/ouputs.
+
+    # Returns
+        TODO (PR welcome): Filling this section.
+    """
     if data_format is None:
         data_format = image_data_format()
     data_format = data_format.lower()
