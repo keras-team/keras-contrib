@@ -17,9 +17,11 @@ py_all = all
 
 def _preprocess_conv2d_input(x, data_format):
     """Transpose and cast the input before the conv2d.
+
     # Arguments
         x: input tensor.
         data_format: string, `"channels_last"` or `"channels_first"`.
+
     # Returns
         A tensor.
     """
@@ -36,9 +38,11 @@ def _preprocess_conv2d_input(x, data_format):
 
 def _postprocess_conv2d_output(x, data_format):
     """Transpose and cast the output from conv2d if needed.
+
     # Arguments
         x: A tensor.
         data_format: string, `"channels_last"` or `"channels_first"`.
+
     # Returns
         A tensor.
     """
@@ -53,10 +57,13 @@ def _postprocess_conv2d_output(x, data_format):
 
 def _preprocess_padding(padding):
     """Convert keras' padding to tensorflow's padding.
+
     # Arguments
         padding: string, `"same"` or `"valid"`.
+
     # Returns
         a string, `"SAME"` or `"VALID"`.
+
     # Raises
         ValueError: if `padding` is invalid.
     """

@@ -6,13 +6,17 @@ from itertools import compress
 
 import pytest
 
-modules = ['keras.layers', 'keras.models', 'keras',
-           'keras.backend.tensorflow_backend', 'keras.engine',
-           'keras.wrappers', 'keras.utils',
-           'keras.callbacks', 'keras.activations',
-           'keras.losses', 'keras.models', 'keras.optimizers']
+modules = ['keras_contrib.layers',
+           'keras_contrib',
+           'keras_contrib.backend.tensorflow_backend',
+           'keras_contrib.wrappers',
+           'keras_contrib.utils',
+           'keras_contrib.callbacks',
+           'keras_contrib.activations',
+           'keras_contrib.losses',
+           'keras_contrib.optimizers']
 accepted_name = ['from_config']
-accepted_module = ['keras.legacy.layers', 'keras.utils.generic_utils']
+accepted_module = []
 
 # Functions or classes with less than 'MIN_CODE_SIZE' lines can be ignored
 MIN_CODE_SIZE = 10
