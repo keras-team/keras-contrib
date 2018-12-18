@@ -4,26 +4,27 @@ from keras.utils.generic_utils import get_custom_objects
 
 
 class Padam(Optimizer):
+    """Partially adaptive momentum estimation optimizer.
+
+    # Arguments
+        lr: float >= 0. Learning rate.
+        beta_1: float, 0 < beta < 1. Generally close to 1.
+        beta_2: float, 0 < beta < 1. Generally close to 1.
+        epsilon: float >= 0. Fuzz factor. If `None`, defaults to `K.epsilon()`.
+        decay: float >= 0. Learning rate decay over each update.
+        amsgrad: boolean. Whether to apply the AMSGrad variant of this
+            algorithm from the paper "On the Convergence of Adam and
+            Beyond".
+        partial: float, 0 <= partial <= 0.5 . Parameter controlling partial momentum adaption. For `partial=0`, this optimizer behaves like SGD, for `partial=0.5`
+        it behaves like AMSGrad.
+
+    # References
+        - [Closing the Generalization Gap of Adaptive Gradient Methods in Training Deep Neural Networks](https://arxiv.org/pdf/1806.06763.pdf)
+
+    """
+
     def __init__(self, lr=1e-1, beta_1=0.9, beta_2=0.999,
                  epsilon=1e-8, decay=0., amsgrad=False, partial=1. / 8., **kwargs):
-        """ Partially adaptive momentum estimation optimizer.
-
-        # Arguments
-            lr: float >= 0. Learning rate.
-            beta_1: float, 0 < beta < 1. Generally close to 1.
-            beta_2: float, 0 < beta < 1. Generally close to 1.
-            epsilon: float >= 0. Fuzz factor. If `None`, defaults to `K.epsilon()`.
-            decay: float >= 0. Learning rate decay over each update.
-            amsgrad: boolean. Whether to apply the AMSGrad variant of this
-                algorithm from the paper "On the Convergence of Adam and
-                Beyond".
-            partial: float, 0 <= partial <= 0.5 . Parameter controlling partial momentum adaption. For `partial=0`, this optimizer behaves like SGD, for `partial=0.5`
-            it behaves like AMSGrad.
-
-        # References
-            - [Closing the Generalization Gap of Adaptive Gradient Methods in Training Deep Neural Networks](https://arxiv.org/pdf/1806.06763.pdf)
-
-        """
         if partial < 0 or partial > 0.5:
             raise ValueError(
                 "Padam: 'partial' must be a positive float with a maximum "

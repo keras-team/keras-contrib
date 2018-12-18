@@ -97,3 +97,8 @@ ENV/
 .idea
 
 *.DS_Store
+
+contrib-docs/site/*
+contrib-docs/sources/*
+contrib-docs/theme/fonts/*
+contrib-docs/theme/img/*
