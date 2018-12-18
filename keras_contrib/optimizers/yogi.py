@@ -87,4 +87,4 @@ class Yogi(Optimizer):
         return dict(list(base_config.items()) + list(config.items()))
 
 
-get_custom_objects().update({'yogi': Yogi})
+get_custom_objects().update({'Yogi': Yogi})
