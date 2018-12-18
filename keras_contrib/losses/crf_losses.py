@@ -4,7 +4,18 @@ from keras.objectives import sparse_categorical_crossentropy
 
 
 def crf_nll(y_true, y_pred):
-    '''Usual Linear Chain CRF negative log likelihood. Used for CRF "join" mode. See `layers.CRF` for usage.'''
+    """The negative log-likelihood used to train the linear chain Conditional Random Field (CRF).
+
+    This loss function is only used when the `layers.CRF` layer is trained in the "join" mode.
+
+    # Arguments
+        y_true: tensor with true targets.
+        y_pred: tensor with predicted targets.
+
+    # Returns
+        A scalar representing corresponding to the negative log-likelihood.
+    """
+
     crf, idx = y_pred._keras_history[:2]
     assert not crf._outbound_nodes, 'When learn_model="join", CRF must be the last layer.'
     if crf.sparse_target:
@@ -16,7 +27,17 @@ def crf_nll(y_true, y_pred):
 
 
 def crf_loss(y_true, y_pred):
-    '''General CRF loss function, depending on the learning mode.'''
+    """General CRF loss function depending on the learning mode.
+
+    # Arguments
+        y_true: tensor with true targets.
+        y_pred: tensor with predicted targets.
+
+    # Returns
+        If the CRF layer is being trained in the join mode, returns the negative
+        log-likelihood. Otherwise returns the categorical crossentropy implemented
+        by the underlying Keras backend.
+    """
     crf, idx = y_pred._keras_history[:2]
     if crf.learn_mode == 'join':
         return crf_nll(y_true, y_pred)
