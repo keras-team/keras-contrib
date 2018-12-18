@@ -132,7 +132,7 @@ def _shortcut(input_feature, residual, conv_name_base=None, bn_name_base=None):
 
 def _residual_block(block_function, filters, blocks, stage,
                     transition_strides=None, transition_dilation_rates=None,
-                    dilation_rates=(1, 1), is_first_layer=False, dropout=None,
+                    dilation_rates=None, is_first_layer=False, dropout=None,
                     residual_unit=_bn_relu_conv):
     """Builds a residual block with repeating bottleneck blocks.
 
@@ -145,6 +145,8 @@ def _residual_block(block_function, filters, blocks, stage,
         transition_dilation_rates = [(1, 1)] * blocks
     if transition_strides is None:
         transition_strides = [(1, 1)] * blocks
+    if dilation_rates is None:
+        dilation_rates = [1] * blocks
 
     def f(x):
         for i in range(blocks):
@@ -288,7 +290,7 @@ def ResNet(input_shape=None, classes=10, block='bottleneck', residual_unit='v2',
             if `include_top` is False (otherwise the input shape
             has to be `(224, 224, 3)` (with `channels_last` dim ordering)
             or `(3, 224, 224)` (with `channels_first` dim ordering).
-            It should have exactly 3 inputs channels,
+            It should have exactly 3 dimensions,
             and width and height should be no smaller than 8.
             E.g. `(224, 224, 3)` would be one valid value.
         classes: The number of outputs at final softmax layer
@@ -297,7 +299,6 @@ def ResNet(input_shape=None, classes=10, block='bottleneck', residual_unit='v2',
         repetitions: Number of repetitions of various block units.
             At each block unit, the number of filters are doubled and the input size is halved.
             Default of None implies the ResNet50v2 values of [3, 4, 6, 3].
-        transition_dilation_rate: Used for pixel-wise prediction tasks such as image segmentation.
         residual_unit: the basic residual unit, 'v1' for conv bn relu, 'v2' for bn relu conv.
             See [Identity Mappings in Deep Residual Networks](https://arxiv.org/abs/1603.05027)
             for details.

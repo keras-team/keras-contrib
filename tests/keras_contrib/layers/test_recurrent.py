@@ -7,7 +7,6 @@ from keras_contrib.layers import recurrent
 from keras.layers import embeddings
 from keras.models import Sequential
 from keras import regularizers
-from keras.utils.test_utils import keras_test
 
 from keras import backend as K
 from keras_contrib import backend as KC
@@ -21,7 +20,6 @@ def rnn_test(f):
     All the recurrent layers share the same interface,
     so we can run through them with a single function.
     """
-    f = keras_test(f)
     # Example : return pytest.mark.parametrize("layer_class", [recurrent.JZ1, recurrent.NTM])(f)
     return pytest.mark.parametrize('layer_class', [])(f)
 

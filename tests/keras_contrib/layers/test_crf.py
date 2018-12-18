@@ -2,7 +2,6 @@ import pytest
 import numpy as np
 from numpy.testing import assert_allclose
 
-from keras.utils.test_utils import keras_test
 from keras.layers import Embedding
 from keras.models import Sequential
 from keras.models import model_from_json
@@ -17,7 +16,6 @@ nb_samples, timesteps, embedding_dim, output_dim = 2, 10, 4, 5
 embedding_num = 12
 
 
-@keras_test
 def test_CRF():
     # data
     x = np.random.randint(1, embedding_num, nb_samples * timesteps).reshape((nb_samples, timesteps))

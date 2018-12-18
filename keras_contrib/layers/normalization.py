@@ -1,8 +1,7 @@
 from keras.engine import Layer, InputSpec
-from .. import initializers, regularizers, constraints
+from keras import initializers, regularizers, constraints
 from .. import backend as K
 from keras.utils.generic_utils import get_custom_objects
-
 import numpy as np
 
 
@@ -209,6 +208,10 @@ class BatchRenormalization(Layer):
                  gamma_initializer='one', moving_mean_initializer='zeros',
                  moving_variance_initializer='ones', gamma_regularizer=None, beta_regularizer=None,
                  beta_constraint=None, gamma_constraint=None, **kwargs):
+        if axis != -1 and K.backend() == 'tensorflow':
+            raise NotImplementedError('There is currently a bug '
+                                      'when using batch renormalisation and '
+                                      'the TensorFlow backend.')
         self.supports_masking = True
         self.axis = axis
         self.epsilon = epsilon
@@ -330,7 +333,7 @@ class BatchRenormalization(Layer):
             return x_normed
         else:
             def normalize_inference():
-                if sorted(reduction_axes) == range(K.ndim(inputs))[:-1]:
+                if sorted(reduction_axes) == list(range(K.ndim(inputs)))[:-1]:
                     x_normed_running = K.batch_normalization(
                         inputs, self.running_mean, self.running_variance,
                         self.beta, self.gamma,
