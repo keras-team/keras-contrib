@@ -48,8 +48,10 @@ class CRF(Layer):
     # Examples
 
     ```python
+        from keras_contrib.layers import CRF
         from keras_contrib.losses import crf_loss
         from keras_contrib.metrics import crf_viterbi_accuracy
+
         model = Sequential()
         model.add(Embedding(3001, 300, mask_zero=True)(X)
 
@@ -68,6 +70,18 @@ class CRF(Layer):
         y_hat = model.predict(x_test)
     ```
 
+    The following snippet shows how to load a persisted model that uses the CRF layer:
+
+    ```python
+        from keras.models import load_model
+        from keras_contrib.losses import import crf_loss
+        from keras_contrib.metrics import crf_viterbi_accuracy
+
+        loaded_model = load_model('<path_to_model>',
+                                  custom_objects={'CRF': CRF,
+                                                  'crf_loss': crf_loss,
+                                                  'crf_viterbi_accuracy': crf_viterbi_accuracy})
+    ```
 
     # Arguments
         units: Positive integer, dimensionality of the output space.

@@ -1,5 +1,6 @@
 import pytest
 import numpy as np
+import os
 from numpy.testing import assert_allclose
 
 from keras.layers import Embedding
@@ -14,6 +15,8 @@ from keras_contrib.layers import CRF
 
 nb_samples, timesteps, embedding_dim, output_dim = 2, 10, 4, 5
 embedding_num = 12
+
+MODEL_PERSISTENCE_PATH = './test_saving_crf_model.h5'
 
 
 def test_CRF():
@@ -32,11 +35,11 @@ def test_CRF():
     model.add(crf)
     model.compile(optimizer='rmsprop', loss=crf_loss)
     model.fit(x, y_onehot, epochs=1, batch_size=10)
-    model.save('./test_saving_crf_model.h5')
-    crf_loaded = load_model('./test_saving_crf_model.h5',
-                             custom_objects={'CRF': CRF,
-                                             'crf_loss': crf_loss,
-                                             'crf_viterbi_accuracy': crf_viterbi_accuracy})
+    model.save(MODEL_PERSISTENCE_PATH)
+    crf_loaded = load_model(MODEL_PERSISTENCE_PATH,
+                            custom_objects={'CRF': CRF,
+                                            'crf_loss': crf_loss,
+                                            'crf_viterbi_accuracy': crf_viterbi_accuracy})
 
     # test with masking, sparse target, dynamic length; test crf_viterbi_accuracy, crf_marginal_accuracy
 
@@ -87,6 +90,11 @@ def test_CRF():
 
     # check y_pred is onehot vector (output from 'viterbi' test mode)
     assert_allclose(np.eye(output_dim)[y_pred.argmax(-1)], y_pred, atol=1e-6)
+
+    try:
+        os.remove(MODEL_PERSISTENCE_PATH)
+    except OSError:
+        pass
 
 
 if __name__ == '__main__':
