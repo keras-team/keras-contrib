@@ -1,6 +1,8 @@
 from __future__ import absolute_import
 from __future__ import division
 
+import warnings
+
 from .. import backend as K
 from keras import activations
 from keras import initializers
@@ -8,8 +10,11 @@ from keras import regularizers
 from keras import constraints
 from keras.engine import Layer
 from keras.engine import InputSpec
-from keras.objectives import categorical_crossentropy
-from keras.objectives import sparse_categorical_crossentropy
+from keras.objectives import categorical_crossentropy, sparse_categorical_crossentropy
+
+from keras_contrib.losses import crf_loss
+from keras_contrib.metrics import crf_marginal_accuracy
+from keras_contrib.metrics import crf_viterbi_accuracy
 
 
 class CRF(Layer):
@@ -35,7 +40,7 @@ class CRF(Layer):
     probabilities if probabilities are needed. However, if one chooses *join mode* for training,
     Viterbi output is typically better than marginal output, but the marginal output will still perform
     reasonably close, while if *marginal mode* is used for training, marginal output usually performs
-    much better. The default behavior is set according to this observation.
+    much better. The default behavior and `metrics.crf_accuracy` is set according to this observation.
 
     In addition, this implementation supports masking and accepts either onehot or sparse target.
 
@@ -43,6 +48,10 @@ class CRF(Layer):
     # Examples
 
     ```python
+        from keras_contrib.layers import CRF
+        from keras_contrib.losses import crf_loss
+        from keras_contrib.metrics import crf_viterbi_accuracy
+
         model = Sequential()
         model.add(Embedding(3001, 300, mask_zero=True)(X)
 
@@ -50,9 +59,9 @@ class CRF(Layer):
         crf = CRF(10, sparse_target=True)
         model.add(crf)
 
-        # crf.accuracy is default to Viterbi acc if using join-mode (default).
+        # crf_accuracy is default to Viterbi acc if using join-mode (default).
         # One can add crf.marginal_acc if interested, but may slow down learning
-        model.compile('adam', loss=crf.loss_function, metrics=[crf.accuracy])
+        model.compile('adam', loss=crf_loss, metrics=[crf_viterbi_accuracy])
 
         # y must be label indices (with shape 1 at dim 3) here, since `sparse_target=True`
         model.fit(x, y)
@@ -61,17 +70,35 @@ class CRF(Layer):
         y_hat = model.predict(x_test)
     ```
 
+    The following snippet shows how to load a persisted model that uses the CRF layer:
+
+    ```python
+        from keras.models import load_model
+        from keras_contrib.losses import import crf_loss
+        from keras_contrib.metrics import crf_viterbi_accuracy
+
+        loaded_model = load_model('<path_to_model>',
+                                  custom_objects={'CRF': CRF,
+                                                  'crf_loss': crf_loss,
+                                                  'crf_viterbi_accuracy': crf_viterbi_accuracy})
+    ```
 
     # Arguments
         units: Positive integer, dimensionality of the output space.
         learn_mode: Either 'join' or 'marginal'.
             The former train the model by maximizing join likelihood while the latter
             maximize the product of marginal likelihood over all time steps.
+            One should use `losses.crf_nll` for 'join' mode and `losses.categorical_crossentropy` or
+            `losses.sparse_categorical_crossentropy` for `marginal` mode.  For convenience, simply
+            use `losses.crf_loss`, which will decide the proper loss as described.
         test_mode: Either 'viterbi' or 'marginal'.
             The former is recommended and as default when `learn_mode = 'join'` and
             gives one-hot representation of the best path at test (prediction) time,
             while the latter is recommended and chosen as default when `learn_mode = 'marginal'`,
             which produces marginal probabilities for each time step.
+            For evaluating metrics, one should use `metrics.crf_viterbi_accuracy` for 'viterbi' mode and
+            'metrics.crf_marginal_accuracy' for 'marginal' mode, or simply use `metrics.crf_accuracy` for
+            both which automatically decides it as described. One can also use both for evaluation at training.
         sparse_target: Boolean (default False) indicating if provided labels are one-hot or
             indices (with shape 1 at dim 3).
         use_boundary: Boolean (default True) indicating if trainable start-end chain energies
@@ -211,7 +238,7 @@ class CRF(Layer):
                                         regularizer=self.bias_regularizer,
                                         constraint=self.bias_constraint)
         else:
-            self.bias = None
+            self.bias = 0
 
         if self.use_boundary:
             self.left_boundary = self.add_weight((self.units,),
@@ -282,63 +309,30 @@ class CRF(Layer):
 
     @property
     def loss_function(self):
-        if self.learn_mode == 'join':
-            def loss(y_true, y_pred):
-                assert self._inbound_nodes, 'CRF has not connected to any layer.'
-                assert not self._outbound_nodes, 'When learn_model="join", CRF must be the last layer.'
-                if self.sparse_target:
-                    y_true = K.one_hot(K.cast(y_true[:, :, 0], 'int32'), self.units)
-                X = self._inbound_nodes[0].input_tensors[0]
-                mask = self._inbound_nodes[0].input_masks[0]
-                nloglik = self.get_negative_log_likelihood(y_true, X, mask)
-                return nloglik
-            return loss
-        else:
-            if self.sparse_target:
-                return sparse_categorical_crossentropy
-            else:
-                return categorical_crossentropy
+        warnings.warn('CRF.loss_function is deprecated and it might be removed in the future. Please '
+                      'use losses.crf_loss instead.')
+        return crf_loss
 
     @property
     def accuracy(self):
+        warnings.warn('CRF.accuracy is deprecated and it might be removed in the future. Please '
+                      'use metrics.crf_accuracy')
         if self.test_mode == 'viterbi':
-            return self.viterbi_acc
+            return crf_viterbi_accuracy
         else:
-            return self.marginal_acc
-
-    @staticmethod
-    def _get_accuracy(y_true, y_pred, mask, sparse_target=False):
-        y_pred = K.argmax(y_pred, -1)
-        if sparse_target:
-            y_true = K.cast(y_true[:, :, 0], K.dtype(y_pred))
-        else:
-            y_true = K.argmax(y_true, -1)
-        judge = K.cast(K.equal(y_pred, y_true), K.floatx())
-        if mask is None:
-            return K.mean(judge)
-        else:
-            mask = K.cast(mask, K.floatx())
-            return K.sum(judge * mask) / K.sum(mask)
+            return crf_marginal_accuracy
 
     @property
     def viterbi_acc(self):
-        def acc(y_true, y_pred):
-            X = self._inbound_nodes[0].input_tensors[0]
-            mask = self._inbound_nodes[0].input_masks[0]
-            y_pred = self.viterbi_decoding(X, mask)
-            return self._get_accuracy(y_true, y_pred, mask, self.sparse_target)
-        acc.func_name = 'viterbi_acc'
-        return acc
+        warnings.warn('CRF.viterbi_acc is deprecated and it might be removed in the future. Please '
+                      'use metrics.viterbi_acc instead.')
+        return crf_viterbi_accuracy
 
     @property
     def marginal_acc(self):
-        def acc(y_true, y_pred):
-            X = self._inbound_nodes[0].input_tensors[0]
-            mask = self._inbound_nodes[0].input_masks[0]
-            y_pred = self.get_marginal_prob(X, mask)
-            return self._get_accuracy(y_true, y_pred, mask, self.sparse_target)
-        acc.func_name = 'marginal_acc'
-        return acc
+        warnings.warn('CRF.moarginal_acc is deprecated and it might be removed in the future. Please '
+                      'use metrics.marginal_acc instead.')
+        return crf_marginal_accuracy
 
     @staticmethod
     def softmaxNd(x, axis=-1):
