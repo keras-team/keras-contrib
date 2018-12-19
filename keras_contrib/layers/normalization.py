@@ -1,8 +1,7 @@
 from keras.engine import Layer, InputSpec
-from .. import initializers, regularizers, constraints
+from keras import initializers, regularizers, constraints
 from .. import backend as K
 from keras.utils.generic_utils import get_custom_objects
-
 import numpy as np
 
 
@@ -148,11 +147,9 @@ get_custom_objects().update({'InstanceNormalization': InstanceNormalization})
 
 class BatchRenormalization(Layer):
     """Batch renormalization layer (Sergey Ioffe, 2017).
-
     Normalize the activations of the previous layer at each batch,
     i.e. applies a transformation that maintains the mean activation
     close to 0 and the activation standard deviation close to 1.
-
     # Arguments
         axis: Integer, the axis that should be normalized
             (typically the features axis).
@@ -191,15 +188,12 @@ class BatchRenormalization(Layer):
             applied to the beta vector.
         beta_constraint: Optional constraint for the beta weight.
         gamma_constraint: Optional constraint for the gamma weight.
-
     # Input shape
         Arbitrary. Use the keyword argument `input_shape`
         (tuple of integers, does not include the samples axis)
         when using this layer as the first layer in a model.
-
     # Output shape
         Same shape as input.
-
     # References
         - [Batch Normalization: Accelerating Deep Network Training by Reducing Internal Covariate Shift](https://arxiv.org/abs/1502.03167)
     """
@@ -209,6 +203,10 @@ class BatchRenormalization(Layer):
                  gamma_initializer='one', moving_mean_initializer='zeros',
                  moving_variance_initializer='ones', gamma_regularizer=None, beta_regularizer=None,
                  beta_constraint=None, gamma_constraint=None, **kwargs):
+        if axis != -1 and K.backend() == 'tensorflow':
+            raise NotImplementedError('There is currently a bug '
+                                      'when using batch renormalisation and '
+                                      'the TensorFlow backend.')
         self.supports_masking = True
         self.axis = axis
         self.epsilon = epsilon
@@ -284,7 +282,6 @@ class BatchRenormalization(Layer):
     def call(self, inputs, training=None):
         assert self.built, 'Layer must be built before being called'
         input_shape = K.int_shape(inputs)
-        ndim = len(input_shape)
 
         reduction_axes = list(range(len(input_shape)))
         del reduction_axes[self.axis]
@@ -331,7 +328,7 @@ class BatchRenormalization(Layer):
             return x_normed
         else:
             def normalize_inference():
-                if (sorted(reduction_axes) == list(range(ndim))[:-1]):
+                if sorted(reduction_axes) == list(range(K.ndim(inputs)))[:-1]:
                     x_normed_running = K.batch_normalization(
                         inputs, self.running_mean, self.running_variance,
                         self.beta, self.gamma,
@@ -381,19 +378,15 @@ get_custom_objects().update({'BatchRenormalization': BatchRenormalization})
 
 class GroupNormalization(Layer):
     """Group normalization layer
-
     Group Normalization divides the channels into groups and computes within each group
     the mean and variance for normalization. Group Normalization's computation is independent
      of batch sizes, and its accuracy is stable in a wide range of batch sizes.
-
     Relation to Layer Normalization:
     If the number of groups is set to 1, then this operation becomes identical to
     Layer Normalization.
-
     Relation to Instance Normalization:
     If the number of groups is set to the input dimension (number of groups is equal
     to number of channels), then this operation becomes identical to Instance Normalization.
-
     # Arguments
         groups: Integer, the number of groups for Group Normalization.
             Can be in the range [1, N] where N is the input dimension.
@@ -417,15 +410,12 @@ class GroupNormalization(Layer):
         gamma_regularizer: Optional regularizer for the gamma weight.
         beta_constraint: Optional constraint for the beta weight.
         gamma_constraint: Optional constraint for the gamma weight.
-
     # Input shape
         Arbitrary. Use the keyword argument `input_shape`
         (tuple of integers, does not include the samples axis)
         when using this layer as the first layer in a model.
-
     # Output shape
         Same shape as input.
-
     # References
         - [Group Normalization](https://arxiv.org/abs/1803.08494)
     """
