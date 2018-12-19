@@ -11,6 +11,8 @@ from keras.models import Sequential
 from keras.layers import Embedding, Bidirectional, LSTM
 from keras.preprocessing.sequence import pad_sequences
 from keras_contrib.layers import CRF
+from keras_contrib.losses import crf_loss
+from keras_contrib.metrics import crf_viterbi_accuracy
 from keras_contrib.datasets import conll2000
 
 EPOCHS = 10
@@ -62,7 +64,8 @@ crf = CRF(len(class_labels), sparse_target=True)
 model.add(crf)
 model.summary()
 
-model.compile('adam', loss=crf.loss_function, metrics=[crf.accuracy])
+# The default `crf_loss` for `learn_mode='join'` is negative log likelihood.
+model.compile('adam', loss=crf_loss, metrics=[crf_viterbi_accuracy])
 model.fit(train_x, train_y, epochs=EPOCHS, validation_data=[test_x, test_y])
 
 test_y_pred = model.predict(test_x).argmax(-1)[test_x > 0]
@@ -84,7 +87,7 @@ crf = CRF(len(class_labels), sparse_target=True)
 model.add(crf)
 model.summary()
 
-model.compile('adam', loss=crf.loss_function, metrics=[crf.accuracy])
+model.compile('adam', loss=crf_loss, metrics=[crf_viterbi_accuracy])
 model.fit(train_x, train_y, epochs=EPOCHS, validation_data=[test_x, test_y])
 
 test_y_pred = model.predict(test_x).argmax(-1)[test_x > 0]

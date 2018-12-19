@@ -1,7 +1,7 @@
 import numpy as np
-from .. import initializers
-from .. import regularizers
-from .. import constraints
+from keras import initializers
+from keras import regularizers
+from keras import constraints
 from keras.engine import Layer
 from keras.engine import InputSpec
 from .. import backend as K

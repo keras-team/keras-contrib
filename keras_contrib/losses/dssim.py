@@ -4,19 +4,20 @@ import keras_contrib.backend as KC
 
 
 class DSSIMObjective():
-    def __init__(self, k1=0.01, k2=0.03, kernel_size=3, max_value=1.0):
-        """
-        Difference of Structural Similarity (DSSIM loss function). Clipped between 0 and 0.5
-        Note : You should add a regularization term like a l2 loss in addition to this one.
-        Note : In theano, the `kernel_size` must be a factor of the output size. So 3 could
-               not be the `kernel_size` for an output of 32.
+    """Difference of Structural Similarity (DSSIM loss function). Clipped between 0 and 0.5
 
-        # Arguments
-            k1: Parameter of the SSIM (default 0.01)
-            k2: Parameter of the SSIM (default 0.03)
-            kernel_size: Size of the sliding window (default 3)
-            max_value: Max value of the output (default 1.0)
-        """
+    Note : You should add a regularization term like a l2 loss in addition to this one.
+    Note : In theano, the `kernel_size` must be a factor of the output size. So 3 could
+           not be the `kernel_size` for an output of 32.
+
+    # Arguments
+        k1: Parameter of the SSIM (default 0.01)
+        k2: Parameter of the SSIM (default 0.03)
+        kernel_size: Size of the sliding window (default 3)
+        max_value: Max value of the output (default 1.0)
+    """
+
+    def __init__(self, k1=0.01, k2=0.03, kernel_size=3, max_value=1.0):
         self.__name__ = 'DSSIMObjective'
         self.kernel_size = kernel_size
         self.k1 = k1

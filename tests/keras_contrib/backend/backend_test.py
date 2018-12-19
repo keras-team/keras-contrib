@@ -169,43 +169,6 @@ class TestBackend(object):
                     assert_allclose(th_mean_val, cntk_mean_val, rtol=1e-4, atol=1e-10)
                     assert_allclose(th_var_val, cntk_var_val, rtol=1e-4, atol=1e-10)
 
-    def test_clip(self):
-        check_single_tensor_operation('clip', (4, 2), min_value=0.4, max_value=0.6)
-        check_single_tensor_operation('clip', (4, 2), min_value=0.4, max_value=None)
-
-        cases = [
-            # (x, min_value, max_value, expected)
-            (1, 0, 2, 1),
-            (1, 2, 0, 2),
-            (-1, 0, 2, 0),
-            (-1, 2, 0, 2),
-            (3, 0, 2, 2),
-            (3, 2, 0, 2),
-            (1, 0, np.inf, 1),
-            (1, np.inf, 0, np.inf),
-            (1, 0, -np.inf, 0),
-            (1, -np.inf, 0, 0),
-            (-1, 0, -np.inf, 0),
-            (-1, -np.inf, 0, -1),
-            (1, 0, None, 1),
-            (-1, 0, None, 0),
-
-            # NOTE: In the following two cases, Keras 2.0.8 raises an
-            # error on all backends, but this is a sensible extension.
-            (1, None, 0, 0),
-            (-1, None, 0, -1),
-
-            # NOTE: In the following case, Keras 2.0.8 rasies an error
-            # for TensorFlow and Theano, but returns 0 for CNTK. This
-            # extends the TensorFlow and Theano backends to match the
-            # CNTK behavior instead of raising an error.
-            (0, None, None, 0),
-        ]
-        for K_, KC_ in [(KTF, KCTF), (KTH, KCTH)]:
-            for x, min_value, max_value, expected in cases:
-                actual = K_.eval(KC_.clip(K_.constant(x), min_value, max_value))
-                assert_allclose(expected, actual, atol=1e-5)
-
 
 if __name__ == '__main__':
     pytest.main([__file__])

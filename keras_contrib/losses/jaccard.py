@@ -19,6 +19,14 @@ def jaccard_distance(y_true, y_pred, smooth=100):
     Jaccard = (|X & Y|)/ (|X|+ |Y| - |X & Y|)
             = sum(|A*B|)/(sum(|A|)+sum(|B|)-sum(|A*B|))
 
+    # Arguments
+        y_true: The ground truth tensor.
+        y_pred: The predicted tensor
+        smooth: Smoothing factor. Default is 100.
+
+    # Returns
+        The Jaccard distance between the two tensors.
+
     # References
 
     Csurka, Gabriela & Larlus, Diane & Perronnin, Florent. (2013).
