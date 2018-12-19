@@ -1,6 +1,7 @@
 from keras import backend as K
 from keras.optimizers import Optimizer
 from keras.utils.generic_utils import get_custom_objects
+from keras.legacy import interfaces
 
 
 class Yogi(Optimizer):
