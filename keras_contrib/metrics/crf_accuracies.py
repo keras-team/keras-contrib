@@ -1,4 +1,4 @@
-from .. import backend as K
+from keras import backend as K
 
 
 def _get_accuracy(y_true, y_pred, mask, sparse_target=False):
