@@ -1,4 +1,3 @@
-import numpy as np
 from keras import initializers
 from keras import regularizers
 from keras import constraints

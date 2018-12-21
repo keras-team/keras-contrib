@@ -9,7 +9,6 @@ from collections import Counter
 
 from keras.models import Sequential
 from keras.layers import Embedding, Bidirectional, LSTM
-from keras.preprocessing.sequence import pad_sequences
 from keras_contrib.layers import CRF
 from keras_contrib.losses import crf_loss
 from keras_contrib.metrics import crf_viterbi_accuracy

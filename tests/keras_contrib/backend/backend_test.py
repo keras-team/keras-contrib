@@ -3,14 +3,12 @@ from numpy.testing import assert_allclose
 import numpy as np
 
 from keras import backend as K
-from keras.backend import theano_backend as KTH, floatx, set_floatx, variable
+from keras.backend import theano_backend as KTH
 from keras.backend import tensorflow_backend as KTF
 from keras.backend import cntk_backend as KCTK
-from keras_contrib import backend as KC
 import keras_contrib.backend.theano_backend as KCTH
 import keras_contrib.backend.tensorflow_backend as KCTF
 import keras_contrib.backend.cntk_backend as KCNTK
-from keras.utils.conv_utils import convert_kernel
 
 
 def check_dtype(var, dtype):

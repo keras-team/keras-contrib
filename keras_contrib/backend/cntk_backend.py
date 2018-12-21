@@ -1,7 +1,4 @@
 from keras.backend import cntk_backend as KCN
-from keras.backend.cntk_backend import logsumexp
-import cntk as C
-import numpy as np
 
 
 def moments(x, axes, shift=None, keep_dims=False):

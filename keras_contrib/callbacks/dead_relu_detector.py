@@ -2,7 +2,6 @@ import numpy as np
 
 from keras.callbacks import Callback
 from keras import backend as K
-from keras.layers import Input
 
 
 class DeadReluDetector(Callback):

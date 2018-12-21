@@ -2,7 +2,7 @@ import pytest
 import numpy as np
 from keras_contrib import callbacks
 from keras.models import Sequential
-from keras.layers import Dense, Input
+from keras.layers import Dense
 from numpy.testing import assert_allclose
 
 

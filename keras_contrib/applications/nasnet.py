@@ -40,8 +40,6 @@ from keras.regularizers import l2
 from keras.utils.data_utils import get_file
 from keras.engine.topology import get_source_inputs
 from keras_applications.imagenet_utils import _obtain_input_shape
-from keras.applications.inception_v3 import preprocess_input
-from keras.applications.imagenet_utils import decode_predictions
 from keras import backend as K
 
 _BN_DECAY = 0.9997
@@ -214,9 +212,9 @@ def NASNet(input_shape=None,
         x, p = _reduction_A(x, p, filters // filters_multiplier, weight_decay, id='stem_2')
 
     for i in range(nb_blocks):
-        x, p = _normal_A(x, p, filters, weight_decay, id='%d' % (i))
+        x, p = _normal_A(x, p, filters, weight_decay, id='%d' % i)
 
-    x, p0 = _reduction_A(x, p, filters * filters_multiplier, weight_decay, id='reduce_%d' % (nb_blocks))
+    x, p0 = _reduction_A(x, p, filters * filters_multiplier, weight_decay, id='reduce_%d' % nb_blocks)
 
     p = p0 if not skip_reduction_layer_input else p
 
@@ -583,13 +581,13 @@ def _separable_conv_block(ip, filters, kernel_size=(3, 3), strides=(1, 1), weigh
                             padding='same', use_bias=False, kernel_initializer='he_normal',
                             kernel_regularizer=l2(weight_decay))(x)
         x = BatchNormalization(axis=channel_dim, momentum=_BN_DECAY, epsilon=_BN_EPSILON,
-                               name="separable_conv_1_bn_%s" % (id))(x)
+                               name="separable_conv_1_bn_%s" % id)(x)
         x = Activation('relu')(x)
         x = SeparableConv2D(filters, kernel_size, name='separable_conv_2_%s' % id,
                             padding='same', use_bias=False, kernel_initializer='he_normal',
                             kernel_regularizer=l2(weight_decay))(x)
         x = BatchNormalization(axis=channel_dim, momentum=_BN_DECAY, epsilon=_BN_EPSILON,
-                               name="separable_conv_2_bn_%s" % (id))(x)
+                               name="separable_conv_2_bn_%s" % id)(x)
     return x
 
 
@@ -680,12 +678,12 @@ def _normal_A(ip, p, filters, weight_decay=5e-5, id=None):
             x2 = add([x2_1, x2_2], name='normal_add_2_%s' % id)
 
         with K.name_scope('block_3'):
-            x3 = AveragePooling2D((3, 3), strides=(1, 1), padding='same', name='normal_left3_%s' % (id))(h)
+            x3 = AveragePooling2D((3, 3), strides=(1, 1), padding='same', name='normal_left3_%s' % id)(h)
             x3 = add([x3, p], name='normal_add_3_%s' % id)
 
         with K.name_scope('block_4'):
-            x4_1 = AveragePooling2D((3, 3), strides=(1, 1), padding='same', name='normal_left4_%s' % (id))(p)
-            x4_2 = AveragePooling2D((3, 3), strides=(1, 1), padding='same', name='normal_right4_%s' % (id))(p)
+            x4_1 = AveragePooling2D((3, 3), strides=(1, 1), padding='same', name='normal_left4_%s' % id)(p)
+            x4_2 = AveragePooling2D((3, 3), strides=(1, 1), padding='same', name='normal_right4_%s' % id)(p)
             x4 = add([x4_1, x4_2], name='normal_add_4_%s' % id)
 
         with K.name_scope('block_5'):

@@ -10,7 +10,6 @@ import os
 import errno
 import zipfile
 import json
-from collections import defaultdict
 from sacred import Experiment, Ingredient
 import numpy as np
 from PIL import Image

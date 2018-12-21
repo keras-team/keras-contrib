@@ -1,6 +1,5 @@
 from theano import tensor as T
 from theano.sandbox.neighbours import images2neibs
-import numpy as np
 
 try:
     import theano.sparse as th_sparse_module
@@ -12,14 +11,8 @@ except ImportError:
     from theano.sandbox.softsign import softsign as T_softsign
 from keras.backend import theano_backend as KTH
 from keras.backend.common import image_data_format
-from keras.backend.theano_backend import _preprocess_conv3d_input
-from keras.backend.theano_backend import _preprocess_conv3d_kernel
-from keras.backend.theano_backend import _preprocess_conv3d_filter_shape
-from keras.backend.theano_backend import _preprocess_padding
-from keras.backend.theano_backend import _postprocess_conv3d_output
 from keras.backend.theano_backend import _preprocess_conv2d_input
 from keras.backend.theano_backend import _postprocess_conv2d_output
-from keras.backend.theano_backend import logsumexp
 
 py_all = all
 

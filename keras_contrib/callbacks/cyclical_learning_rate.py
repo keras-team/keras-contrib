@@ -91,7 +91,7 @@ class CyclicLR(Callback):
                 self.scale_fn = lambda x: 1 / (2.**(x - 1))
                 self.scale_mode = 'cycle'
             elif self.mode == 'exp_range':
-                self.scale_fn = lambda x: gamma**(x)
+                self.scale_fn = lambda x: gamma ** x
                 self.scale_mode = 'iterations'
         else:
             self.scale_fn = scale_fn

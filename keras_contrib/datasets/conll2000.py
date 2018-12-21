@@ -4,7 +4,6 @@ from keras.utils.data_utils import get_file
 from zipfile import ZipFile
 from collections import Counter
 from keras.preprocessing.sequence import pad_sequences
-from keras.datasets import cifar10
 
 
 def load_data(path='conll2000.zip', min_freq=2):

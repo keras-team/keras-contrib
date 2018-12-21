@@ -10,7 +10,6 @@ from keras import regularizers
 from keras import constraints
 from keras.engine import Layer
 from keras.engine import InputSpec
-from keras.objectives import categorical_crossentropy, sparse_categorical_crossentropy
 
 from keras_contrib.losses import crf_loss
 from keras_contrib.metrics import crf_marginal_accuracy
