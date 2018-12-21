@@ -1,4 +1,4 @@
-from .. import backend as K
+from keras import backend as K
 from keras.objectives import categorical_crossentropy
 from keras.objectives import sparse_categorical_crossentropy
 

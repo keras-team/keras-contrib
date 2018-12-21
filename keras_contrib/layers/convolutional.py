@@ -2,7 +2,8 @@
 from __future__ import absolute_import
 import functools
 
-from .. import backend as K
+from keras import backend as K
+from keras_contrib import backend as KC
 from keras import activations
 from keras import initializers
 from keras import regularizers
@@ -189,17 +190,17 @@ class CosineConvolution2D(Layer):
                 xb = 1.
 
         Wnorm = K.sqrt(K.sum(K.square(self.W), axis=kernel_sum_axes, keepdims=True) + K.square(b) + K.epsilon())
-        xnorm = K.sqrt(K.conv2d(K.square(x), self.kernel_norm, strides=self.strides,
-                                padding=self.padding,
-                                data_format=self.data_format,
-                                filter_shape=self.kernel_norm_shape) + xb + K.epsilon())
+        xnorm = K.sqrt(KC.conv2d(K.square(x), self.kernel_norm, strides=self.strides,
+                                 padding=self.padding,
+                                 data_format=self.data_format,
+                                 filter_shape=self.kernel_norm_shape) + xb + K.epsilon())
 
         W = self.W / Wnorm
 
-        output = K.conv2d(x, W, strides=self.strides,
-                          padding=self.padding,
-                          data_format=self.data_format,
-                          filter_shape=self.kernel_shape)
+        output = KC.conv2d(x, W, strides=self.strides,
+                           padding=self.padding,
+                           data_format=self.data_format,
+                           filter_shape=self.kernel_shape)
 
         if K.backend() == 'theano':
             xnorm = K.pattern_broadcast(xnorm, [False, True, False, False])
@@ -302,7 +303,7 @@ class SubPixelUpscaling(Layer):
         pass
 
     def call(self, x, mask=None):
-        y = K.depth_to_space(x, self.scale_factor, self.data_format)
+        y = KC.depth_to_space(x, self.scale_factor, self.data_format)
         return y
 
     def compute_output_shape(self, input_shape):

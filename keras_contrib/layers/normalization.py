@@ -1,6 +1,7 @@
 from keras.engine import Layer, InputSpec
 from keras import initializers, regularizers, constraints
-from .. import backend as K
+from keras import backend as K
+from keras_contrib import backend as KC
 from keras.utils.generic_utils import get_custom_objects
 
 
@@ -292,7 +293,7 @@ class BatchRenormalization(Layer):
         broadcast_shape = [1] * len(input_shape)
         broadcast_shape[self.axis] = input_shape[self.axis]
 
-        mean_batch, var_batch = K.moments(inputs, reduction_axes, shift=None, keep_dims=False)
+        mean_batch, var_batch = KC.moments(inputs, reduction_axes, shift=None, keep_dims=False)
         std_batch = (K.sqrt(var_batch + self.epsilon))
 
         r = std_batch / (K.sqrt(self.running_variance + self.epsilon))
@@ -521,7 +522,7 @@ class GroupNormalization(Layer):
         inputs = K.reshape(inputs, group_shape)
 
         group_reduction_axes = list(range(len(group_axes)))
-        mean, variance = K.moments(inputs, group_reduction_axes[2:], keep_dims=True)
+        mean, variance = KC.moments(inputs, group_reduction_axes[2:], keep_dims=True)
         inputs = (inputs - mean) / (K.sqrt(variance + self.epsilon))
 
         # prepare broadcast shape

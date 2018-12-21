@@ -3,7 +3,7 @@ from __future__ import division
 
 import warnings
 
-from .. import backend as K
+from keras import backend as K
 from keras import activations
 from keras import initializers
 from keras import regularizers

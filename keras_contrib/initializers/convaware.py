@@ -1,5 +1,5 @@
 from __future__ import absolute_import
-from keras_contrib import backend as K
+from keras import backend as K
 from keras.initializers import *
 from keras.initializers import _compute_fans
 

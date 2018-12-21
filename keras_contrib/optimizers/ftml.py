@@ -1,6 +1,6 @@
 from __future__ import absolute_import
 from keras.optimizers import Optimizer
-from .. import backend as K
+from keras import backend as K
 from keras.utils.generic_utils import get_custom_objects
 
 
