@@ -3,6 +3,7 @@ from __future__ import absolute_import
 import functools
 
 from keras import backend as K
+from keras_contrib import backend as KC
 from keras import activations
 from keras import initializers
 from keras import regularizers
@@ -189,14 +190,14 @@ class CosineConvolution2D(Layer):
                 xb = 1.
 
         Wnorm = K.sqrt(K.sum(K.square(self.W), axis=kernel_sum_axes, keepdims=True) + K.square(b) + K.epsilon())
-        xnorm = K.sqrt(K.conv2d(K.square(x), self.kernel_norm, strides=self.strides,
+        xnorm = K.sqrt(KC.conv2d(K.square(x), self.kernel_norm, strides=self.strides,
                                 padding=self.padding,
                                 data_format=self.data_format,
                                 filter_shape=self.kernel_norm_shape) + xb + K.epsilon())
 
         W = self.W / Wnorm
 
-        output = K.conv2d(x, W, strides=self.strides,
+        output = KC.conv2d(x, W, strides=self.strides,
                           padding=self.padding,
                           data_format=self.data_format,
                           filter_shape=self.kernel_shape)
