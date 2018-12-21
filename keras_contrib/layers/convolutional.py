@@ -9,7 +9,6 @@ from keras import regularizers
 from keras import constraints
 from keras.engine import Layer
 from keras.engine import InputSpec
-from keras.layers.convolutional import Convolution3D
 from keras.utils.generic_utils import get_custom_objects
 from keras.utils.conv_utils import conv_output_length
 from keras.backend.common import normalize_data_format
@@ -172,9 +171,9 @@ class CosineConvolution2D(Layer):
                                   self.padding, self.strides[1])
 
         if self.data_format == 'channels_first':
-            return (input_shape[0], self.filters, rows, cols)
+            return input_shape[0], self.filters, rows, cols
         elif self.data_format == 'channels_last':
-            return (input_shape[0], rows, cols, self.filters)
+            return input_shape[0], rows, cols, self.filters
 
     def call(self, x, mask=None):
         b, xb = 0., 0.
@@ -309,10 +308,10 @@ class SubPixelUpscaling(Layer):
     def compute_output_shape(self, input_shape):
         if self.data_format == 'channels_first':
             b, k, r, c = input_shape
-            return (b, k // (self.scale_factor ** 2), r * self.scale_factor, c * self.scale_factor)
+            return b, k // (self.scale_factor ** 2), r * self.scale_factor, c * self.scale_factor
         else:
             b, r, c, k = input_shape
-            return (b, r * self.scale_factor, c * self.scale_factor, k // (self.scale_factor ** 2))
+            return b, r * self.scale_factor, c * self.scale_factor, k // (self.scale_factor ** 2)
 
     def get_config(self):
         config = {'scale_factor': self.scale_factor,

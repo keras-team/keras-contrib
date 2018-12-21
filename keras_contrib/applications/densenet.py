@@ -68,7 +68,6 @@ from keras.utils.layer_utils import convert_all_kernels_in_model
 from keras.utils.data_utils import get_file
 from keras.engine.topology import get_source_inputs
 from keras_applications.imagenet_utils import _obtain_input_shape
-from keras.applications.imagenet_utils import decode_predictions
 from keras.applications.imagenet_utils import preprocess_input as _preprocess_input
 import keras.backend as K
 
@@ -236,7 +235,7 @@ def DenseNet(input_shape=None,
         weights_loaded = False
 
         if (depth == 121) and (nb_dense_block == 4) and (growth_rate == 32) and (nb_filter == 64) and \
-                (bottleneck is True) and (reduction == 0.5) and (subsample_initial_block):
+                (bottleneck is True) and (reduction == 0.5) and subsample_initial_block:
             if include_top:
                 weights_path = get_file('DenseNet-BC-121-32.h5',
                                         DENSENET_121_WEIGHTS_PATH,
@@ -251,7 +250,7 @@ def DenseNet(input_shape=None,
             weights_loaded = True
 
         if (depth == 161) and (nb_dense_block == 4) and (growth_rate == 48) and (nb_filter == 96) and \
-                (bottleneck is True) and (reduction == 0.5) and (subsample_initial_block):
+                (bottleneck is True) and (reduction == 0.5) and subsample_initial_block:
             if include_top:
                 weights_path = get_file('DenseNet-BC-161-48.h5',
                                         DENSENET_161_WEIGHTS_PATH,
@@ -266,7 +265,7 @@ def DenseNet(input_shape=None,
             weights_loaded = True
 
         if (depth == 169) and (nb_dense_block == 4) and (growth_rate == 32) and (nb_filter == 64) and \
-                (bottleneck is True) and (reduction == 0.5) and (subsample_initial_block):
+                (bottleneck is True) and (reduction == 0.5) and subsample_initial_block:
             if include_top:
                 weights_path = get_file('DenseNet-BC-169-32.h5',
                                         DENSENET_169_WEIGHTS_PATH,
@@ -372,7 +371,7 @@ def DenseNetFCN(input_shape, nb_dense_block=5, growth_rate=16, nb_layers_per_blo
 
     if type(nb_layers_per_block) is not list and nb_dense_block < 1:
         raise ValueError('Number of dense layers per block must be greater than 1. Argument '
-                         'value was %d.' % (nb_layers_per_block))
+                         'value was %d.' % nb_layers_per_block)
 
     if activation not in ['softmax', 'sigmoid']:
         raise ValueError('activation must be one of "softmax" or "sigmoid"')
@@ -780,7 +779,7 @@ def __create_dense_net(nb_classes, img_input, include_top, depth=40, nb_dense_bl
         if type(nb_layers_per_block) is list or type(nb_layers_per_block) is tuple:
             nb_layers = list(nb_layers_per_block)  # Convert tuple to list
 
-            if len(nb_layers) != (nb_dense_block):
+            if len(nb_layers) != nb_dense_block:
                 raise ValueError('If `nb_dense_block` is a list, its length must match '
                                  'the number of layers provided by `nb_layers`.')
 

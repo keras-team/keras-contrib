@@ -2,7 +2,6 @@
 import numpy as np
 from numpy.testing import assert_allclose
 import inspect
-import six
 
 from keras.engine import Model, Input
 from keras.models import Sequential

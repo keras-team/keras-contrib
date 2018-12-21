@@ -1,5 +1,4 @@
 from __future__ import print_function
-import pytest
 import numpy as np
 
 from keras.utils import test_utils

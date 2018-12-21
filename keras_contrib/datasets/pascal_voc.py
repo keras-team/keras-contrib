@@ -17,18 +17,12 @@ If you aren't sure run this to do a full download + conversion setup of the data
    ./data_pascal_voc.py pascal_voc_setup
 """
 from __future__ import division, print_function, unicode_literals
-import sys
 import os
 import shutil
 import errno
-import tarfile
 from sacred import Ingredient, Experiment
-import numpy as np
-from PIL import Image
-from collections import defaultdict
 from keras.utils import get_file
 import skimage.io as io
-import numpy as np
 
 
 # ============== Ingredient 2: dataset =======================
