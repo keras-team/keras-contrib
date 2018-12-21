@@ -38,7 +38,7 @@ def classification_report(y_true, y_pred, labels):
     for r in report:
         print(formatter(*r))
     print('')
-    report2 = zip(*[(r * s, p * s, f1 * s) for l, r, p, f1, s in report])
+    report2 = list(zip(*[(r * s, p * s, f1 * s) for l, r, p, f1, s in report]))
     N = len(y_true)
     print(formatter('avg / total', sum(report2[0]) / N, sum(report2[1]) / N, sum(report2[2]) / N, N) + '\n')
 
