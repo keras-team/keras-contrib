@@ -1,5 +1,4 @@
 import tensorflow as tf
-import numpy as np
 
 try:
     from tensorflow.python.ops import ctc_ops as ctc
@@ -9,8 +8,6 @@ from keras.backend import tensorflow_backend as KTF
 from keras.backend import dtype
 from keras.backend.common import floatx
 from keras.backend.common import image_data_format
-from keras.backend.tensorflow_backend import _to_tensor
-from keras.backend.tensorflow_backend import logsumexp
 
 py_all = all
 

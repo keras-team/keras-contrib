@@ -12,7 +12,7 @@ from keras_contrib import backend as KC
 
 input_1 = np.arange(10)
 input_2 = np.zeros(10)
-input_3 = np.ones((10))
+input_3 = np.ones(10)
 input_shapes = [np.ones((10, 10)), np.ones((10, 10, 10))]
 
 

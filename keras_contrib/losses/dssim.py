@@ -3,7 +3,7 @@ from keras.objectives import *
 import keras_contrib.backend as KC
 
 
-class DSSIMObjective():
+class DSSIMObjective:
     """Difference of Structural Similarity (DSSIM loss function). Clipped between 0 and 0.5
 
     Note : You should add a regularization term like a l2 loss in addition to this one.
