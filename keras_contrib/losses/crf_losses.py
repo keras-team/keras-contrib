@@ -14,6 +14,9 @@ def crf_nll(y_true, y_pred):
 
     # Returns
         A scalar representing corresponding to the negative log-likelihood.
+
+    If you open an issue or a pull request about CRF, please
+    add 'cc @lzfelix' to notify Luiz Felix.
     """
 
     crf, idx = y_pred._keras_history[:2]
@@ -37,6 +40,9 @@ def crf_loss(y_true, y_pred):
         If the CRF layer is being trained in the join mode, returns the negative
         log-likelihood. Otherwise returns the categorical crossentropy implemented
         by the underlying Keras backend.
+
+    If you open an issue or a pull request about CRF, please
+    add 'cc @lzfelix' to notify Luiz Felix.
     """
     crf, idx = y_pred._keras_history[:2]
     if crf.learn_mode == 'join':
