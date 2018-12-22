@@ -8,10 +8,13 @@ from numpy.testing import assert_allclose
 from keras_contrib.utils.save_load_utils import save_all_weights, load_all_weights
 
 
-@pytest.mark.skipif(K.backend() != 'tensorflow', reason='save_all_weights and load_all_weights only supported on TensorFlow')
+@pytest.mark.skipif(K.backend() != 'tensorflow',
+                    reason='save_all_weights and load_all_weights only '
+                           'supported on TensorFlow')
 def test_save_and_load_all_weights():
     '''
-    Test save_all_weights and load_all_weights. Save and load optimizer and model weights but not configuration.
+    Test save_all_weights and load_all_weights.
+    Save and load optimizer and model weights but not configuration.
     '''
 
     def make_model():

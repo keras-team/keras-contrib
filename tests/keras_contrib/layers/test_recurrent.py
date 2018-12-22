@@ -20,7 +20,8 @@ def rnn_test(f):
     All the recurrent layers share the same interface,
     so we can run through them with a single function.
     """
-    # Example : return pytest.mark.parametrize("layer_class", [recurrent.JZ1, recurrent.NTM])(f)
+    # Example : return pytest.mark.parametrize("layer_class",
+    #                                           [recurrent.JZ1, recurrent.NTM])(f)
     return pytest.mark.parametrize('layer_class', [])(f)
 
 
