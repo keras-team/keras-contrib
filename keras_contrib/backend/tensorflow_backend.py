@@ -155,8 +155,9 @@ def extract_image_patches(x, ksizes, ssizes, padding='same',
                                        padding)
     # Reshaping to fit Theano
     bs, w, h, ch = KTF.int_shape(patches)
-    patches = tf.reshape(tf.transpose(tf.reshape(patches, [-1, w, h, tf.floordiv(ch, ch_i), ch_i]), [0, 1, 2, 4, 3]),
-                         [-1, w, h, ch_i, ksizes[0], ksizes[1]])
+    reshaped = tf.reshape(patches, [-1, w, h, tf.floordiv(ch, ch_i), ch_i])
+    final_shape = [-1, w, h, ch_i, ksizes[0], ksizes[1]]
+    patches = tf.reshape(tf.transpose(reshaped, [0, 1, 2, 4, 3]), final_shape)
     if data_format == 'channels_last':
         patches = KTF.permute_dimensions(patches, [0, 1, 2, 4, 5, 3])
     return patches
