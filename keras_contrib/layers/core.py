@@ -14,7 +14,8 @@ from keras.utils.generic_utils import get_custom_objects
 
 class CosineDense(Layer):
     """A cosine normalized densely-connected NN layer
-    Cosine Normalization: Using Cosine Similarity Instead of Dot Product in Neural Networks
+    Cosine Normalization: Using Cosine Similarity Instead
+    of Dot Product in Neural Networks
     https://arxiv.org/pdf/1702.05870.pdf
 
     # Example
@@ -81,7 +82,8 @@ class CosineDense(Layer):
 
     def __init__(self, units, kernel_initializer='glorot_uniform',
                  activation=None, weights=None,
-                 kernel_regularizer=None, bias_regularizer=None, activity_regularizer=None,
+                 kernel_regularizer=None, bias_regularizer=None,
+                 activity_regularizer=None,
                  kernel_constraint=None, bias_constraint=None,
                  use_bias=True, **kwargs):
         if 'input_shape' not in kwargs and 'input_dim' in kwargs:
@@ -135,8 +137,12 @@ class CosineDense(Layer):
         else:
             b, xb = 0., 0.
 
-        xnorm = K.sqrt(K.sum(K.square(x), axis=-1, keepdims=True) + xb + K.epsilon())
-        Wnorm = K.sqrt(K.sum(K.square(self.kernel), axis=0) + K.square(b) + K.epsilon())
+        xnorm = K.sqrt(K.sum(K.square(x), axis=-1, keepdims=True)
+                       + xb
+                       + K.epsilon())
+        Wnorm = K.sqrt(K.sum(K.square(self.kernel), axis=0)
+                       + K.square(b)
+                       + K.epsilon())
 
         xWnorm = (xnorm * Wnorm)
 
@@ -154,15 +160,18 @@ class CosineDense(Layer):
         return tuple(output_shape)
 
     def get_config(self):
-        config = {'units': self.units,
-                  'kernel_initializer': initializers.serialize(self.kernel_initializer),
-                  'activation': activations.serialize(self.activation),
-                  'kernel_regularizer': regularizers.serialize(self.kernel_regularizer),
-                  'bias_regularizer': regularizers.serialize(self.bias_regularizer),
-                  'activity_regularizer': regularizers.serialize(self.activity_regularizer),
-                  'kernel_constraint': constraints.serialize(self.kernel_constraint),
-                  'bias_constraint': constraints.serialize(self.bias_constraint),
-                  'use_bias': self.use_bias}
+        config = {
+            'units': self.units,
+            'kernel_initializer': initializers.serialize(self.kernel_initializer),
+            'activation': activations.serialize(self.activation),
+            'kernel_regularizer': regularizers.serialize(self.kernel_regularizer),
+            'bias_regularizer': regularizers.serialize(self.bias_regularizer),
+            'activity_regularizer':
+                regularizers.serialize(self.activity_regularizer),
+            'kernel_constraint': constraints.serialize(self.kernel_constraint),
+            'bias_constraint': constraints.serialize(self.bias_constraint),
+            'use_bias': self.use_bias
+        }
         base_config = super(CosineDense, self).get_config()
         return dict(list(base_config.items()) + list(config.items()))
 
