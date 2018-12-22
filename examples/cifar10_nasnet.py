@@ -16,9 +16,14 @@ import numpy as np
 
 
 weights_file = 'NASNet-CIFAR-10.h5'
-lr_reducer = ReduceLROnPlateau(factor=np.sqrt(0.5), cooldown=0, patience=5, min_lr=0.5e-5)
+lr_reducer = ReduceLROnPlateau(factor=np.sqrt(0.5),
+                               cooldown=0,
+                               patience=5,
+                               min_lr=0.5e-5)
 csv_logger = CSVLogger('NASNet-CIFAR-10.csv')
-model_checkpoint = ModelCheckpoint(weights_file, monitor='val_predictions_acc', save_best_only=True,
+model_checkpoint = ModelCheckpoint(weights_file,
+                                   monitor='val_predictions_acc',
+                                   save_best_only=True,
                                    save_weights_only=True, mode='max')
 
 batch_size = 128
@@ -74,8 +79,8 @@ else:
         samplewise_std_normalization=False,  # divide each input by its std
         zca_whitening=False,  # apply ZCA whitening
         rotation_range=0,  # randomly rotate images in the range (degrees, 0 to 180)
-        width_shift_range=0.1,  # randomly shift images horizontally (fraction of total width)
-        height_shift_range=0.1,  # randomly shift images vertically (fraction of total height)
+        width_shift_range=0.1,
+        height_shift_range=0.1,
         horizontal_flip=True,  # randomly flip images
         vertical_flip=False)  # randomly flip images
 
@@ -83,7 +88,8 @@ else:
     # (std, mean, and principal components if ZCA whitening is applied).
     datagen.fit(X_train)
 
-    # wrap the ImageDataGenerator to yield two label batches [y, y] for each input batch X
+    # wrap the ImageDataGenerator to yield
+    # two label batches [y, y] for each input batch X
     # When training a NASNet model, we have to use its auxilary training head
     # Therefore the model is technically a 1 input - 2 output model, and requires
     # the label to be duplicated for the auxilary head
