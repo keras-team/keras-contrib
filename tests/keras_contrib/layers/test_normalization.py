@@ -170,7 +170,10 @@ def test_instancenorm_perchannel_correctness():
 
     # this model does not provide a normalization axis
     model = Sequential()
-    norm = normalization.InstanceNormalization(axis=None, input_shape=(3, 4, 4), center=False, scale=False)
+    norm = normalization.InstanceNormalization(axis=None,
+                                               input_shape=(3, 4, 4),
+                                               center=False,
+                                               scale=False)
     model.add(norm)
     model.compile(loss='mse', optimizer='sgd')
     model.fit(batch, batch, epochs=4, verbose=0)
@@ -190,7 +193,10 @@ def test_instancenorm_perchannel_correctness():
 
     # this model sets the channel as a normalization axis
     model = Sequential()
-    norm = normalization.InstanceNormalization(axis=1, input_shape=(3, 4, 4), center=False, scale=False)
+    norm = normalization.InstanceNormalization(axis=1,
+                                               input_shape=(3, 4, 4),
+                                               center=False,
+                                               scale=False)
     model.add(norm)
     model.compile(loss='mse', optimizer='sgd')
 
@@ -257,7 +263,9 @@ def test_batchrenorm_mode_0_or_2_twice():
                            'axis is something else than -1.')
 def test_batchrenorm_mode_0_convnet():
     model = Sequential()
-    norm_m0 = normalization.BatchRenormalization(axis=1, input_shape=(3, 4, 4), momentum=0.8)
+    norm_m0 = normalization.BatchRenormalization(axis=1,
+                                                 input_shape=(3, 4, 4),
+                                                 momentum=0.8)
     model.add(norm_m0)
     model.compile(loss='mse', optimizer='sgd')
 
@@ -441,8 +449,12 @@ def test_groupnorm_mode_twice():
     # This is a regression test for issue #4881 with the old
     # batch normalization functions in the Theano backend.
     model = Sequential()
-    model.add(normalization.GroupNormalization(input_shape=(10, 5, 5), axis=1, groups=2))
-    model.add(normalization.GroupNormalization(input_shape=(10, 5, 5), axis=1, groups=2))
+    model.add(normalization.GroupNormalization(input_shape=(10, 5, 5),
+                                               axis=1,
+                                               groups=2))
+    model.add(normalization.GroupNormalization(input_shape=(10, 5, 5),
+                                               axis=1,
+                                               groups=2))
     model.compile(loss='mse', optimizer='sgd')
 
     x = np.random.normal(loc=5.0, scale=10.0, size=(20, 10, 5, 5))
@@ -452,7 +464,9 @@ def test_groupnorm_mode_twice():
 
 def test_groupnorm_convnet():
     model = Sequential()
-    norm = normalization.GroupNormalization(axis=1, input_shape=(3, 4, 4), groups=3)
+    norm = normalization.GroupNormalization(axis=1,
+                                            input_shape=(3, 4, 4),
+                                            groups=3)
     model.add(norm)
     model.compile(loss='mse', optimizer='sgd')
 
