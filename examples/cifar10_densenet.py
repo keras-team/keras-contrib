@@ -25,7 +25,10 @@ img_rows, img_cols = 32, 32
 img_channels = 3
 
 # Parameters for the DenseNet model builder
-img_dim = (img_channels, img_rows, img_cols) if K.image_data_format() == 'channels_first' else (img_rows, img_cols, img_channels)
+if K.image_data_format() == 'channels_first':
+    img_dim = (img_channels, img_rows, img_cols)
+else:
+    img_dim = (img_rows, img_cols, img_channels)
 depth = 40
 nb_dense_block = 3
 growth_rate = 12
@@ -68,12 +71,14 @@ weights_file = 'DenseNet-40-12-CIFAR-10.h5'
 lr_reducer = ReduceLROnPlateau(monitor='val_loss', factor=np.sqrt(0.1),
                                cooldown=0, patience=10, min_lr=0.5e-6)
 early_stopper = EarlyStopping(monitor='val_acc', min_delta=1e-4, patience=20)
-model_checkpoint = ModelCheckpoint(weights_file, monitor='val_acc', save_best_only=True,
+model_checkpoint = ModelCheckpoint(weights_file, monitor='val_acc',
+                                   save_best_only=True,
                                    save_weights_only=True, mode='auto')
 
 callbacks = [lr_reducer, early_stopper, model_checkpoint]
 
-model.fit_generator(generator.flow(trainX, Y_train, batch_size=batch_size), steps_per_epoch=len(trainX) // batch_size,
+model.fit_generator(generator.flow(trainX, Y_train, batch_size=batch_size),
+                    steps_per_epoch=len(trainX) // batch_size,
                     epochs=epochs,
                     callbacks=callbacks,
                     validation_data=(testX, Y_test),
