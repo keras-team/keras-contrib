@@ -16,7 +16,8 @@ def _get_accuracy(y_true, y_pred, mask, sparse_target=False):
 
 
 def crf_viterbi_accuracy(y_true, y_pred):
-    '''Use Viterbi algorithm to get best path, and compute its accuracy. `y_pred` must be an output from CRF.'''
+    '''Use Viterbi algorithm to get best path, and compute its accuracy.
+    `y_pred` must be an output from CRF.'''
     crf, idx = y_pred._keras_history[:2]
     X = crf._inbound_nodes[idx].input_tensors[0]
     mask = crf._inbound_nodes[idx].input_masks[0]
@@ -25,7 +26,8 @@ def crf_viterbi_accuracy(y_true, y_pred):
 
 
 def crf_marginal_accuracy(y_true, y_pred):
-    '''Use time-wise marginal argmax as prediction. `y_pred` must be an output from CRF with `learn_mode="marginal"`.'''
+    '''Use time-wise marginal argmax as prediction.
+    `y_pred` must be an output from CRF with `learn_mode="marginal"`.'''
     crf, idx = y_pred._keras_history[:2]
     X = crf._inbound_nodes[idx].input_tensors[0]
     mask = crf._inbound_nodes[idx].input_masks[0]
