@@ -19,7 +19,7 @@ class Yogi(Optimizer):
         - [Adaptive Methods for Nonconvex Optimization](
            https://papers.nips.cc/paper/8186-adaptive-methods-for-nonconvex-optimization)
 
-    If you open a issues or a pull request about the Yogi optimizer,
+    If you open an issue or a pull request about the Yogi optimizer,
     please add 'cc @MarcoAndreaBuchmann' to notify him.
     """
 
