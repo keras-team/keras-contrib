@@ -43,6 +43,9 @@ class CRF(Layer):
 
     In addition, this implementation supports masking and accepts either onehot or sparse target.
 
+    If you open a issue or a pull request about CRF, please
+    add 'cc @lzfelix' to notify Luiz Felix.
+
 
     # Examples
 
