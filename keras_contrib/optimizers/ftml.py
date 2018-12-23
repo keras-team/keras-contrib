@@ -15,7 +15,8 @@ class FTML(Optimizer):
         decay: float >= 0. Learning rate decay over each update.
 
     # References
-        - [FTML - Follow the Moving Leader in Deep Learning](http://www.cse.ust.hk/~szhengac/papers/icml17.pdf)
+        - [FTML - Follow the Moving Leader in Deep Learning](
+        http://www.cse.ust.hk/~szhengac/papers/icml17.pdf)
     """
 
     def __init__(self, lr=0.0025, beta_1=0.6, beta_2=0.999,
@@ -50,7 +51,8 @@ class FTML(Optimizer):
 
         for p, g, z, v, d in zip(params, grads, zs, vs, ds):
             v_t = self.beta_2 * v + (1. - self.beta_2) * K.square(g)
-            d_t = (K.sqrt(v_t / (1. - K.pow(self.beta_2, t))) + self.epsilon) / lr_t
+            d_t = (K.sqrt(v_t / (1. - K.pow(self.beta_2, t)))
+                   + self.epsilon) / lr_t
             sigma_t = d_t - self.beta_1 * d
             z_t = self.beta_1 * z + (1. - self.beta_1) * g - sigma_t * p
 
