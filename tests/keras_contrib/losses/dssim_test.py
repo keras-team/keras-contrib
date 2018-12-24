@@ -44,14 +44,20 @@ def test_DSSIM_channels_last():
     K.set_image_data_format('channels_last')
     for input_dim, kernel_size in zip([32, 33], [2, 3]):
         input_shape = [input_dim, input_dim, 3]
-        X = np.random.random_sample(4 * input_dim * input_dim * 3).reshape([4] + input_shape)
-        y = np.random.random_sample(4 * input_dim * input_dim * 3).reshape([4] + input_shape)
+        X = np.random.random_sample(4 * input_dim * input_dim * 3)
+        X = X.reshape([4] + input_shape)
+        y = np.random.random_sample(4 * input_dim * input_dim * 3)
+        y = y.reshape([4] + input_shape)
 
         model = Sequential()
-        model.add(Conv2D(32, (3, 3), padding='same', input_shape=input_shape, activation='relu'))
-        model.add(Conv2D(3, (3, 3), padding='same', input_shape=input_shape, activation='relu'))
+        model.add(Conv2D(32, (3, 3), padding='same', input_shape=input_shape,
+                         activation='relu'))
+        model.add(Conv2D(3, (3, 3), padding='same', input_shape=input_shape,
+                         activation='relu'))
         adam = Adam(lr=0.001, beta_1=0.9, beta_2=0.999, epsilon=1e-8)
-        model.compile(loss=DSSIMObjective(kernel_size=kernel_size), metrics=['mse'], optimizer=adam)
+        model.compile(loss=DSSIMObjective(kernel_size=kernel_size),
+                      metrics=['mse'],
+                      optimizer=adam)
         model.fit(X, y, batch_size=2, epochs=1, shuffle='batch')
 
         # Test same
@@ -74,14 +80,19 @@ def test_DSSIM_channels_first():
     K.set_image_data_format('channels_first')
     for input_dim, kernel_size in zip([32, 33], [2, 3]):
         input_shape = [3, input_dim, input_dim]
-        X = np.random.random_sample(4 * input_dim * input_dim * 3).reshape([4] + input_shape)
-        y = np.random.random_sample(4 * input_dim * input_dim * 3).reshape([4] + input_shape)
+        X = np.random.random_sample(4 * input_dim * input_dim * 3)
+        X = X.reshape([4] + input_shape)
+        y = np.random.random_sample(4 * input_dim * input_dim * 3)
+        y = y.reshape([4] + input_shape)
 
         model = Sequential()
-        model.add(Conv2D(32, (3, 3), padding='same', input_shape=input_shape, activation='relu'))
-        model.add(Conv2D(3, (3, 3), padding='same', input_shape=input_shape, activation='relu'))
+        model.add(Conv2D(32, (3, 3), padding='same', input_shape=input_shape,
+                         activation='relu'))
+        model.add(Conv2D(3, (3, 3), padding='same', input_shape=input_shape,
+                         activation='relu'))
         adam = Adam(lr=0.001, beta_1=0.9, beta_2=0.999, epsilon=1e-8)
-        model.compile(loss=DSSIMObjective(kernel_size=kernel_size), metrics=['mse'], optimizer=adam)
+        model.compile(loss=DSSIMObjective(kernel_size=kernel_size), metrics=['mse'],
+                      optimizer=adam)
         model.fit(X, y, batch_size=2, epochs=1, shuffle='batch')
 
         # Test same

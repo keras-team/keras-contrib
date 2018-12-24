@@ -1,0 +1,12 @@
+{
+  "/mnt/c/Users/smith/Desktop/projects/keras-contrib/contrib-docs/__init__.py": [
+    1545649340.334594,
+    [
+      "E402",
+      "\\",
+      "E731",
+      "\\",
+      "W503"
+    ]
+  ]
+}
