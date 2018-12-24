@@ -12,7 +12,8 @@ from keras.models import Sequential, Model
 from keras.layers import Input, Dense, Conv2D, Flatten, Activation
 from keras import backend as K
 
-n_out = 11  # with 1 neuron dead, 1/11 is just below the threshold of 10% with verbose = False
+n_out = 11
+# with 1 neuron dead, 1/11 is just below the threshold of 10% with verbose = False
 
 
 def check_print(do_train, expected_warnings, nr_dead=None, perc_dead=None):
@@ -30,7 +31,9 @@ def check_print(do_train, expected_warnings, nr_dead=None, perc_dead=None):
 
     do_train()
 
-    stdoutput = out.getvalue().strip()  # get prints, can be something like: "Layer dense (#0) has 2 dead neurons (20.00%)!"
+    # get prints, can be something like: "Layer
+    # dense (#0) has 2 dead neurons (20.00%)!"
+    stdoutput = out.getvalue().strip()
     str_to_count = "dead neurons"
     count = stdoutput.count(str_to_count)
 
@@ -40,10 +43,12 @@ def check_print(do_train, expected_warnings, nr_dead=None, perc_dead=None):
     assert expected_warnings == count
     if expected_warnings and (nr_dead is not None):
         str_to_check = 'has {} dead'.format(nr_dead)
-        assert str_to_check in stdoutput, '"{}" not in "{}"'.format(str_to_check, stdoutput)
+        assert str_to_check in stdoutput, '"{}" not in "{}"'.format(str_to_check,
+                                                                    stdoutput)
     if expected_warnings and (perc_dead is not None):
         str_to_check = 'neurons ({:.2%})!'.format(perc_dead)
-        assert str_to_check in stdoutput, '"{}" not in "{}"'.format(str_to_check, stdoutput)
+        assert str_to_check in stdoutput, '"{}" not in "{}"'.format(str_to_check,
+                                                                    stdoutput)
 
 
 def test_DeadDeadReluDetector():
@@ -75,17 +80,23 @@ def test_DeadDeadReluDetector():
 
         check_print(do_train, expected_warnings, nr_dead, perc_dead)
 
-    weights_1_dead = np.ones(shape_weights)  # weights that correspond to NN with 1/11 neurons dead
-    weights_2_dead = np.ones(shape_weights)  # weights that correspond to NN with 2/11 neurons dead
-    weights_all_dead = np.zeros(shape_weights)  # weights that correspond to all neurons dead
+    # weights that correspond to NN with 1/11 neurons dead
+    weights_1_dead = np.ones(shape_weights)
+    # weights that correspond to NN with 2/11 neurons dead
+    weights_2_dead = np.ones(shape_weights)
+    # weights that correspond to all neurons dead
+    weights_all_dead = np.zeros(shape_weights)
 
     weights_1_dead[:, 0] = 0
     weights_2_dead[:, 0:2] = 0
 
-    do_test(weights_1_dead, verbose=True, expected_warnings=1, nr_dead=1, perc_dead=1. / n_out)
+    do_test(weights_1_dead, verbose=True,
+            expected_warnings=1, nr_dead=1, perc_dead=1. / n_out)
     do_test(weights_1_dead, verbose=False, expected_warnings=0)
-    do_test(weights_2_dead, verbose=True, expected_warnings=1, nr_dead=2, perc_dead=2. / n_out)
-    # do_test(weights_all_dead, verbose=True, expected_warnings=1, nr_dead=n_out, perc_dead=1.)
+    do_test(weights_2_dead, verbose=True,
+            expected_warnings=1, nr_dead=2, perc_dead=2. / n_out)
+    # do_test(weights_all_dead, verbose=True, expected_warnings=1,
+    # nr_dead=n_out, perc_dead=1.)
 
 
 def test_DeadDeadReluDetector_bias():
@@ -99,7 +110,8 @@ def test_DeadDeadReluDetector_bias():
     # ignore batch size
     input_shape_dense = tuple(input_shape[1:])
 
-    def do_test(weights, bias, expected_warnings, verbose, nr_dead=None, perc_dead=None):
+    def do_test(weights, bias, expected_warnings, verbose,
+                nr_dead=None, perc_dead=None):
 
         def do_train():
             dataset = np.ones(input_shape)  # data to be fed as training
@@ -118,19 +130,25 @@ def test_DeadDeadReluDetector_bias():
 
         check_print(do_train, expected_warnings, nr_dead, perc_dead)
 
-    weights_1_dead = np.ones(shape_weights)  # weights that correspond to NN with 1/11 neurons dead
-    weights_2_dead = np.ones(shape_weights)  # weights that correspond to NN with 2/11 neurons dead
-    weights_all_dead = np.zeros(shape_weights)  # weights that correspond to all neurons dead
+    # weights that correspond to NN with 1/11 neurons dead
+    weights_1_dead = np.ones(shape_weights)
+    # weights that correspond to NN with 2/11 neurons dead
+    weights_2_dead = np.ones(shape_weights)
+    # weights that correspond to all neurons dead
+    weights_all_dead = np.zeros(shape_weights)
 
     weights_1_dead[:, 0] = 0
     weights_2_dead[:, 0:2] = 0
 
     bias = np.zeros(shape_bias)
 
-    do_test(weights_1_dead, bias, verbose=True, expected_warnings=1, nr_dead=1, perc_dead=1. / n_out)
+    do_test(weights_1_dead, bias, verbose=True, expected_warnings=1,
+            nr_dead=1, perc_dead=1. / n_out)
     do_test(weights_1_dead, bias, verbose=False, expected_warnings=0)
-    do_test(weights_2_dead, bias, verbose=True, expected_warnings=1, nr_dead=2, perc_dead=2. / n_out)
-    # do_test(weights_all_dead, bias, verbose=True, expected_warnings=1, nr_dead=n_out, perc_dead=1.)
+    do_test(weights_2_dead, bias, verbose=True, expected_warnings=1,
+            nr_dead=2, perc_dead=2. / n_out)
+    # do_test(weights_all_dead, bias, verbose=True,
+    # expected_warnings=1, nr_dead=n_out, perc_dead=1.)
 
 
 def test_DeadDeadReluDetector_conv():
@@ -147,7 +165,8 @@ def test_DeadDeadReluDetector_conv():
     shape_weights = (5, 5, 4, n_out)
     shape_out = (n_samples, n_out)
 
-    def do_test(weights_bias, expected_warnings, verbose, nr_dead=None, perc_dead=None):
+    def do_test(weights_bias, expected_warnings, verbose,
+                nr_dead=None, perc_dead=None):
         """
         :param perc_dead: as float, 10% should be written as 0.1
         """
@@ -155,7 +174,8 @@ def test_DeadDeadReluDetector_conv():
         def do_train():
             dataset = np.ones(input_shape)  # data to be fed as training
             model = Sequential()
-            model.add(Conv2D(n_out, (5, 5), activation='relu', input_shape=input_shape_conv,
+            model.add(Conv2D(n_out, (5, 5), activation='relu',
+                             input_shape=input_shape_conv,
                              use_bias=True, weights=weights_bias, name='conv'))
             model.add(Flatten())  # to handle Theano's categorical crossentropy
             model.compile(optimizer='sgd', loss='categorical_crossentropy')
@@ -170,11 +190,14 @@ def test_DeadDeadReluDetector_conv():
 
         check_print(do_train, expected_warnings, nr_dead, perc_dead)
 
-    weights_1_dead = np.ones(shape_weights)      # weights that correspond to NN with 1/11 neurons dead
+    # weights that correspond to NN with 1/11 neurons dead
+    weights_1_dead = np.ones(shape_weights)
     weights_1_dead[..., 0] = 0
-    weights_2_dead = np.ones(shape_weights)    # weights that correspond to NN with 2/11 neurons dead
+    # weights that correspond to NN with 2/11 neurons dead
+    weights_2_dead = np.ones(shape_weights)
     weights_2_dead[..., 0:2] = 0
-    weights_all_dead = np.zeros(shape_weights)    # weights that correspond to NN with all neurons dead
+    # weights that correspond to NN with all neurons dead
+    weights_all_dead = np.zeros(shape_weights)
 
     bias = np.zeros((11, ))
 
@@ -182,10 +205,13 @@ def test_DeadDeadReluDetector_conv():
     weights_bias_2_dead = [weights_2_dead, bias]
     weights_bias_all_dead = [weights_all_dead, bias]
 
-    do_test(weights_bias_1_dead, verbose=True, expected_warnings=1, nr_dead=1, perc_dead=1. / n_out)
+    do_test(weights_bias_1_dead, verbose=True, expected_warnings=1,
+            nr_dead=1, perc_dead=1. / n_out)
     do_test(weights_bias_1_dead, verbose=False, expected_warnings=0)
-    do_test(weights_bias_2_dead, verbose=True, expected_warnings=1, nr_dead=2, perc_dead=2. / n_out)
-    # do_test(weights_bias_all_dead, verbose=True, expected_warnings=1, nr_dead=n_out, perc_dead=1.)
+    do_test(weights_bias_2_dead, verbose=True, expected_warnings=1,
+            nr_dead=2, perc_dead=2. / n_out)
+    # do_test(weights_bias_all_dead, verbose=True, expected_warnings=1,
+    # nr_dead=n_out, perc_dead=1.)
 
 
 def test_DeadDeadReluDetector_activation():
