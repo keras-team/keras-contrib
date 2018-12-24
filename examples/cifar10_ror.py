@@ -41,10 +41,14 @@ optimizer = Adam(lr=1e-3)
 model.compile(loss='categorical_crossentropy', optimizer=optimizer, metrics=['acc'])
 print('Finished compiling')
 
-model.fit_generator(generator.flow(trainX, trainY, batch_size=batch_size), steps_per_epoch=len(trainX) // batch_size,
+checkpoint = callbacks.ModelCheckpoint('weights/RoR-WRN-40-2-Weights.h5',
+                                       monitor='val_acc',
+                                       save_best_only=True,
+                                       save_weights_only=True)
+model.fit_generator(generator.flow(trainX, trainY, batch_size=batch_size),
+                    steps_per_epoch=len(trainX) // batch_size,
                     epochs=epochs,
-                    callbacks=[callbacks.ModelCheckpoint('weights/RoR-WRN-40-2-Weights.h5', monitor='val_acc',
-                                                         save_best_only=True, save_weights_only=True)],
+                    callbacks=[checkpoint],
                     validation_data=(testX, testY),
                     verbose=2)
 

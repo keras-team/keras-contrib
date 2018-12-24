@@ -1,4 +1,5 @@
-"""Train CRF and BiLSTM-CRF on CONLL2000 chunking data, similar to https://arxiv.org/pdf/1508.01991v1.pdf.
+"""Train CRF and BiLSTM-CRF on CONLL2000 chunking data,
+similar to https://arxiv.org/pdf/1508.01991v1.pdf.
 """
 from __future__ import absolute_import
 from __future__ import print_function
@@ -20,7 +21,8 @@ BiRNN_UNITS = 200
 
 
 def classification_report(y_true, y_pred, labels):
-    '''Similar to the one in sklearn.metrics, reports per classs recall, precision and F1 score'''
+    '''Similar to the one in sklearn.metrics,
+    reports per classs recall, precision and F1 score'''
     y_true = numpy.asarray(y_true).ravel()
     y_pred = numpy.asarray(y_pred).ravel()
     corrects = Counter(yt for yt, yp in zip(y_true, y_pred) if yt == yp)
@@ -33,23 +35,33 @@ def classification_report(y_true, y_pred, labels):
                ) for i, lab in enumerate(labels))
     report = [(l, r, p, 2 * r * p / max(1e-9, r + p), s) for l, r, p, s in report]
 
-    print('{:<15}{:>10}{:>10}{:>10}{:>10}\n'.format('', 'recall', 'precision', 'f1-score', 'support'))
+    print('{:<15}{:>10}{:>10}{:>10}{:>10}\n'.format('',
+                                                    'recall',
+                                                    'precision',
+                                                    'f1-score',
+                                                    'support'))
     formatter = '{:<15}{:>10.2f}{:>10.2f}{:>10.2f}{:>10d}'.format
     for r in report:
         print(formatter(*r))
     print('')
     report2 = list(zip(*[(r * s, p * s, f1 * s) for l, r, p, f1, s in report]))
     N = len(y_true)
-    print(formatter('avg / total', sum(report2[0]) / N, sum(report2[1]) / N, sum(report2[2]) / N, N) + '\n')
+    print(formatter('avg / total',
+                    sum(report2[0]) / N,
+                    sum(report2[1]) / N,
+                    sum(report2[2]) / N, N) + '\n')
 
 
 # ------
 # Data
 # -----
 
-# conll200 has two different targets, here will only use IBO like chunking as an example
-(train_x, _, train_y), (test_x, _, test_y), (vocab, _, class_labels) = conll2000.load_data()
-
+# conll200 has two different targets, here will only use
+# IBO like chunking as an example
+train, test, voc = conll2000.load_data()
+(train_x, _, train_y) = train
+(test_x, _, test_y) = test
+(vocab, _, class_labels) = voc
 
 # --------------
 # 1. Regular CRF
