@@ -62,7 +62,8 @@ class CyclicLR(Callback):
 
     # References
 
-      - [Cyclical Learning Rates for Training Neural Networks](https://arxiv.org/abs/1506.01186)
+      - [Cyclical Learning Rates for Training Neural Networks](
+      https://arxiv.org/abs/1506.01186)
     """
 
     def __init__(
@@ -76,8 +77,10 @@ class CyclicLR(Callback):
             scale_mode='cycle'):
         super(CyclicLR, self).__init__()
 
-        assert mode in ['triangular', 'triangular2',
-                        'exp_range'], "mode must be one of 'triangular', 'triangular2', or 'exp_range'"
+        if mode not in ['triangular', 'triangular2',
+                        'exp_range']:
+            raise KeyError("mode must be one of 'triangular', "
+                           "'triangular2', or 'exp_range'")
         self.base_lr = base_lr
         self.max_lr = max_lr
         self.step_size = step_size
