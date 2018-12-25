@@ -102,3 +102,5 @@ contrib-docs/site/*
 contrib-docs/sources/*
 contrib-docs/theme/fonts/*
 contrib-docs/theme/img/*
+
+.pytest_cache/*
