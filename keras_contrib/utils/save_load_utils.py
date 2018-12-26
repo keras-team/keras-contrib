@@ -14,7 +14,8 @@ def save_all_weights(model, filepath, include_optimizer=True):
     The HDF5 file contains:
         - the model's weights
         - the model's optimizer's state (if any)
-    If you have a complicated model or set of models that do not serialize to JSON correctly, use this method.
+    If you have a complicated model or set of models that do not serialize
+    to JSON correctly, use this method.
     # Arguments
         model: Keras model instance to be saved.
         filepath: String, path where to save the model.
@@ -95,7 +96,9 @@ def load_all_weights(model, filepath, include_optimizer=True):
         # set weights
         saving.load_weights_from_hdf5_group(f['model_weights'], model.layers)
         # Set optimizer weights.
-        if include_optimizer and 'optimizer_weights' in f and hasattr(model, 'optimizer') and model.optimizer:
+        if (include_optimizer
+                and 'optimizer_weights' in f and hasattr(model, 'optimizer')
+                and model.optimizer):
             optimizer_weights_group = f['optimizer_weights']
             optimizer_weight_names = [n.decode('utf8') for n in
                                       optimizer_weights_group.attrs['weight_names']]
