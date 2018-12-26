@@ -38,7 +38,8 @@ def ids():
 
 def id_to_palette_map():
     return {idx: color for idx, color in enumerate(palette())}
-    # return {0: (0, 0, 0), idx: (idx, idx, idx) for idx, _ in enumerate(categories())}
+    # return {0: (0, 0, 0), idx: (idx, idx, idx)
+    # for idx, _ in enumerate(categories())}
 
 
 def cid_to_palette_map():
@@ -47,7 +48,8 @@ def cid_to_palette_map():
 
 def palette_to_id_map():
     return {color: ids()[idx] for idx, color in enumerate(palette())}
-    # return {(0, 0, 0): 0, (idx, idx, idx): idx for idx, _ in enumerate(categories())}
+    # return {(0, 0, 0): 0, (idx, idx, idx): idx
+    # for idx, _ in enumerate(categories())}
 
 
 def class_weight(image_segmentation_stats_file=None,
@@ -70,14 +72,24 @@ def mask_to_palette_map(cid):
 
 def categories():  # 80 classes
     return ['background',  # class zero
-            'person', 'bicycle', 'car', 'motorcycle', 'airplane', 'bus', 'train', 'truck', 'boat', 'traffic light',
-            'fire hydrant', 'stop sign', 'parking meter', 'bench', 'bird', 'cat', 'dog', 'horse', 'sheep', 'cow',
-            'elephant', 'bear', 'zebra', 'giraffe', 'backpack', 'umbrella', 'handbag', 'tie', 'suitcase', 'frisbee',
-            'skis', 'snowboard', 'sports ball', 'kite', 'baseball bat', 'baseball glove', 'skateboard', 'surfboard', 'tennis racket', 'bottle',
-            'wine glass', 'cup', 'fork', 'knife', 'spoon', 'bowl', 'banana', 'apple', 'sandwich', 'orange',
-            'broccoli', 'carrot', 'hot dog', 'pizza', 'donut', 'cake', 'chair', 'couch', 'potted plant', 'bed',
-            'dining table', 'toilet', 'tv', 'laptop', 'mouse', 'remote', 'keyboard', 'cell phone', 'microwave', 'oven',
-            'toaster', 'sink', 'refrigerator', 'book', 'clock', 'vase', 'scissors', 'teddy bear', 'hair drier', 'toothbrush']
+            'person', 'bicycle', 'car', 'motorcycle',
+            'airplane', 'bus', 'train',
+            'truck', 'boat', 'traffic light',
+            'fire hydrant', 'stop sign', 'parking meter', 'bench', 'bird',
+            'cat', 'dog', 'horse', 'sheep', 'cow',
+            'elephant', 'bear', 'zebra', 'giraffe',
+            'backpack', 'umbrella', 'handbag', 'tie', 'suitcase', 'frisbee',
+            'skis', 'snowboard', 'sports ball', 'kite',
+            'baseball bat', 'baseball glove', 'skateboard',
+            'surfboard', 'tennis racket', 'bottle',
+            'wine glass', 'cup', 'fork', 'knife',
+            'spoon', 'bowl', 'banana', 'apple', 'sandwich', 'orange',
+            'broccoli', 'carrot', 'hot dog', 'pizza',
+            'donut', 'cake', 'chair', 'couch', 'potted plant', 'bed',
+            'dining table', 'toilet', 'tv', 'laptop',
+            'mouse', 'remote', 'keyboard', 'cell phone', 'microwave', 'oven',
+            'toaster', 'sink', 'refrigerator', 'book',
+            'clock', 'vase', 'scissors', 'teddy bear', 'hair drier', 'toothbrush']
 
 
 def id_to_category(category_id):
@@ -111,16 +123,18 @@ def coco_config():
     dataset_root = os.path.join(os.path.expanduser('~'), 'datasets')
     dataset_path = os.path.join(dataset_root, 'coco')
     urls = [
-        'http://msvocds.blob.core.windows.net/coco2014/train2014.zip',
-        'http://msvocds.blob.core.windows.net/coco2014/val2014.zip',
-        'http://msvocds.blob.core.windows.net/coco2014/test2014.zip',
-        'http://msvocds.blob.core.windows.net/coco2015/test2015.zip',
-        'http://msvocds.blob.core.windows.net/annotations-1-0-3/instances_train-val2014.zip',
-        'http://msvocds.blob.core.windows.net/annotations-1-0-3/person_keypoints_trainval2014.zip',
-        'http://msvocds.blob.core.windows.net/annotations-1-0-4/image_info_test2014.zip',
-        'http://msvocds.blob.core.windows.net/annotations-1-0-4/image_info_test2015.zip',
-        'http://msvocds.blob.core.windows.net/annotations-1-0-3/captions_train-val2014.zip'
+        'coco2014/train2014.zip',
+        'coco2014/val2014.zip',
+        'coco2014/test2014.zip',
+        'coco2015/test2015.zip',
+        'annotations-1-0-3/instances_train-val2014.zip',
+        'annotations-1-0-3/person_keypoints_trainval2014.zip',
+        'annotations-1-0-4/image_info_test2014.zip',
+        'annotations-1-0-4/image_info_test2015.zip',
+        'annotations-1-0-3/captions_train-val2014.zip'
     ]
+    base_url = 'http://msvocds.blob.core.windows.net/'
+    urls = [base_url + x for x in urls]
     data_prefixes = [
         'train2014',
         'val2014',
@@ -152,14 +166,19 @@ def coco_config():
         'annotations/instances_train2014.json',
         'annotations/instances_val2014.json'
     ]
-    annotation_paths = [os.path.join(dataset_path, postfix) for postfix in annotation_json]
+    annotation_paths = [os.path.join(dataset_path, postfix)
+                        for postfix in annotation_json]
     # only first two data prefixes contain segmentation masks
-    seg_mask_image_paths = [os.path.join(dataset_path, prefix) for prefix in data_prefixes[0:1]]
-    seg_mask_output_paths = [os.path.join(seg_mask_path, prefix) for prefix in data_prefixes[0:1]]
+    seg_mask_image_paths = [os.path.join(dataset_path, prefix)
+                            for prefix in data_prefixes[0:1]]
+    seg_mask_output_paths = [os.path.join(seg_mask_path, prefix)
+                             for prefix in data_prefixes[0:1]]
     seg_mask_extensions = ['.npy' for prefix in data_prefixes[0:1]]
     image_dirs = [os.path.join(dataset_path, prefix) for prefix in data_prefixes]
     image_extensions = ['.jpg' for prefix in data_prefixes]
-    voc_imageset_txt_paths = [os.path.join(dataset_path, 'annotations', prefix + '.txt') for prefix in data_prefixes]
+    voc_imageset_txt_paths = [os.path.join(dataset_path,
+                                           'annotations', prefix + '.txt')
+                              for prefix in data_prefixes]
 
 
 @data_coco.capture
@@ -174,15 +193,19 @@ def coco_files(dataset_path, filenames, dataset_root, urls, md5s, annotation_pat
 
 
 @data_coco.command
-def print_coco_files(dataset_path, filenames, dataset_root, urls, md5s, annotation_paths):
+def print_coco_files(dataset_path, filenames, dataset_root,
+                     urls, md5s, annotation_paths):
     coco_files(dataset_path, filenames, dataset_root, urls, md5s, annotation_paths)
 
 
 @data_coco.command
-def coco_download(dataset_path, filenames, dataset_root, urls, md5s, annotation_paths):
-    zip_paths = coco_files(dataset_path, filenames, dataset_root, urls, md5s, annotation_paths)
+def coco_download(dataset_path, filenames, dataset_root,
+                  urls, md5s, annotation_paths):
+    zip_paths = coco_files(dataset_path, filenames, dataset_root,
+                           urls, md5s, annotation_paths)
     for url, filename, md5 in zip(urls, filenames, md5s):
-        path = get_file(filename, url, md5_hash=md5, extract=True, cache_subdir=dataset_path)
+        path = get_file(filename, url, md5_hash=md5,
+                        extract=True, cache_subdir=dataset_path)
         # TODO(ahundt) check if it is already extracted, don't re-extract. see
         # https://github.com/fchollet/keras/issues/5861
         zip_file = zipfile.ZipFile(path, 'r')
@@ -191,8 +214,10 @@ def coco_download(dataset_path, filenames, dataset_root, urls, md5s, annotation_
 
 
 @data_coco.command
-def coco_json_to_segmentation(seg_mask_output_paths, annotation_paths, seg_mask_image_paths, verbose):
-    for (seg_mask_path, annFile, image_path) in zip(seg_mask_output_paths, annotation_paths, seg_mask_image_paths):
+def coco_json_to_segmentation(seg_mask_output_paths,
+                              annotation_paths, seg_mask_image_paths, verbose):
+    for (seg_mask_path, annFile, image_path) in zip(
+            seg_mask_output_paths, annotation_paths, seg_mask_image_paths):
         print('Loading COCO Annotations File: ', annFile)
         print('Segmentation Mask Output Folder: ', seg_mask_path)
         print('Source Image Folder: ', image_path)
@@ -219,7 +244,8 @@ def coco_json_to_segmentation(seg_mask_output_paths, annotation_paths, seg_mask_
         # 'annotations' was previously 'instances' in an old version
         for img_num in range(total_imgs):
             # Both [0]'s are used to extract the element from a list
-            img = coco.loadImgs(coco.imgToAnns[coco.imgToAnns.keys()[img_num]][0]['image_id'])[0]
+            img = coco.loadImgs(
+                coco.imgToAnns[coco.imgToAnns.keys()[img_num]][0]['image_id'])[0]
             h = img['height']
             w = img['width']
             name = img['file_name']
@@ -289,14 +315,18 @@ def coco_to_pascal_voc_imageset_txt(voc_imageset_txt_paths, image_dirs,
                                     image_extensions):
     # os.environ["CUDA_VISIBLE_DEVICES"] = '1'
     # Get some image/annotation pairs for example
-    for imgset_path, img_dir, t_ext in zip(voc_imageset_txt_paths, image_dirs, image_extensions):
+    for imgset_path, img_dir, t_ext in zip(
+            voc_imageset_txt_paths, image_dirs, image_extensions):
         with open(imgset_path, 'w') as txtfile:
-            [txtfile.write(os.path.splitext(os.path.basename(file))[0] + '\n') for file in os.listdir(img_dir) if file.endswith(t_ext)]
+            [txtfile.write(os.path.splitext(os.path.basename(file))[0] + '\n')
+             for file in os.listdir(img_dir) if file.endswith(t_ext)]
 
 
 @data_coco.command
-def coco_image_segmentation_stats(seg_mask_output_paths, annotation_paths, seg_mask_image_paths, verbose):
-    for (seg_mask_path, annFile, image_path) in zip(seg_mask_output_paths, annotation_paths, seg_mask_image_paths):
+def coco_image_segmentation_stats(seg_mask_output_paths, annotation_paths,
+                                  seg_mask_image_paths, verbose):
+    for (seg_mask_path, annFile, image_path) in zip(
+            seg_mask_output_paths, annotation_paths, seg_mask_image_paths):
         print('Loading COCO Annotations File: ', annFile)
         print('Segmentation Mask Output Folder: ', seg_mask_path)
         print('Source Image Folder: ', image_path)
@@ -345,15 +375,17 @@ def coco_image_segmentation_stats(seg_mask_output_paths, annotation_paths, seg_m
 
             for ann in anns:
                 mask_partial = coco.annToMask(ann)
-                mask_one_hot[mask_partial > 0, ann['category_id']] = ann['category_id'] + 1
-                mask_one_hot[mask_partial > 0, 0] = 0
+                above_zero = mask_partial > 0
+                mask_one_hot[above_zero, ann['category_id']] = ann['category_id'] + 1
+                mask_one_hot[above_zero, 0] = 0
 
             # print( mask_one_hot)
             # print('initial bin_count shape:', np.shape(bin_count))
             # flat_mask_one_hot = mask_one_hot.flatten()
             bincount_result = np.bincount(mask_one_hot.flatten())
             # print('bincount_result TYPE:', type(bincount_result))
-            # np.array(np.ndarray.flatten(np.bincount(np.ndarray.flatten(np.array(mask_one_hot)).astype(int))).resize(max_bin_count))
+            # np.array(np.ndarray.flatten(np.bincount(np.ndarray.
+            # flatten(np.array(mask_one_hot)).astype(int))).resize(max_bin_count))
             # print('bincount_result:', bincount_result)
             # print('bincount_result_shape', np.shape(bincount_result))
             length = int(np.shape(bincount_result)[0])
@@ -422,7 +454,8 @@ def coco_setup(dataset_root, dataset_path, data_prefixes,
                image_dirs, seg_mask_output_paths, verbose,
                image_extensions):
     # download the dataset
-    coco_download(dataset_path, filenames, dataset_root, urls, md5s, annotation_paths)
+    coco_download(dataset_path, filenames, dataset_root,
+                  urls, md5s, annotation_paths)
     # convert the relevant files to a more useful format
     coco_json_to_segmentation(seg_mask_output_paths, annotation_paths)
     coco_to_pascal_voc_imageset_txt(voc_imageset_txt_paths, image_dirs,
