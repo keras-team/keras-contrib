@@ -21,7 +21,8 @@ class CRF(Layer):
 
     An linear chain CRF is defined to maximize the following likelihood function:
 
-    $$ L(W, U, b; y_1, ..., y_n) := \frac{1}{Z} \sum_{y_1, ..., y_n} \exp(-a_1' y_1 - a_n' y_n
+    $$ L(W, U, b; y_1, ..., y_n) := \frac{1}{Z}
+    \sum_{y_1, ..., y_n} \exp(-a_1' y_1 - a_n' y_n
         - \sum_{k=1^n}((f(x_k' W + b) y_k) + y_1' U y_2)), $$
 
     where:
@@ -29,19 +30,29 @@ class CRF(Layer):
         $x_k, y_k$:  inputs and outputs
 
     This implementation has two modes for optimization:
-    1. (`join mode`) optimized by maximizing join likelihood, which is optimal in theory of statistics.
+    1. (`join mode`) optimized by maximizing join likelihood,
+    which is optimal in theory of statistics.
        Note that in this case, CRF must be the output/last layer.
-    2. (`marginal mode`) return marginal probabilities on each time step and optimized via composition
-       likelihood (product of marginal likelihood), i.e., using `categorical_crossentropy` loss.
-       Note that in this case, CRF can be either the last layer or an intermediate layer (though not explored).
+    2. (`marginal mode`) return marginal probabilities on each time
+    step and optimized via composition
+       likelihood (product of marginal likelihood), i.e.,
+       using `categorical_crossentropy` loss.
+       Note that in this case, CRF can be either the last layer or an
+       intermediate layer (though not explored).
 
-    For prediction (test phrase), one can choose either Viterbi best path (class indices) or marginal
-    probabilities if probabilities are needed. However, if one chooses *join mode* for training,
-    Viterbi output is typically better than marginal output, but the marginal output will still perform
-    reasonably close, while if *marginal mode* is used for training, marginal output usually performs
-    much better. The default behavior and `metrics.crf_accuracy` is set according to this observation.
+    For prediction (test phrase), one can choose either Viterbi
+    best path (class indices) or marginal
+    probabilities if probabilities are needed.
+    However, if one chooses *join mode* for training,
+    Viterbi output is typically better than marginal output,
+    but the marginal output will still perform
+    reasonably close, while if *marginal mode* is used for training,
+    marginal output usually performs
+    much better. The default behavior and `metrics.crf_accuracy`
+    is set according to this observation.
 
-    In addition, this implementation supports masking and accepts either onehot or sparse target.
+    In addition, this implementation supports masking and accepts either
+    onehot or sparse target.
 
     If you open a issue or a pull request about CRF, please
     add 'cc @lzfelix' to notify Luiz Felix.
@@ -57,7 +68,8 @@ class CRF(Layer):
         model = Sequential()
         model.add(Embedding(3001, 300, mask_zero=True)(X)
 
-        # use learn_mode = 'join', test_mode = 'viterbi', sparse_target = True (label indice output)
+        # use learn_mode = 'join', test_mode = 'viterbi',
+        # sparse_target = True (label indice output)
         crf = CRF(10, sparse_target=True)
         model.add(crf)
 
@@ -65,24 +77,28 @@ class CRF(Layer):
         # One can add crf.marginal_acc if interested, but may slow down learning
         model.compile('adam', loss=crf_loss, metrics=[crf_viterbi_accuracy])
 
-        # y must be label indices (with shape 1 at dim 3) here, since `sparse_target=True`
+        # y must be label indices (with shape 1 at dim 3) here,
+        # since `sparse_target=True`
         model.fit(x, y)
 
         # prediction give onehot representation of Viterbi best path
         y_hat = model.predict(x_test)
     ```
 
-    The following snippet shows how to load a persisted model that uses the CRF layer:
+    The following snippet shows how to load a persisted
+    model that uses the CRF layer:
 
     ```python
         from keras.models import load_model
         from keras_contrib.losses import import crf_loss
         from keras_contrib.metrics import crf_viterbi_accuracy
 
+        custom_objects={'CRF': CRF,
+                        'crf_loss': crf_loss,
+                        'crf_viterbi_accuracy': crf_viterbi_accuracy}
+
         loaded_model = load_model('<path_to_model>',
-                                  custom_objects={'CRF': CRF,
-                                                  'crf_loss': crf_loss,
-                                                  'crf_viterbi_accuracy': crf_viterbi_accuracy})
+                                  custom_objects=custom_objects)
     ```
 
     # Arguments
@@ -90,20 +106,28 @@ class CRF(Layer):
         learn_mode: Either 'join' or 'marginal'.
             The former train the model by maximizing join likelihood while the latter
             maximize the product of marginal likelihood over all time steps.
-            One should use `losses.crf_nll` for 'join' mode and `losses.categorical_crossentropy` or
-            `losses.sparse_categorical_crossentropy` for `marginal` mode.  For convenience, simply
+            One should use `losses.crf_nll` for 'join' mode
+            and `losses.categorical_crossentropy` or
+            `losses.sparse_categorical_crossentropy` for
+            `marginal` mode.  For convenience, simply
             use `losses.crf_loss`, which will decide the proper loss as described.
         test_mode: Either 'viterbi' or 'marginal'.
             The former is recommended and as default when `learn_mode = 'join'` and
             gives one-hot representation of the best path at test (prediction) time,
-            while the latter is recommended and chosen as default when `learn_mode = 'marginal'`,
+            while the latter is recommended and chosen as default
+            when `learn_mode = 'marginal'`,
             which produces marginal probabilities for each time step.
-            For evaluating metrics, one should use `metrics.crf_viterbi_accuracy` for 'viterbi' mode and
-            'metrics.crf_marginal_accuracy' for 'marginal' mode, or simply use `metrics.crf_accuracy` for
-            both which automatically decides it as described. One can also use both for evaluation at training.
-        sparse_target: Boolean (default False) indicating if provided labels are one-hot or
+            For evaluating metrics, one should
+            use `metrics.crf_viterbi_accuracy` for 'viterbi' mode and
+            'metrics.crf_marginal_accuracy' for 'marginal' mode, or
+            simply use `metrics.crf_accuracy` for
+            both which automatically decides it as described.
+            One can also use both for evaluation at training.
+        sparse_target: Boolean (default False) indicating
+            if provided labels are one-hot or
             indices (with shape 1 at dim 3).
-        use_boundary: Boolean (default True) indicating if trainable start-end chain energies
+        use_boundary: Boolean (default True) indicating if trainable
+            start-end chain energies
             should be added to model.
         use_bias: Boolean, whether the layer uses a bias vector.
         kernel_initializer: Initializer for the `kernel` weights matrix,
@@ -112,7 +136,8 @@ class CRF(Layer):
         chain_initializer: Initializer for the `chain_kernel` weights matrix,
             used for the CRF chain energy.
             (see [initializers](../initializers.md)).
-        boundary_initializer: Initializer for the `left_boundary`, 'right_boundary' weights vectors,
+        boundary_initializer: Initializer for the `left_boundary`,
+            'right_boundary' weights vectors,
             used for the start/left and end/right boundary energy.
             (see [initializers](../initializers.md)).
         bias_initializer: Initializer for the bias vector
@@ -146,8 +171,10 @@ class CRF(Layer):
         input_dim: dimensionality of the input (integer).
             This argument (or alternatively, the keyword argument `input_shape`)
             is required when using this layer as the first layer in a model.
-        unroll: Boolean (default False). If True, the network will be unrolled, else a symbolic loop will be used.
-            Unrolling can speed-up a RNN, although it tends to be more memory-intensive.
+        unroll: Boolean (default False). If True, the network will be
+            unrolled, else a symbolic loop will be used.
+            Unrolling can speed-up a RNN, although it tends
+            to be more memory-intensive.
             Unrolling is only suitable for short sequences.
 
     # Input shape
@@ -285,39 +312,44 @@ class CRF(Layer):
         return mask
 
     def get_config(self):
-        config = {'units': self.units,
-                  'learn_mode': self.learn_mode,
-                  'test_mode': self.test_mode,
-                  'use_boundary': self.use_boundary,
-                  'use_bias': self.use_bias,
-                  'sparse_target': self.sparse_target,
-                  'kernel_initializer': initializers.serialize(self.kernel_initializer),
-                  'chain_initializer': initializers.serialize(self.chain_initializer),
-                  'boundary_initializer': initializers.serialize(self.boundary_initializer),
-                  'bias_initializer': initializers.serialize(self.bias_initializer),
-                  'activation': activations.serialize(self.activation),
-                  'kernel_regularizer': regularizers.serialize(self.kernel_regularizer),
-                  'chain_regularizer': regularizers.serialize(self.chain_regularizer),
-                  'boundary_regularizer': regularizers.serialize(self.boundary_regularizer),
-                  'bias_regularizer': regularizers.serialize(self.bias_regularizer),
-                  'kernel_constraint': constraints.serialize(self.kernel_constraint),
-                  'chain_constraint': constraints.serialize(self.chain_constraint),
-                  'boundary_constraint': constraints.serialize(self.boundary_constraint),
-                  'bias_constraint': constraints.serialize(self.bias_constraint),
-                  'input_dim': self.input_dim,
-                  'unroll': self.unroll}
+        config = {
+            'units': self.units,
+            'learn_mode': self.learn_mode,
+            'test_mode': self.test_mode,
+            'use_boundary': self.use_boundary,
+            'use_bias': self.use_bias,
+            'sparse_target': self.sparse_target,
+            'kernel_initializer': initializers.serialize(self.kernel_initializer),
+            'chain_initializer': initializers.serialize(self.chain_initializer),
+            'boundary_initializer': initializers.serialize(
+                self.boundary_initializer),
+            'bias_initializer': initializers.serialize(self.bias_initializer),
+            'activation': activations.serialize(self.activation),
+            'kernel_regularizer': regularizers.serialize(self.kernel_regularizer),
+            'chain_regularizer': regularizers.serialize(self.chain_regularizer),
+            'boundary_regularizer': regularizers.serialize(
+                self.boundary_regularizer),
+            'bias_regularizer': regularizers.serialize(self.bias_regularizer),
+            'kernel_constraint': constraints.serialize(self.kernel_constraint),
+            'chain_constraint': constraints.serialize(self.chain_constraint),
+            'boundary_constraint': constraints.serialize(self.boundary_constraint),
+            'bias_constraint': constraints.serialize(self.bias_constraint),
+            'input_dim': self.input_dim,
+            'unroll': self.unroll}
         base_config = super(CRF, self).get_config()
         return dict(list(base_config.items()) + list(config.items()))
 
     @property
     def loss_function(self):
-        warnings.warn('CRF.loss_function is deprecated and it might be removed in the future. Please '
+        warnings.warn('CRF.loss_function is deprecated '
+                      'and it might be removed in the future. Please '
                       'use losses.crf_loss instead.')
         return crf_loss
 
     @property
     def accuracy(self):
-        warnings.warn('CRF.accuracy is deprecated and it might be removed in the future. Please '
+        warnings.warn('CRF.accuracy is deprecated and it '
+                      'might be removed in the future. Please '
                       'use metrics.crf_accuracy')
         if self.test_mode == 'viterbi':
             return crf_viterbi_accuracy
@@ -326,13 +358,15 @@ class CRF(Layer):
 
     @property
     def viterbi_acc(self):
-        warnings.warn('CRF.viterbi_acc is deprecated and it might be removed in the future. Please '
+        warnings.warn('CRF.viterbi_acc is deprecated and it might '
+                      'be removed in the future. Please '
                       'use metrics.viterbi_acc instead.')
         return crf_viterbi_accuracy
 
     @property
     def marginal_acc(self):
-        warnings.warn('CRF.moarginal_acc is deprecated and it might be removed in the future. Please '
+        warnings.warn('CRF.moarginal_acc is deprecated and it '
+                      'might be removed in the future. Please '
                       'use metrics.marginal_acc instead.')
         return crf_marginal_accuracy
 
@@ -357,8 +391,10 @@ class CRF(Layer):
         start = K.expand_dims(K.expand_dims(start, 0), 0)
         end = K.expand_dims(K.expand_dims(end, 0), 0)
         if mask is None:
-            energy = K.concatenate([energy[:, :1, :] + start, energy[:, 1:, :]], axis=1)
-            energy = K.concatenate([energy[:, :-1, :], energy[:, -1:, :] + end], axis=1)
+            energy = K.concatenate([energy[:, :1, :] + start, energy[:, 1:, :]],
+                                   axis=1)
+            energy = K.concatenate([energy[:, :-1, :], energy[:, -1:, :] + end],
+                                   axis=1)
         else:
             mask = K.expand_dims(K.cast(mask, K.floatx()))
             start_mask = K.cast(K.greater(mask, self.shift_right(mask)), K.floatx())
@@ -379,11 +415,14 @@ class CRF(Layer):
         """Energy = a1' y1 + u1' y1 + y1' U y2 + u2' y2 + y2' U y3 + u3' y3 + an' y3
         """
         input_energy = K.sum(input_energy * y_true, 2)  # (B, T)
-        chain_energy = K.sum(K.dot(y_true[:, :-1, :], self.chain_kernel) * y_true[:, 1:, :], 2)  # (B, T-1)
+        # (B, T-1)
+        chain_energy = K.sum(K.dot(y_true[:, :-1, :],
+                                   self.chain_kernel) * y_true[:, 1:, :], 2)
 
         if mask is not None:
             mask = K.cast(mask, K.floatx())
-            chain_mask = mask[:, :-1] * mask[:, 1:]  # (B, T-1), mask[:,:-1]*mask[:,1:] makes it work with any padding
+            # (B, T-1), mask[:,:-1]*mask[:,1:] makes it work with any padding
+            chain_mask = mask[:, :-1] * mask[:, 1:]
             input_energy = input_energy * mask
             chain_energy = chain_energy * chain_mask
         total_energy = K.sum(input_energy, -1) + K.sum(chain_energy, -1)  # (B, )
@@ -396,9 +435,12 @@ class CRF(Layer):
         """
         input_energy = self.activation(K.dot(X, self.kernel) + self.bias)
         if self.use_boundary:
-            input_energy = self.add_boundary_energy(input_energy, mask, self.left_boundary, self.right_boundary)
+            input_energy = self.add_boundary_energy(input_energy, mask,
+                                                    self.left_boundary,
+                                                    self.right_boundary)
         energy = self.get_energy(y_true, input_energy, mask)
-        logZ = self.get_log_normalization_constant(input_energy, mask, input_length=K.int_shape(X)[1])
+        logZ = self.get_log_normalization_constant(input_energy, mask,
+                                                   input_length=K.int_shape(X)[1])
         nloglik = logZ + energy
         if mask is not None:
             nloglik = nloglik / K.sum(K.cast(mask, K.floatx()), 1)
@@ -418,25 +460,31 @@ class CRF(Layer):
             else:
                 m = K.tf.slice(states[3], [0, t], [-1, 2])
             input_energy_t = input_energy_t * K.expand_dims(m[:, 0])
-            chain_energy = chain_energy * K.expand_dims(K.expand_dims(m[:, 0] * m[:, 1]))  # (1, F, F)*(B, 1, 1) -> (B, F, F)
+            # (1, F, F)*(B, 1, 1) -> (B, F, F)
+            chain_energy = chain_energy * K.expand_dims(
+                K.expand_dims(m[:, 0] * m[:, 1]))
         if return_logZ:
-            energy = chain_energy + K.expand_dims(input_energy_t - prev_target_val, 2)  # shapes: (1, B, F) + (B, F, 1) -> (B, F, F)
+            # shapes: (1, B, F) + (B, F, 1) -> (B, F, F)
+            energy = chain_energy + K.expand_dims(input_energy_t - prev_target_val, 2)
             new_target_val = K.logsumexp(-energy, 1)  # shapes: (B, F)
             return new_target_val, [new_target_val, i + 1]
         else:
             energy = chain_energy + K.expand_dims(input_energy_t + prev_target_val, 2)
             min_energy = K.min(energy, 1)
-            argmin_table = K.cast(K.argmin(energy, 1), K.floatx())  # cast for tf-version `K.rnn`
+            # cast for tf-version `K.rnn
+            argmin_table = K.cast(K.argmin(energy, 1), K.floatx())
             return argmin_table, [min_energy, i + 1]
 
-    def recursion(self, input_energy, mask=None, go_backwards=False, return_sequences=True, return_logZ=True, input_length=None):
+    def recursion(self, input_energy, mask=None, go_backwards=False,
+                  return_sequences=True, return_logZ=True, input_length=None):
         """Forward (alpha) or backward (beta) recursion
 
         If `return_logZ = True`, compute the logZ, the normalization constant:
 
         \[ Z = \sum_{y1, y2, y3} exp(-E) # energy
           = \sum_{y1, y2, y3} exp(-(u1' y1 + y1' W y2 + u2' y2 + y2' W y3 + u3' y3))
-          = sum_{y2, y3} (exp(-(u2' y2 + y2' W y3 + u3' y3)) sum_{y1} exp(-(u1' y1' + y1' W y2))) \]
+          = sum_{y2, y3} (exp(-(u2' y2 + y2' W y3 + u3' y3))
+          sum_{y1} exp(-(u1' y1' + y1' W y2))) \]
 
         Denote:
             \[ S(y2) := sum_{y1} exp(-(u1' y1 + y1' W y2)), \]
@@ -449,8 +497,10 @@ class CRF(Layer):
         If `return_logZ = False`, compute the Viterbi's best path lookup table.
         """
         chain_energy = self.chain_kernel
-        chain_energy = K.expand_dims(chain_energy, 0)  # shape=(1, F, F): F=num of output features. 1st F is for t-1, 2nd F for t
-        prev_target_val = K.zeros_like(input_energy[:, 0, :])  # shape=(B, F), dtype=float32
+        # shape=(1, F, F): F=num of output features. 1st F is for t-1, 2nd F for t
+        chain_energy = K.expand_dims(chain_energy, 0)
+        # shape=(B, F), dtype=float32
+        prev_target_val = K.zeros_like(input_energy[:, 0, :])
 
         if go_backwards:
             input_energy = K.reverse(input_energy, 1)
@@ -461,14 +511,18 @@ class CRF(Layer):
         constants = [chain_energy]
 
         if mask is not None:
-            mask2 = K.cast(K.concatenate([mask, K.zeros_like(mask[:, :1])], axis=1), K.floatx())
+            mask2 = K.cast(K.concatenate([mask, K.zeros_like(mask[:, :1])], axis=1),
+                           K.floatx())
             constants.append(mask2)
 
         def _step(input_energy_i, states):
             return self.step(input_energy_i, states, return_logZ)
 
-        target_val_last, target_val_seq, _ = K.rnn(_step, input_energy, initial_states, constants=constants,
-                                                   input_length=input_length, unroll=self.unroll)
+        target_val_last, target_val_seq, _ = K.rnn(_step, input_energy,
+                                                   initial_states,
+                                                   constants=constants,
+                                                   input_length=input_length,
+                                                   unroll=self.unroll)
 
         if return_sequences:
             if go_backwards:
@@ -486,10 +540,14 @@ class CRF(Layer):
     def get_marginal_prob(self, X, mask=None):
         input_energy = self.activation(K.dot(X, self.kernel) + self.bias)
         if self.use_boundary:
-            input_energy = self.add_boundary_energy(input_energy, mask, self.left_boundary, self.right_boundary)
+            input_energy = self.add_boundary_energy(input_energy, mask,
+                                                    self.left_boundary,
+                                                    self.right_boundary)
         input_length = K.int_shape(X)[1]
-        alpha = self.forward_recursion(input_energy, mask=mask, input_length=input_length)
-        beta = self.backward_recursion(input_energy, mask=mask, input_length=input_length)
+        alpha = self.forward_recursion(input_energy, mask=mask,
+                                       input_length=input_length)
+        beta = self.backward_recursion(input_energy, mask=mask,
+                                       input_length=input_length)
         if mask is not None:
             input_energy = input_energy * K.expand_dims(K.cast(mask, K.floatx()))
         margin = -(self.shift_right(alpha) + input_energy + self.shift_left(beta))
@@ -498,14 +556,17 @@ class CRF(Layer):
     def viterbi_decoding(self, X, mask=None):
         input_energy = self.activation(K.dot(X, self.kernel) + self.bias)
         if self.use_boundary:
-            input_energy = self.add_boundary_energy(input_energy, mask, self.left_boundary, self.right_boundary)
+            input_energy = self.add_boundary_energy(
+                input_energy, mask, self.left_boundary, self.right_boundary)
 
         argmin_tables = self.recursion(input_energy, mask, return_logZ=False)
         argmin_tables = K.cast(argmin_tables, 'int32')
 
-        # backward to find best path, `initial_best_idx` can be any, as all elements in the last argmin_table are the same
+        # backward to find best path, `initial_best_idx` can be any,
+        # as all elements in the last argmin_table are the same
         argmin_tables = K.reverse(argmin_tables, 1)
-        initial_best_idx = [K.expand_dims(argmin_tables[:, 0, 0])]  # matrix instead of vector is required by tf `K.rnn`
+        # matrix instead of vector is required by tf `K.rnn`
+        initial_best_idx = [K.expand_dims(argmin_tables[:, 0, 0])]
         if K.backend() == 'theano':
             initial_best_idx = [K.T.unbroadcast(initial_best_idx[0], 1)]
 
@@ -524,7 +585,8 @@ class CRF(Layer):
                 next_best_idx = K.T.unbroadcast(next_best_idx, 1)
             return next_best_idx, [next_best_idx]
 
-        _, best_paths, _ = K.rnn(find_path, argmin_tables, initial_best_idx, input_length=K.int_shape(X)[1], unroll=self.unroll)
+        _, best_paths, _ = K.rnn(find_path, argmin_tables, initial_best_idx,
+                                 input_length=K.int_shape(X)[1], unroll=self.unroll)
         best_paths = K.reverse(best_paths, 1)
         best_paths = K.squeeze(best_paths, 2)
 
