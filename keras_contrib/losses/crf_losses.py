@@ -17,6 +17,9 @@ def crf_nll(y_true, y_pred):
     # Returns
         A scalar representing corresponding to the negative log-likelihood.
 
+    # Raises
+        TypeError: If CRF is not the last layer.
+
     If you open an issue or a pull request about CRF, please
     add 'cc @lzfelix' to notify Luiz Felix.
     """
