@@ -4,8 +4,7 @@ from keras.objectives import sparse_categorical_crossentropy
 
 
 def crf_nll(y_true, y_pred):
-    """The negative log-likelihood used to train the linear
-    chain Conditional Random Field (CRF).
+    """The negative log-likelihood for linear chain Conditional Random Field (CRF).
 
     This loss function is only used when the `layers.CRF` layer
     is trained in the "join" mode.
