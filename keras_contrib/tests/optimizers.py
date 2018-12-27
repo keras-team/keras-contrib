@@ -6,7 +6,6 @@ from keras import optimizers
 from keras.models import Sequential
 from keras.layers.core import Dense, Activation
 from keras.utils.np_utils import to_categorical
-from keras_contrib.optimizers import lars
 
 
 def get_test_data():
@@ -41,7 +40,3 @@ def _test_optimizer(optimizer, target=0.75):
     optim = optimizers.deserialize(config)
     new_config = optimizers.serialize(optim)
     assert config == new_config
-
-def test_lars():
-    _test_optimizer(lars(0.01)
-    _test_optimizer(lars(0.01, use_nesterov = True
