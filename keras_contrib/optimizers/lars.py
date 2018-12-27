@@ -52,44 +52,44 @@ class LARS(Optimizer):
         super(LARSOptimizer, self).__init__(use_locking=False, name=name)
         with K.name_scope(self.__class__.__name__):
             self.iterations = K.variable(0, dtype='int64', name='iterations')
-            self.lr = K.variable(learning_rate,name='lr')
-            self._momentum = K.variable(momentum,name='momentum')
-            self._weight_decay = K.variable(weight_decay,name='weight_decay')
-            self._eeta = K.variable(eeta,name='eeta')
+            self.lr = K.variable(learning_rate, name='lr')
+            self._momentum = K.variable(momentum, name='momentum')
+            self._weight_decay = K.variable(weight_decay, name='weight_decay')
+            self._eeta = K.variable(eeta, name='eeta')
         self._epsilon = epsilon
         self._skip_list = skip_list
         self._use_nesterov = use_nesterov
 
     def get_config(self):
-        config = {'lr': float(K.get_value(self.lr)),
-                  'momentum': float(K.get_value(self.beta_1)),
-                  'weight_decay': float(K.get_value(self._weight_decay)),
-                  'epsilon': self.epsilon,
-                  'etaa': float(K.get_value(self._eeta)),
-                  'nesterov': self._use_nesterov,
-                  'skip_list':self._skip_list}
+        config = {'lr' : float(K.get_value(self.lr)),
+                  'momentum' : float(K.get_value(self.beta_1)),
+                  'weight_decay' : float(K.get_value(self._weight_decay)),
+                  'epsilon' : self.epsilon,
+                  'etaa' : float(K.get_value(self._eeta)),
+                  'nesterov' : self._use_nesterov,
+                  'skip_list' : self._skip_list}
         base_config = super(LARS, self).get_config()
         return dict(list(base_config.items()) + list(config.items()))
 
     @interfaces.legacy_get_updates_support
     def get_updates(self, loss, params):
         grad = self.get_gradients(loss, params)
-        weights=self.get_weights()
+        weights = self.get_weights()
         self.updates = [K.update_add(self.iterations, 1)]
-    #def compute_lr(self, grad, var):
         scaled_lr = self.lr
         if self._skip_list is None or not any(p in params.name
-                                            for p in self._skip_list):
-            w_norm =K.sqrt(sum([K.sum(K.square(w)) for w in weights]))
-            g_norm =K.sqrt(sum([K.sum(K.square(g)) for g in grads]))
-            if w_norm>0:
-                if g_norm>0:
-                    trust_ratio=(self._eeta * w_norm /(g_norm + self._weight_decay * w_norm + self._epsilon))
+                                              for p in self._skip_list):
+            w_norm = K.sqrt(sum([K.sum(K.square(w)) for w in weights]))
+            g_norm = K.sqrt(sum([K.sum(K.square(g)) for g in grads]))
+            if w_norm > 0:
+                if g_norm > 0:
+                    trust_ratio = (self._eeta * w_norm / 
+                                  (g_norm + self._weight_decay * w_norm + self._epsilon))
                 else:
-                    trust_ration=1.0
+                    trust_ration = 1.0
             else:
-                trust_ratio=1.0
-            scaled_lr=self.lr*trust_ratio
+                trust_ratio = 1.0
+            scaled_lr = self.lr*trust_ratio
 
         # momentum
         shapes = [K.int_shape(p) for p in params]
@@ -110,7 +110,5 @@ class LARS(Optimizer):
 
             self.updates.append(K.update(p, new_p))
         return self.updates
-
-
 
 get_custom_objects().update({'LARS': LARS})
