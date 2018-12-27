@@ -78,8 +78,8 @@ class LARS(Optimizer):
                                               for p in self.skip_list):
             w_norm = K.sqrt(K.sum([K.sum(K.square(w)) for w in weights]))
             g_norm = K.sqrt(K.sum([K.sum(K.square(g)) for g in grads]))
-            if w_norm > 0:
-                if g_norm > 0:
+            if K.greater(w_norm, K.zeros([1])):
+                if K.greater(g_norm, K.zeros([1])):
                     trust_ratio = (self.eeta * w_norm / (g_norm +
                                    self.weight_decay * w_norm + self.epsilon))
                 else:
