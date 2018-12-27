@@ -78,15 +78,12 @@ class LARS(Optimizer):
                                               for p in self.skip_list):
             w_norm = K.sqrt(K.sum([K.sum(K.square(w)) for w in weights]))
             g_norm = K.sqrt(K.sum([K.sum(K.square(g)) for g in grads]))
-            if K.greater(w_norm, K.zeros([1])):
-                if K.greater(g_norm, K.zeros([1])):
-                    trust_ratio = (self.eeta * w_norm / (g_norm +
-                                   self.weight_decay * w_norm + self.epsilon))
-                else:
-                    trust_ration = 1.0
-            else:
-                trust_ratio = 1.0
-            scaled_lr = self.lr*trust_ratio
+            scaled_lr = K.switch(K.greater(w_norm * g_norm, K.zeros([1])),
+                                 K.cast((self.eeta * w_norm / (g_norm +
+                                         self.weight_decay * w_norm +
+                                         self.epsilon)),
+                                        dtype='float16') * self.lr,
+                                 K.ones([1]) * self.lr)
 
         # momentum
         shapes = [K.int_shape(p) for p in params]
