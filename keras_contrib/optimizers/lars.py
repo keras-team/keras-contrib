@@ -2,6 +2,7 @@ from keras import backend as K
 from keras.optimizers import Optimizer
 from keras.utils.generic_utils import get_custom_objects
 
+
 class LARS(Optimizer):
     """Layer-wise Adaptive Rate Scaling for large batch training.
     Introduced by "Large Batch Training of Convolutional Networks" by Y. You,
@@ -13,15 +14,15 @@ class LARS(Optimizer):
         - Gradual learning rate warm-up
         - Linear learning rate scaling
         - Poly rule learning rate decay
-    Note, LARS scaling is currently only enabled for dense tensors. 
+    Note, LARS scaling is currently only enabled for dense tensors.
 
     Args:
         learning_rate: A `Tensor` or floating point value. The base learning rate.
         momentum: A floating point value. Momentum hyperparameter.
         weight_decay: A floating point value. Weight decay hyperparameter.
         eeta: LARS coefficient as used in the paper. Dfault set to LARS
-            coefficient from the paper. (eeta / weight_decay) determines the highest
-            scaling factor in LARS.
+            coefficient from the paper. (eeta / weight_decay) determines the
+            highest scaling factor in LARS.
         epsilon: Optional epsilon parameter to be set in models that have very
             small gradients. Default set to 0.0.
         skip_list: List of strings to enable skipping variables from LARS scaling.
@@ -36,44 +37,40 @@ class LARS(Optimizer):
       learning_rate,
       momentum=0.9,
       weight_decay=0.0001,
-      # The LARS coefficient is a hyperparameter
       eeta=0.001,
       epsilon=0.0,
-      # Enable skipping variables from LARS scaling.
-      # TODO(sameerkm): Enable a direct mechanism to pass a
-      # subset of variables to the optimizer.
       skip_list=None,
-      use_nesterov=False):
+      use_nesterov=False,
+      **kwargs):
 
         if momentum < 0.0:
             raise ValueError("momentum should be positive: %s" % momentum)
         if weight_decay < 0.0:
-            raise ValueError("weight_decay should be positive: %s" % weight_decay)
-        super(LARSOptimizer, self).__init__(use_locking=False, name=name)
+            raise ValueError("weight_decay is not positive: %s" % weight_decay)
+        super(LARS, self).__init__(**kwargs)
         with K.name_scope(self.__class__.__name__):
             self.iterations = K.variable(0, dtype='int64', name='iterations')
             self.lr = K.variable(learning_rate, name='lr')
-            self._momentum = K.variable(momentum, name='momentum')
-            self._weight_decay = K.variable(weight_decay, name='weight_decay')
-            self._eeta = K.variable(eeta, name='eeta')
-        self._epsilon = epsilon
-        self._skip_list = skip_list
-        self._use_nesterov = use_nesterov
+            self.momentum = K.variable(momentum, name='momentum')
+            self.weight_decay = K.variable(weight_decay, name='weight_decay')
+            self.eeta = K.variable(eeta, name='eeta')
+        self.epsilon = epsilon
+        self.skip_list = skip_list
+        self.use_nesterov = use_nesterov
 
     def get_config(self):
-        config = {'lr' : float(K.get_value(self.lr)),
-                  'momentum' : float(K.get_value(self.beta_1)),
-                  'weight_decay' : float(K.get_value(self._weight_decay)),
-                  'epsilon' : self.epsilon,
-                  'etaa' : float(K.get_value(self._eeta)),
-                  'nesterov' : self._use_nesterov,
-                  'skip_list' : self._skip_list}
+        config = {'lr': float(K.get_value(self.lr)),
+                  'momentum': float(K.get_value(self.beta_1)),
+                  'weight_decay': float(K.get_value(self._weight_decay)),
+                  'epsilon': self.epsilon,
+                  'etaa': float(K.get_value(self._eeta)),
+                  'nesterov': self._use_nesterov,
+                  'skip_list': self._skip_list}
         base_config = super(LARS, self).get_config()
         return dict(list(base_config.items()) + list(config.items()))
 
-    @interfaces.legacy_get_updates_support
     def get_updates(self, loss, params):
-        grad = self.get_gradients(loss, params)
+        grads = self.get_gradients(loss, params)
         weights = self.get_weights()
         self.updates = [K.update_add(self.iterations, 1)]
         scaled_lr = self.lr
@@ -83,8 +80,8 @@ class LARS(Optimizer):
             g_norm = K.sqrt(sum([K.sum(K.square(g)) for g in grads]))
             if w_norm > 0:
                 if g_norm > 0:
-                    trust_ratio = (self._eeta * w_norm / 
-                                  (g_norm + self._weight_decay * w_norm + self._epsilon))
+                    trust_ratio = (self.eeta * w_norm / (g_norm +
+                                   self.weight_decay * w_norm + self.epsilon))
                 else:
                     trust_ration = 1.0
             else:
@@ -110,5 +107,6 @@ class LARS(Optimizer):
 
             self.updates.append(K.update(p, new_p))
         return self.updates
+
 
 get_custom_objects().update({'LARS': LARS})
