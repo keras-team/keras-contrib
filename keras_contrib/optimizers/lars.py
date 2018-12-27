@@ -79,10 +79,9 @@ class LARS(Optimizer):
             w_norm = K.sqrt(K.sum([K.sum(K.square(w)) for w in weights]))
             g_norm = K.sqrt(K.sum([K.sum(K.square(g)) for g in grads]))
             scaled_lr = K.switch(K.greater(w_norm * g_norm, K.zeros([1])),
-                                 K.cast((self.eeta * w_norm / (g_norm +
+                                 (self.eeta * w_norm / (g_norm +
                                          self.weight_decay * w_norm +
-                                         self.epsilon)),
-                                        dtype='float16') * self.lr,
+                                         self.epsilon)) * self.lr,
                                  K.ones([1]) * self.lr)
 
         # momentum
