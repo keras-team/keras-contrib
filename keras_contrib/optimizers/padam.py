@@ -1,6 +1,6 @@
 from keras import backend as K
 from keras.optimizers import Optimizer
-from keras.utils.generic_utils import get_custom_objects
+from keras.utils import get_custom_objects
 
 
 class Padam(Optimizer):
