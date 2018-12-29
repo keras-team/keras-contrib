@@ -6,10 +6,12 @@ from keras.utils.generic_utils import get_custom_objects
 
 
 class InstanceNormalization(Layer):
-    """Instance normalization layer (Lei Ba et al, 2016, Ulyanov et al., 2016).
+    """Instance normalization layer.
+
     Normalize the activations of the previous layer at each step,
     i.e. applies a transformation that maintains the mean activation
     close to 0 and the activation standard deviation close to 1.
+
     # Arguments
         axis: Integer, the axis that should be normalized
             (typically the features axis).
@@ -33,12 +35,15 @@ class InstanceNormalization(Layer):
         gamma_regularizer: Optional regularizer for the gamma weight.
         beta_constraint: Optional constraint for the beta weight.
         gamma_constraint: Optional constraint for the gamma weight.
+
     # Input shape
         Arbitrary. Use the keyword argument `input_shape`
         (tuple of integers, does not include the samples axis)
-        when using this layer as the first layer in a model.
+        when using this layer as the first layer in a Sequential model.
+
     # Output shape
         Same shape as input.
+
     # References
         - [Layer Normalization](https://arxiv.org/abs/1607.06450)
         - [Instance Normalization: The Missing Ingredient for Fast Stylization](
@@ -177,19 +182,20 @@ class BatchRenormalization(Layer):
             `[(input_shape,), (input_shape,)]`
             Note that the order of this list is [gamma, beta, mean, std]
         beta_initializer: name of initialization function for shift parameter
-            (see [initializers](../initializers.md)), or alternatively,
+            (see [initializers](https://keras.io/initializers)), or alternatively,
             Theano/TensorFlow function to use for weights initialization.
             This parameter is only relevant if you don't pass a `weights` argument.
         gamma_initializer: name of initialization function for scale parameter (see
-            [initializers](../initializers.md)), or alternatively,
+            [initializers](https://keras.io/initializers)), or alternatively,
             Theano/TensorFlow function to use for weights initialization.
             This parameter is only relevant if you don't pass a `weights` argument.
         moving_mean_initializer: Initializer for the moving mean.
         moving_variance_initializer: Initializer for the moving variance.
-        gamma_regularizer: instance of [WeightRegularizer](../regularizers.md)
-            (eg. L1 or L2 regularization), applied to the gamma vector.
-        beta_regularizer: instance of [WeightRegularizer](../regularizers.md),
-            applied to the beta vector.
+        gamma_regularizer: instance of [WeightRegularizer](
+            https://keras.io/regularizers) (eg. L1 or L2 regularization),
+            applied to the gamma vector.
+        beta_regularizer: instance of [WeightRegularizer](
+            https://keras.io/regularizers), applied to the beta vector.
         beta_constraint: Optional constraint for the beta weight.
         gamma_constraint: Optional constraint for the gamma weight.
 
@@ -407,7 +413,7 @@ get_custom_objects().update({'BatchRenormalization': BatchRenormalization})
 
 
 class GroupNormalization(Layer):
-    """Group normalization layer
+    """Group normalization layer.
 
     Group Normalization divides the channels into groups and computes
     within each group
