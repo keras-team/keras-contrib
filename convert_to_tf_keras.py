@@ -14,7 +14,12 @@ def replace_imports(file_path):
         f.write(text)
 
 
-if __name__ == '__main__':
+def main():
+    """Run this function to convert the codebase to tf.keras"""
     for root, dirs, files in os.walk("."):
         for name in files:
             replace_imports(os.path.join(root, name))
+
+
+if __name__ == '__main__':
+    main()
