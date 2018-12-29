@@ -79,9 +79,9 @@ class LARS(Optimizer):
             w_norm = K.sqrt(K.sum([K.sum(K.square(w)) for w in weights]))
             g_norm = K.sqrt(K.sum([K.sum(K.square(g)) for g in grads]))
             scaled_lr = K.switch(K.greater(w_norm * g_norm, K.zeros([1])),
-                                 (self.eeta * w_norm / (g_norm +
+                                 K.expand_ndims((self.eeta * w_norm / (g_norm +
                                          self.weight_decay * w_norm +
-                                         self.epsilon)) * self.lr,
+                                         self.epsilon)) * self.lr),
                                  K.ones([1]) * self.lr)
 
         # momentum
@@ -103,6 +103,6 @@ class LARS(Optimizer):
 
             self.updates.append(K.update(p, new_p))
         return self.updates
-
+y
 
 get_custom_objects().update({'LARS': LARS})
