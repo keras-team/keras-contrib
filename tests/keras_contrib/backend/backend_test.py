@@ -5,10 +5,10 @@ import numpy as np
 from keras import backend as K
 from keras.backend import theano_backend as KTH
 from keras.backend import tensorflow_backend as KTF
-from keras.backend import cntk_backend as KCTK
 import keras_contrib.backend.theano_backend as KCTH
 import keras_contrib.backend.tensorflow_backend as KCTF
-import keras_contrib.backend.cntk_backend as KCNTK
+import keras_contrib.backend.numpy_backend as KCNP
+from keras_contrib import backend as KC
 
 
 def check_dtype(var, dtype):
@@ -73,6 +73,8 @@ def check_composed_tensor_operations(first_function_name, first_function_args,
 
 class TestBackend(object):
 
+    @pytest.mark.skipif(K.backend() != 'tensorflow',
+                        reason='No need to run the tests twice.')
     @pytest.mark.parametrize('input_shape', [(1, 3, 40, 40), (1, 3, 10, 10)])
     @pytest.mark.parametrize('kernel_shape', [2, 5])
     def test_extract(self, input_shape, kernel_shape):
@@ -90,6 +92,8 @@ class TestBackend(object):
         assert zth.shape == ztf.shape
         assert_allclose(zth, ztf, atol=1e-02)
 
+    @pytest.mark.skipif(K.backend() != 'tensorflow',
+                        reason='No need to run the tests twice.')
     @pytest.mark.parametrize('input_shape', [(1, 40, 40, 3), (1, 10, 10, 3)])
     @pytest.mark.parametrize('kernel_shape', [2, 5])
     def test_extract2(self, input_shape, kernel_shape):
@@ -109,6 +113,8 @@ class TestBackend(object):
         assert zth.shape == ztf.shape
         assert_allclose(zth, ztf, atol=1e-02)
 
+    @pytest.mark.skipif(K.backend() != 'tensorflow',
+                        reason='No need to run the tests twice.')
     @pytest.mark.parametrize('batch_size', [1, 2, 3])
     @pytest.mark.parametrize('scale', [2, 3])
     @pytest.mark.parametrize('channels', [1, 2, 3])
@@ -154,28 +160,15 @@ class TestBackend(object):
 
         for ip in [x_0, x_1, x_random]:
             for axes in [th_axes, tf_axes]:
-                ip_th = KTH.variable(ip)
-                th_mean, th_var = KCTH.moments(ip_th, axes, keep_dims=keep_dims)
+                K_mean, K_var = KC.moments(K.variable(ip), axes, keep_dims=keep_dims)
+                np_mean, np_var = KCNP.moments(ip, axes, keep_dims=keep_dims)
 
-                ip_tf = KTF.variable(ip)
-                tf_mean, tf_var = KCTF.moments(ip_tf, axes, keep_dims=keep_dims)
-
-                ip_cntk = KCTK.variable(ip)
-                cntk_mean, cntk_var = KCNTK.moments(ip_cntk, axes,
-                                                    keep_dims=keep_dims)
-
-                th_mean_val = KTH.eval(th_mean)
-                tf_mean_val = KTF.eval(tf_mean)
-                cntk_mean_val = KCTK.eval(cntk_mean)
-                th_var_val = KTH.eval(th_var)
-                tf_var_val = KTF.eval(tf_var)
-                cntk_var_val = KCTK.eval(cntk_var)
+                K_mean_val = K.eval(K_mean)
+                K_var_val = K.eval(K_var)
 
                 # absolute tolerance needed when working with zeros
-                assert_allclose(th_mean_val, tf_mean_val, rtol=1e-4, atol=1e-10)
-                assert_allclose(th_var_val, tf_var_val, rtol=1e-4, atol=1e-10)
-                assert_allclose(th_mean_val, cntk_mean_val, rtol=1e-4, atol=1e-10)
-                assert_allclose(th_var_val, cntk_var_val, rtol=1e-4, atol=1e-10)
+                assert_allclose(K_mean_val, np_mean, rtol=1e-4, atol=1e-10)
+                assert_allclose(K_var_val, np_var, rtol=1e-4, atol=1e-10)
 
 
 if __name__ == '__main__':
