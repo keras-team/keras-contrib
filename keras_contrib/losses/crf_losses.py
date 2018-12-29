@@ -19,8 +19,9 @@ def crf_nll(y_true, y_pred):
     # Raises
         TypeError: If CRF is not the last layer.
 
-    If you open an issue or a pull request about CRF, please
-    add 'cc @lzfelix' to notify Luiz Felix.
+    # About GitHub
+        If you open an issue or a pull request about CRF, please
+        add `cc @lzfelix` to notify Luiz Felix.
     """
 
     crf, idx = y_pred._keras_history[:2]
@@ -46,8 +47,9 @@ def crf_loss(y_true, y_pred):
         log-likelihood. Otherwise returns the categorical crossentropy implemented
         by the underlying Keras backend.
 
-    If you open an issue or a pull request about CRF, please
-    add 'cc @lzfelix' to notify Luiz Felix.
+    # About GitHub
+        If you open an issue or a pull request about CRF, please
+        add `cc @lzfelix` to notify Luiz Felix.
     """
     crf, idx = y_pred._keras_history[:2]
     if crf.learn_mode == 'join':
