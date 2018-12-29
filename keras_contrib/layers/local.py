@@ -6,6 +6,6 @@ from .. import activations
 from .. import initializers
 from .. import regularizers
 from .. import constraints
-from keras.engine import Layer
-from keras.engine import InputSpec
+from keras.layers import Layer
+from keras.layers import InputSpec
 from keras.utils.conv_utils import conv_output_length

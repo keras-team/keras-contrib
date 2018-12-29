@@ -8,8 +8,8 @@ from keras import activations
 from keras import initializers
 from keras import regularizers
 from keras import constraints
-from keras.engine import Layer
-from keras.engine import InputSpec
+from keras.layers import Layer
+from keras.layers import InputSpec
 
 from keras_contrib.losses import crf_loss
 from keras_contrib.metrics import crf_marginal_accuracy

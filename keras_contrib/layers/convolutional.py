@@ -8,8 +8,8 @@ from keras import activations
 from keras import initializers
 from keras import regularizers
 from keras import constraints
-from keras.engine import Layer
-from keras.engine import InputSpec
+from keras.layers import Layer
+from keras.layers import InputSpec
 from keras.utils.generic_utils import get_custom_objects
 from keras.utils.conv_utils import conv_output_length
 from keras.backend.common import normalize_data_format

@@ -1,4 +1,4 @@
-from keras.engine import Layer, InputSpec
+from keras.layers import Layer, InputSpec
 from keras import initializers, regularizers, constraints
 from keras import backend as K
 from keras_contrib import backend as KC
