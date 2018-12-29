@@ -9,16 +9,20 @@ from keras.utils.generic_utils import get_custom_objects
 
 class PELU(Layer):
     """Parametric Exponential Linear Unit.
+
     It follows:
     `f(x) = alphas * (exp(x / betas) - 1) for x < 0`,
     `f(x) = (alphas / betas) * x for x >= 0`,
     where `alphas` & `betas` are learned arrays with the same shape as x.
+
     # Input shape
         Arbitrary. Use the keyword argument `input_shape`
         (tuple of integers, does not include the samples axis)
         when using this layer as the first layer in a model.
+
     # Output shape
         Same shape as the input.
+
     # Arguments
         alphas_initializer: initialization function for the alpha variable weights.
         betas_initializer: initialization function for the beta variable weights.
@@ -31,9 +35,10 @@ class PELU(Layer):
             and you wish to share parameters across space
             so that each filter only has one set of parameters,
             set `shared_axes=[1, 2]`.
+
     # References
-        - [PARAMETRIC EXPONENTIAL LINEAR UNIT FOR DEEP CONVOLUTIONAL NEURAL NETWORKS](
-        https://arxiv.org/abs/1605.09332v3)
+        - [Parametric exponential linear unit for deep convolutional neural networks](
+           https://arxiv.org/abs/1605.09332v3)
     """
 
     def __init__(self, alpha_initializer='ones',
@@ -149,7 +154,7 @@ class SReLU(Layer):
 
     # References
         - [Deep Learning with S-shaped Rectified Linear Activation Units](
-        http://arxiv.org/abs/1512.07030)
+           http://arxiv.org/abs/1512.07030)
     """
 
     def __init__(self, t_left_initializer='zeros',
@@ -261,7 +266,7 @@ class Swish(Layer):
     # References
         - [Searching for Activation Functions](https://arxiv.org/abs/1710.05941)
         - [Sigmoid-weighted linear units for neural network function
-        approximation in reinforcement learning](https://arxiv.org/abs/1702.03118)
+           approximation in reinforcement learning](https://arxiv.org/abs/1702.03118)
     """
 
     def __init__(self, beta=1.0, trainable=False, **kwargs):
@@ -316,7 +321,10 @@ class SineReLU(Layer):
             When using Dense Networks, try something around 0.006.
 
     # References:
-        - SineReLU: An Alternative to the ReLU Activation Function. This function was
+        - [SineReLU: An Alternative to the ReLU Activation Function](
+           https://medium.com/@wilder.rodrigues/sinerelu-an-alternative-to-the-relu-activation-function-e46a6199997d).
+
+        This function was
         first introduced at the Codemotion Amsterdam 2018 and then at
         the DevDays, in Vilnius, Lithuania.
         It has been extensively tested with Deep Nets, CNNs,
