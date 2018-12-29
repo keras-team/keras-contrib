@@ -43,7 +43,7 @@ install:
 
   - travis_retry conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION
   - source activate test-environment
-  - travis_retry pip install --only-binary=numpy,scipy,pandas numpy nose scipy h5py theano pytest pytest-pep8 pandas --progress-bar off
+  - travis_retry pip install --only-binary=numpy,scipy,pandas numpy nose scipy h5py theano pytest pytest-pep8 pytest-xdist pytest-cov pandas --progress-bar off
   - if [[ "$USE_TF_KERAS" == "" ]]; then
       pip install git+https://github.com/keras-team/keras.git --progress-bar off;
     fi
@@ -54,7 +54,7 @@ install:
       travis_retry conda install -q mkl mkl-service;
     fi
 
-  - pip install -e .[tests] --progress-bar off --no-deps
+  - pip install -e . --progress-bar off --no-deps
 
   # install TensorFlow (CPU version).
   - pip install tensorflow==1.9 --progress-bar off
