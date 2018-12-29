@@ -6,5 +6,5 @@ from .. import backend as K
 from .. import activations
 from .. import initializers
 from .. import regularizers
-from keras.engine import Layer
-from keras.engine import InputSpec
+from keras.layers import Layer
+from keras.layers import InputSpec
