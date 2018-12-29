@@ -13,6 +13,6 @@ def depth_to_space(input, scale, data_format=None):
 
 
 def moments(x, axes, shift=None, keep_dims=False):
-    mean_batch = np.mean(x, axis=axes, keepdims=keep_dims)
-    var_batch = np.var(x, axis=axes, keepdims=keep_dims)
+    mean_batch = np.mean(x, axis=tuple(axes), keepdims=keep_dims)
+    var_batch = np.var(x, axis=tuple(axes), keepdims=keep_dims)
     return mean_batch, var_batch
