@@ -38,7 +38,7 @@ class CosineDense(Layer):
     # Arguments
         units: Positive integer, dimensionality of the output space.
         init: name of initialization function for the weights of the layer
-            (see [initializers](../initializers.md)),
+            (see [initializers](https://keras.io/initializers)),
             or alternatively, Theano function to use for weights
             initialization. This parameter is only relevant
             if you don't pass a `weights` argument.
