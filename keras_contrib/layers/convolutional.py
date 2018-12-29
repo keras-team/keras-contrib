@@ -19,14 +19,6 @@ import numpy as np
 class CosineConvolution2D(Layer):
     """Cosine Normalized Convolution operator for filtering
     windows of two-dimensional inputs.
-    Cosine Normalization: Using Cosine Similarity Instead
-    of Dot Product in Neural Networks
-    https://arxiv.org/pdf/1702.05870.pdf
-
-    When using this layer as the first layer in a model,
-    provide the keyword argument `input_shape`
-    (tuple of integers, does not include the sample axis),
-    e.g. `input_shape=(3, 128, 128)` for 128x128 RGB pictures.
 
     # Examples
 
@@ -49,12 +41,12 @@ class CosineConvolution2D(Layer):
             2 integers, specifying the
             dimensions of the convolution window.
         init: name of initialization function for the weights of the layer
-            (see [initializers](../initializers.md)), or alternatively,
+            (see [initializers](https://keras.io/initializers)), or alternatively,
             Theano function to use for weights initialization.
             This parameter is only relevant if you don't pass
             a `weights` argument.
         activation: name of activation function to use
-            (see [activations](../activations.md)),
+            (see [activations](https://keras.io/activations)),
             or alternatively, elementwise Theano function.
             If you don't specify anything, no activation is applied
             (ie. "linear" activation: a(x) = x).
@@ -63,22 +55,24 @@ class CosineConvolution2D(Layer):
             ('full' requires the Theano backend).
         strides: tuple of length 2. Factor by which to strides output.
             Also called strides elsewhere.
-        kernel_regularizer: instance of [WeightRegularizer](../regularizers.md)
+        kernel_regularizer: instance of [WeightRegularizer](
+            https://keras.io/regularizers)
             (eg. L1 or L2 regularization), applied to the main weights matrix.
-        bias_regularizer: instance of [WeightRegularizer](../regularizers.md),
-            applied to the use_bias.
-        activity_regularizer: instance of [ActivityRegularizer](../regularizers.md),
-            applied to the network output.
-        kernel_constraint: instance of the [constraints](../constraints.md) module
+        bias_regularizer: instance of [WeightRegularizer](
+            https://keras.io/regularizers), applied to the use_bias.
+        activity_regularizer: instance of [ActivityRegularizer](
+            https://keras.io/regularizers), applied to the network output.
+        kernel_constraint: instance of the [constraints](
+            https://keras.io/constraints) module
             (eg. maxnorm, nonneg), applied to the main weights matrix.
-        bias_constraint: instance of the [constraints](../constraints.md) module,
-            applied to the use_bias.
+        bias_constraint: instance of the [constraints](
+            https://keras.io/constraints) module, applied to the use_bias.
         data_format: 'channels_first' or 'channels_last'.
             In 'channels_first' mode, the channels dimension
             (the depth) is at index 1, in 'channels_last' mode is it at index 3.
             It defaults to the `image_data_format` value found in your
             Keras config file at `~/.keras/keras.json`.
-            If you never set it, then it will be "tf".
+            If you never set it, then it will be `'channels_last'`.
         use_bias: whether to include a use_bias
             (i.e. make the layer affine rather than linear).
 
@@ -96,6 +90,11 @@ class CosineConvolution2D(Layer):
         `(samples, nekernel_rows, nekernel_cols, filters)`
         if data_format='channels_last'.
         `rows` and `cols` values might have changed due to padding.
+
+
+    # References
+        - [Cosine Normalization: Using Cosine Similarity Instead
+           of Dot Product in Neural Networks](https://arxiv.org/pdf/1702.05870.pdf)
     """
 
     def __init__(self, filters, kernel_size,
@@ -257,11 +256,7 @@ get_custom_objects().update({'CosineConv2D': CosineConv2D})
 
 
 class SubPixelUpscaling(Layer):
-    """ Sub-pixel convolutional upscaling
-    layer based on the paper "Real-Time Single Image
-    and Video Super-Resolution Using an
-    Efficient Sub-Pixel Convolutional Neural Network"
-    (https://arxiv.org/abs/1609.05158).
+    """ Sub-pixel convolutional upscaling layer.
 
     This layer requires a Convolution2D prior to it,
     having output filters computed according to
@@ -281,7 +276,7 @@ class SubPixelUpscaling(Layer):
         x = Convolution2D(256, 3, 3, padding='same', activation='relu')(...)
         u = SubPixelUpscaling(scale_factor=2)(x)
 
-        [Optional]
+        # Optional
         x = Convolution2D(256, 3, 3, padding='same', activation='relu')(u)
     ```
 
@@ -314,6 +309,10 @@ class SubPixelUpscaling(Layer):
         `(samples, rows * scale_factor, cols * scale_factor, k channels)`
         if data_format='channels_last'.
 
+    # References
+        - [Real-Time Single Image and Video Super-Resolution Using an
+           Efficient Sub-Pixel Convolutional Neural Network](
+           https://arxiv.org/abs/1609.05158)
     """
 
     def __init__(self, scale_factor=2, data_format=None, **kwargs):
