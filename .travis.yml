@@ -13,9 +13,9 @@ matrix:
         - python: 3.6
           env: KERAS_BACKEND=tensorflow
         - python: 2.7
-          env: KERAS_BACKEND=tensorflow USE_TF_KERAS=1 PYTEST_IGNORE=--ignore=tests/keras_contrib/backend/
+          env: KERAS_BACKEND=tensorflow USE_TF_KERAS=1 PYTEST_IGNORE=--ignore=tests/keras_contrib/backend
         - python: 3.6
-          env: KERAS_BACKEND=tensorflow USE_TF_KERAS=1 PYTEST_IGNORE=--ignore=tests/keras_contrib/backend/
+          env: KERAS_BACKEND=tensorflow USE_TF_KERAS=1 PYTEST_IGNORE=--ignore=tests/keras_contrib/backend
         - python: 2.7
           env: KERAS_BACKEND=theano THEANO_FLAGS=optimizer=fast_compile
         - python: 3.6
@@ -83,12 +83,11 @@ script:
   - echo -e "Running tests with the following config:\n$(cat ~/.keras/keras.json)"
 
   - if [[ "$USE_TF_KERAS" == "1" ]]; then
-      # we should be able to run everything without keras-team/keras
       pip uninstall -y keras && python convert_to_tf_keras.py;
     fi
 
   - if [[ "$TEST_MODE" == "PEP8_DOC" ]]; then
       PYTHONPATH=$PWD:$PYTHONPATH py.test --pep8 -m pep8 -n0 && py.test tests/test_documentation.py;
     else
-      PYTHONPATH=$PWD:$PYTHONPATH py.test tests/ $PYTEST_IGNORE --cov-config .coveragerc --cov=keras_contrib tests/;
+      PYTHONPATH=$PWD:$PYTHONPATH py.test tests/ --cov-config .coveragerc --cov=keras_contrib tests/;
     fi
