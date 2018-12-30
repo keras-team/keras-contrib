@@ -12,7 +12,8 @@ def replace_imports(file_path):
     text_updated = text_updated.replace('from keras.', 'from tensorflow.keras.')
     text_updated = text_updated.replace('from keras ', 'from tensorflow.keras ')
 
-    # temporary workaround because layer_test is not in the public API
+    # TODO: Find a way to remove this.
+    # layer_test is not in the public API which is bad.
     text_updated = text_updated.replace(
         'from keras.utils.test_utils import layer_test',
         'from tensorflow.python.keras.testing_utils import layer_test')

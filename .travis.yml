@@ -89,5 +89,5 @@ script:
   - if [[ "$TEST_MODE" == "PEP8_DOC" ]]; then
       PYTHONPATH=$PWD:$PYTHONPATH py.test --pep8 -m pep8 -n0 && py.test tests/test_documentation.py;
     else
-      PYTHONPATH=$PWD:$PYTHONPATH py.test tests/ --cov-config .coveragerc --cov=keras_contrib tests/;
+      PYTHONPATH=$PWD:$PYTHONPATH py.test tests/ $PYTEST_IGNORE --cov-config .coveragerc --cov=keras_contrib tests/;
     fi
