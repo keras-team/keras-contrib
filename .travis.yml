@@ -55,7 +55,7 @@ install:
       travis_retry conda install -q mkl mkl-service;
     fi
 
-  - pip install -e .[tests] --progress-bar off $PIP_OPTION
+  - pip install $PIP_OPTION -e .[tests] --progress-bar off
 
   # install TensorFlow (CPU version).
   - pip install tensorflow==1.9 --progress-bar off

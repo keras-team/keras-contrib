@@ -32,8 +32,9 @@ def convert_to_tf_keras():
     print('Chnaged imports in ' + str(nb_of_files_changed) + ' files.')
 
 
-if "--use-tf-keras" in sys.argv:
-    sys.argv.remove("--use-tf-keras")
+use_tf_keras = '--use-tf-keras'
+if use_tf_keras in sys.argv:
+    sys.argv.remove(use_tf_keras)
     name = 'tf_keras_contrib'
     install_requires = []
     convert_to_tf_keras()
