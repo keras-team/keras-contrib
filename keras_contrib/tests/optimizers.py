@@ -1,7 +1,7 @@
 from __future__ import print_function
 import numpy as np
 
-from keras.utils import test_utils
+from keras_contrib.utils import test_utils
 from keras import optimizers
 from keras.models import Sequential
 from keras.layers.core import Dense, Activation
