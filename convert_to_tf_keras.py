@@ -7,8 +7,9 @@ def replace_imports(file_path):
     with open(file_path, 'r') as f:
         text = f.read()
 
-    text_updated = text.replace('import keras', 'import tensorflow.keras')
     # we don't want to catch 'from keras_contrib'.
+    text_updated = text.replace('import keras.', 'import tensorflow.keras.')
+    text_updated = text_updated.replace('import keras ', 'import tensorflow.keras ')
     text_updated = text_updated.replace('from keras.', 'from tensorflow.keras.')
     text_updated = text_updated.replace('from keras ', 'from tensorflow.keras ')
 
