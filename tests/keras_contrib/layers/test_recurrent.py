@@ -2,7 +2,7 @@ import pytest
 import numpy as np
 from numpy.testing import assert_allclose
 
-from keras.utils.test_utils import layer_test
+from keras_contrib.utils.test_utils import layer_test
 from keras_contrib.layers import recurrent
 from keras.layers import embeddings
 from keras.models import Sequential

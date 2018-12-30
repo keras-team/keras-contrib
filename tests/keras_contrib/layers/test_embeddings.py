@@ -1,5 +1,5 @@
 import pytest
-from keras.utils.test_utils import layer_test
+from keras_contrib.utils.test_utils import layer_test
 from keras.layers.embeddings import Embedding
 import keras.backend as K
 import keras_contrib.backend as KC

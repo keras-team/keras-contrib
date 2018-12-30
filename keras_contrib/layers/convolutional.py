@@ -11,7 +11,7 @@ from keras import constraints
 from keras.layers import Layer
 from keras.layers import InputSpec
 from keras.utils import get_custom_objects
-from keras.utils.conv_utils import conv_output_length
+from keras_contrib.utils.conv_utils import conv_output_length
 from keras.backend.common import normalize_data_format
 import numpy as np
 
