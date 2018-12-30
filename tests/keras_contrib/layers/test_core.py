@@ -6,7 +6,7 @@ from keras import constraints
 from keras.models import Sequential
 from keras import backend as K
 from keras_contrib.layers import core
-from keras.utils.test_utils import layer_test
+from keras_contrib.utils.test_utils import layer_test
 from numpy.testing import assert_allclose
 
 

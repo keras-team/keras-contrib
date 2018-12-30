@@ -4,7 +4,7 @@ from numpy.testing import assert_allclose
 
 from keras.layers import Dense, Activation, Input
 from keras import regularizers
-from keras.utils.test_utils import layer_test
+from keras_contrib.utils.test_utils import layer_test
 from keras_contrib.layers import normalization
 from keras.models import Sequential, Model
 from keras import backend as K
