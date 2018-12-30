@@ -4,7 +4,8 @@ import numpy as np
 from numpy.testing import assert_allclose
 import inspect
 
-from keras.engine import Model, Input
+from keras.layers import Input
+from keras import Model
 from keras import backend as K
 
 
