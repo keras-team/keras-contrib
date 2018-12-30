@@ -77,7 +77,7 @@ install:
 script:
   - export MKL_THREADING_LAYER="GNU"
   # run keras backend init to initialize backend config
-  - python -c "import keras.backend"
+  - python -c "import keras_contrib.backend"
   # create dataset directory to avoid concurrent directory creation at runtime
   - mkdir ~/.keras/datasets
   # set up keras backend
