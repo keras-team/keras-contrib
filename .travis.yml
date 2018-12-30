@@ -13,9 +13,9 @@ matrix:
         - python: 3.6
           env: KERAS_BACKEND=tensorflow
         - python: 2.7
-          env: KERAS_BACKEND=tensorflow USE_TF_KERAS=1 PYTEST_IGNORE=--ignore=tests/test_doc_auto_generation.py
+          env: KERAS_BACKEND=tensorflow USE_TF_KERAS=1 PYTEST_IGNORE='--ignore=tests/test_doc_auto_generation.py --ignore=tests/keras_contrib/backend'
         - python: 3.6
-          env: KERAS_BACKEND=tensorflow USE_TF_KERAS=1 PYTEST_IGNORE=--ignore=tests/test_doc_auto_generation.py
+          env: KERAS_BACKEND=tensorflow USE_TF_KERAS=1 PYTEST_IGNORE='--ignore=tests/test_doc_auto_generation.py --ignore=tests/keras_contrib/backend'
         - python: 2.7
           env: KERAS_BACKEND=theano THEANO_FLAGS=optimizer=fast_compile
         - python: 3.6
