@@ -83,8 +83,8 @@ script:
   - echo -e "Running tests with the following config:\n$(cat ~/.keras/keras.json)"
 
   - if [[ "$USE_TF_KERAS" == "1" ]]; then
-    # we should be able to run everything without keras-team/keras
-    pip uninstall -y keras && python convert_to_tf_keras.py;
+      # we should be able to run everything without keras-team/keras
+      pip uninstall -y keras && python convert_to_tf_keras.py;
     fi
 
   - if [[ "$TEST_MODE" == "PEP8_DOC" ]]; then
