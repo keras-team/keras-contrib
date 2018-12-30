@@ -4,8 +4,8 @@ import numpy as np
 from keras_contrib.utils import test_utils
 from keras import optimizers
 from keras.models import Sequential
-from keras.layers.core import Dense, Activation
-from keras.utils.np_utils import to_categorical
+from keras.layers import Dense, Activation
+from keras.utils import to_categorical
 
 
 def get_test_data():

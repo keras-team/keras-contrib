@@ -4,7 +4,7 @@ from numpy.testing import assert_allclose
 
 from keras_contrib.utils.test_utils import layer_test
 from keras_contrib.layers import recurrent
-from keras.layers import embeddings
+from keras.layers import Embedding
 from keras.models import Sequential
 from keras import regularizers
 
@@ -65,10 +65,10 @@ def test_implementation_mode(layer_class):
 @rnn_test
 def test_statefulness(layer_class):
     model = Sequential()
-    model.add(embeddings.Embedding(embedding_num, embedding_dim,
-                                   mask_zero=True,
-                                   input_length=timesteps,
-                                   batch_input_shape=(nb_samples, timesteps)))
+    model.add(Embedding(embedding_num, embedding_dim,
+                        mask_zero=True,
+                        input_length=timesteps,
+                        batch_input_shape=(nb_samples, timesteps)))
     layer = layer_class(output_dim, return_sequences=False,
                         stateful=True,
                         weights=None)
