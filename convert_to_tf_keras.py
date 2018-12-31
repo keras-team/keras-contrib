@@ -2,7 +2,9 @@ import os
 
 
 def replace_imports(file_path):
-    if not file_path.endswith('.py') or file_path.endswith('setup.py'):
+    if not file_path.endswith('.py'):
+        return False
+    if os.path.abspath(file_path) == os.path.abspath(__file__):
         return False
     with open(file_path, 'r') as f:
         text = f.read()
@@ -30,3 +32,4 @@ def convert_to_tf_keras():
             if replace_imports(os.path.join(root, name)):
                 nb_of_files_changed += 1
     print('Changed imports in ' + str(nb_of_files_changed) + ' files.')
+    print('Those files were found in the directory ' + os.path.dirname(__file__))
