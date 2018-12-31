@@ -258,7 +258,7 @@ class BatchRenormalization(Layer):
         shape = (dim,)
 
         if self.scale:
-            self.gamma = self.add_weight(shape,
+            self.gamma = self.add_weight(shape=shape,
                                          initializer=self.gamma_initializer,
                                          regularizer=self.gamma_regularizer,
                                          constraint=self.gamma_constraint,
@@ -267,7 +267,7 @@ class BatchRenormalization(Layer):
             self.gamma = None
 
         if self.center:
-            self.beta = self.add_weight(shape,
+            self.beta = self.add_weight(shape=shape,
                                         initializer=self.beta_initializer,
                                         regularizer=self.beta_regularizer,
                                         constraint=self.beta_constraint,
@@ -275,13 +275,13 @@ class BatchRenormalization(Layer):
         else:
             self.beta = None
 
-        self.running_mean = self.add_weight(shape,
+        self.running_mean = self.add_weight(shape=shape,
                                             initializer=self.moving_mean_initializer,
                                             name='{}_running_mean'.format(self.name),
                                             trainable=False)
 
         self.running_variance = self.add_weight(
-            shape,
+            shape=shape,
             initializer=self.moving_variance_initializer,
             name='{}_running_std'.format(self.name),
             trainable=False)
