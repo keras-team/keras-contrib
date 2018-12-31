@@ -1,6 +1,6 @@
 from __future__ import absolute_import
 from keras import backend as K
-from keras.constraints import *
+from keras.constraints import Constraint
 
 
 class Clip(Constraint):
