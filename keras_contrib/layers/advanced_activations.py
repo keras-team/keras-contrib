@@ -119,6 +119,10 @@ class PELU(Layer):
         base_config = super(PELU, self).get_config()
         return dict(list(base_config.items()) + list(config.items()))
 
+    def compute_output_shape(self, input_shape):
+        return input_shape
+
+
 get_custom_objects().update({'PELU': PELU})
 
 
@@ -243,6 +247,10 @@ class SReLU(Layer):
         base_config = super(SReLU, self).get_config()
         return dict(list(base_config.items()) + list(config.items()))
 
+    def compute_output_shape(self, input_shape):
+        return input_shape
+
+
 get_custom_objects().update({'SReLU': SReLU})
 
 
@@ -291,6 +299,10 @@ class Swish(Layer):
                   'trainable': self.trainable}
         base_config = super(Swish, self).get_config()
         return dict(list(base_config.items()) + list(config.items()))
+
+    def compute_output_shape(self, input_shape):
+        return input_shape
+
 
 get_custom_objects().update({'Swish': Swish})
 
@@ -411,5 +423,6 @@ class SineReLU(Layer):
 
     def compute_output_shape(self, input_shape):
         return input_shape
+
 
 get_custom_objects().update({'SineReLU': SineReLU})
