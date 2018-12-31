@@ -27,9 +27,10 @@ def replace_imports(file_path):
 def convert_to_tf_keras():
     """Run this function to convert the codebase to tf.keras"""
     nb_of_files_changed = 0
-    for root, dirs, files in os.walk(os.path.dirname(__file__)):
+    keras_dir = os.path.dirname(os.path.abspath(__file__))
+    for root, dirs, files in os.walk(keras_dir):
         for name in files:
             if replace_imports(os.path.join(root, name)):
                 nb_of_files_changed += 1
     print('Changed imports in ' + str(nb_of_files_changed) + ' files.')
-    print('Those files were found in the directory ' + os.path.dirname(__file__))
+    print('Those files were found in the directory ' + keras_dir)
