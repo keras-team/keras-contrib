@@ -22,7 +22,9 @@ def to_tensorshape(shape):
 def make_return_tensorshape(func):
     @functools.wraps(func)
     def new_func(*args, **kwargs):
-        return to_tensorshape(func(*args, **kwargs))
+        shape = func(*args, **kwargs)
+        tensorshape = to_tensorshape(shape)
+        return tensorshape
     return new_func
 
 
@@ -44,14 +46,11 @@ class TfKerasCompatibleLayer(Layer):
                    regularizer=None,
                    trainable=True,
                    constraint=None):
-        """ This hack is to make custom layers compatible with
-        tf.keras
-        """
         shape = to_tensorshape(shape)
-        super(TfKerasCompatibleLayer, self).add_weight(name,
-                                                       shape,
-                                                       dtype=dtype,
-                                                       initializer=initializer,
-                                                       regularizer=regularizer,
-                                                       trainable=trainable,
-                                                       constraint=constraint)
+        return super(TfKerasCompatibleLayer, self).add_weight(name,
+                                                              shape,
+                                                              dtype=dtype,
+                                                              initializer=initializer,
+                                                              regularizer=regularizer,
+                                                              trainable=trainable,
+                                                              constraint=constraint)
