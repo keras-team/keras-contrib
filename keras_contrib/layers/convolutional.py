@@ -8,7 +8,7 @@ from keras import activations
 from keras import initializers
 from keras import regularizers
 from keras import constraints
-from keras.layers import Layer
+from .base_layer import TfKerasCompatibleLayer as Layer
 from keras.layers import InputSpec
 from keras.utils import get_custom_objects
 from keras_contrib.utils.conv_utils import conv_output_length

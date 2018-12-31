@@ -1,8 +1,9 @@
-from keras.layers import Layer, InputSpec
+from keras.layers import InputSpec
 from keras import initializers, regularizers, constraints
 from keras import backend as K
 from keras_contrib import backend as KC
 from keras.utils import get_custom_objects
+from .base_layer import TfKerasCompatibleLayer as Layer
 
 
 class InstanceNormalization(Layer):

@@ -1,7 +1,7 @@
 from keras import initializers
 from keras import regularizers
 from keras import constraints
-from keras.layers import Layer
+from .base_layer import TfKerasCompatibleLayer as Layer
 from keras.layers import InputSpec
 from keras import backend as K
 from keras.utils import get_custom_objects
