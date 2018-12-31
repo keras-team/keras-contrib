@@ -1,5 +1,5 @@
-from tensorflow.keras.layers import Layer
-from tensorflow import keras
+from keras.layers import Layer
+import keras
 import functools
 
 
