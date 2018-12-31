@@ -250,18 +250,18 @@ class CRF(Layer):
         self.input_spec = [InputSpec(shape=input_shape)]
         self.input_dim = input_shape[-1]
 
-        self.kernel = self.add_weight((self.input_dim, self.units),
+        self.kernel = self.add_weight(shape=(self.input_dim, self.units),
                                       name='kernel',
                                       initializer=self.kernel_initializer,
                                       regularizer=self.kernel_regularizer,
                                       constraint=self.kernel_constraint)
-        self.chain_kernel = self.add_weight((self.units, self.units),
+        self.chain_kernel = self.add_weight(shape=(self.units, self.units),
                                             name='chain_kernel',
                                             initializer=self.chain_initializer,
                                             regularizer=self.chain_regularizer,
                                             constraint=self.chain_constraint)
         if self.use_bias:
-            self.bias = self.add_weight((self.units,),
+            self.bias = self.add_weight(shape=(self.units,),
                                         name='bias',
                                         initializer=self.bias_initializer,
                                         regularizer=self.bias_regularizer,
@@ -270,12 +270,12 @@ class CRF(Layer):
             self.bias = 0
 
         if self.use_boundary:
-            self.left_boundary = self.add_weight((self.units,),
+            self.left_boundary = self.add_weight(shape=(self.units,),
                                                  name='left_boundary',
                                                  initializer=self.boundary_initializer,
                                                  regularizer=self.boundary_regularizer,
                                                  constraint=self.boundary_constraint)
-            self.right_boundary = self.add_weight((self.units,),
+            self.right_boundary = self.add_weight(shape=(self.units,),
                                                   name='right_boundary',
                                                   initializer=self.boundary_initializer,
                                                   regularizer=self.boundary_regularizer,
