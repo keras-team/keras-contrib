@@ -1,13 +1,11 @@
 from setuptools import setup
 from setuptools import find_packages
 import os
-from convert_to_tf_keras import convert_to_tf_keras
 
 
 if os.environ.get('USE_TF_KERAS', None) == '1':
     name = 'tf_keras_contrib'
     install_requires = []
-    convert_to_tf_keras()
 else:
     name = 'keras_contrib'
     install_requires = ['keras']

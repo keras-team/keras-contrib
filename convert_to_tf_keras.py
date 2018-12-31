@@ -34,3 +34,7 @@ def convert_to_tf_keras():
                 nb_of_files_changed += 1
     print('Changed imports in ' + str(nb_of_files_changed) + ' files.')
     print('Those files were found in the directory ' + keras_dir)
+
+
+if __name__ == '__main__':
+    convert_to_tf_keras()

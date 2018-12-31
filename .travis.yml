@@ -55,6 +55,9 @@ install:
       travis_retry conda install -q mkl mkl-service;
     fi
 
+  - if [[ "$USE_TF_KERAS" == "1" ]]; then
+      python convert_to_tf_keras.py;
+    fi
   - pip install -v -e .[tests] --progress-bar off
 
   # install TensorFlow (CPU version).
