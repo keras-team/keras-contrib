@@ -58,7 +58,7 @@ install:
   - pip install -e .[tests] --progress-bar off
 
   # install TensorFlow (CPU version).
-  - pip install tensorflow==1.9 --progress-bar off
+  - pip install tensorflow --progress-bar off
 
   # install cntk
   - ./.travis/install_cntk.sh
