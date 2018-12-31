@@ -29,4 +29,4 @@ def convert_to_tf_keras():
         for name in files:
             if replace_imports(os.path.join(root, name)):
                 nb_of_files_changed += 1
-    print('Chnaged imports in ' + str(nb_of_files_changed) + ' files.')
+    print('Changed imports in ' + str(nb_of_files_changed) + ' files.')
