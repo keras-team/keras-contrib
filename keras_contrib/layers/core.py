@@ -115,13 +115,13 @@ class CosineDense(Layer):
         self.input_spec = [InputSpec(dtype=K.floatx(),
                                      ndim=ndim)]
 
-        self.kernel = self.add_weight((input_dim, self.units),
+        self.kernel = self.add_weight(shape=(input_dim, self.units),
                                       initializer=self.kernel_initializer,
                                       name='{}_W'.format(self.name),
                                       regularizer=self.kernel_regularizer,
                                       constraint=self.kernel_constraint)
         if self.use_bias:
-            self.bias = self.add_weight((self.units,),
+            self.bias = self.add_weight(shape=(self.units,),
                                         initializer='zero',
                                         name='{}_b'.format(self.name),
                                         regularizer=self.bias_regularizer,

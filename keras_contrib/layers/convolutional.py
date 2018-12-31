@@ -139,7 +139,7 @@ class CosineConvolution2D(Layer):
             self.kernel_norm_shape = (self.nb_row, self.nb_col, stack_size, 1)
         else:
             raise ValueError('Invalid data_format:', self.data_format)
-        self.W = self.add_weight(self.kernel_shape,
+        self.W = self.add_weight(shape=self.kernel_shape,
                                  initializer=partial(self.kernel_initializer),
                                  name='{}_W'.format(self.name),
                                  regularizer=self.kernel_regularizer,
@@ -150,7 +150,7 @@ class CosineConvolution2D(Layer):
                                       name=kernel_norm_name)
 
         if self.use_bias:
-            self.b = self.add_weight((self.filters,),
+            self.b = self.add_weight(shape=(self.filters,),
                                      initializer='zero',
                                      name='{}_b'.format(self.name),
                                      regularizer=self.bias_regularizer,

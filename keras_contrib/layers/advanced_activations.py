@@ -74,12 +74,12 @@ class PELU(Layer):
 
         param_shape = tuple(param_shape)
         # Initialised as ones to emulate the default ELU
-        self.alpha = self.add_weight(param_shape,
+        self.alpha = self.add_weight(shape=param_shape,
                                      name='alpha',
                                      initializer=self.alpha_initializer,
                                      regularizer=self.alpha_regularizer,
                                      constraint=self.alpha_constraint)
-        self.beta = self.add_weight(param_shape,
+        self.beta = self.add_weight(shape=param_shape,
                                     name='beta',
                                     initializer=self.beta_initializer,
                                     regularizer=self.beta_regularizer,
@@ -186,19 +186,19 @@ class SReLU(Layer):
 
         param_shape = tuple(param_shape)
 
-        self.t_left = self.add_weight(param_shape,
+        self.t_left = self.add_weight(shape=param_shape,
                                       name='t_left',
                                       initializer=self.t_left_initializer)
 
-        self.a_left = self.add_weight(param_shape,
+        self.a_left = self.add_weight(shape=param_shape,
                                       name='a_left',
                                       initializer=self.a_left_initializer)
 
-        self.t_right = self.add_weight(param_shape,
+        self.t_right = self.add_weight(shape=param_shape,
                                        name='t_right',
                                        initializer=self.t_right_initializer)
 
-        self.a_right = self.add_weight(param_shape,
+        self.a_right = self.add_weight(shape=param_shape,
                                        name='a_right',
                                        initializer=self.a_right_initializer)
 
