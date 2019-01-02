@@ -103,6 +103,6 @@ class LARS(Optimizer):
 
             self.updates.append(K.update(p, new_p))
         return self.updates
-y
+
 
 get_custom_objects().update({'LARS': LARS})
