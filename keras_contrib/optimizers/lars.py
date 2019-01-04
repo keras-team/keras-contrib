@@ -92,7 +92,7 @@ class LARS(Optimizer):
             v = self.momentum * m - scaled_lr * g  # velocity
             self.updates.append(K.update(m, v))
 
-            if self._use_nesterov:
+            if self.use_nesterov:
                 new_p = p + self.momentum * v - scaled_lr * g
             else:
                 new_p = p + v
