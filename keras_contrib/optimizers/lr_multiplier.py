@@ -58,7 +58,7 @@ class LearningRateMultiplier(Optimizer):
 
     def __setattr__(self, name, value):
         if name.startswith('_'):
-            super().__setattr__(name, value)
+            super(LearningRateMultiplier, self).__setattr__(name, value)
         else:
             self._optimizer.__setattr__(name, value)
 
