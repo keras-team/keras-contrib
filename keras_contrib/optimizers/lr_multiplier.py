@@ -32,7 +32,8 @@ class LearningRateMultiplier(Optimizer):
                 return self._lr_multipliers[k]
 
     def get_updates(self, loss, params):
-        mult_lr_params = {p: self._get_multiplier(p) for p in params if self._get_multiplier(p)}
+        mult_lr_params = {p: self._get_multiplier(p) for p in params
+                          if self._get_multiplier(p)}
         base_lr_params = [p for p in params if self._get_multiplier(p) is None]
 
         updates = []
