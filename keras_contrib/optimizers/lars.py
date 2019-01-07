@@ -60,12 +60,12 @@ class LARS(Optimizer):
 
     def get_config(self):
         config = {'lr': float(K.get_value(self.lr)),
-                  'momentum': float(K.get_value(self.beta_1)),
-                  'weight_decay': float(K.get_value(self._weight_decay)),
+                  'momentum': float(K.get_value(self.momentum)),
+                  'weight_decay': float(K.get_value(self.weight_decay)),
                   'epsilon': self.epsilon,
-                  'etaa': float(K.get_value(self._eeta)),
-                  'nesterov': self._use_nesterov,
-                  'skip_list': self._skip_list}
+                  'etaa': float(K.get_value(self.eeta)),
+                  'nesterov': self.use_nesterov,
+                  'skip_list': self.skip_list}
         base_config = super(LARS, self).get_config()
         return dict(list(base_config.items()) + list(config.items()))
 
