@@ -34,13 +34,13 @@ class LARS(Optimizer):
     """
     def __init__(
       self,
-      learning_rate,
+      lr,
       momentum=0.9,
       weight_decay=0.0001,
       eeta=0.001,
       epsilon=0.0,
       skip_list=None,
-      use_nesterov=False,
+      nesterov=False,
       **kwargs):
 
         if momentum < 0.0:
@@ -50,13 +50,13 @@ class LARS(Optimizer):
         super(LARS, self).__init__(**kwargs)
         with K.name_scope(self.__class__.__name__):
             self.iterations = K.variable(0, dtype='int64', name='iterations')
-            self.lr = K.variable(learning_rate, name='lr')
+            self.lr = K.variable(lr, name='lr')
             self.momentum = K.variable(momentum, name='momentum')
             self.weight_decay = K.variable(weight_decay, name='weight_decay')
             self.eeta = K.variable(eeta, name='eeta')
         self.epsilon = epsilon
         self.skip_list = skip_list
-        self.use_nesterov = use_nesterov
+        self.nesterov = nesterov
 
     def get_config(self):
         config = {'lr': float(K.get_value(self.lr)),
@@ -64,7 +64,7 @@ class LARS(Optimizer):
                   'weight_decay': float(K.get_value(self.weight_decay)),
                   'epsilon': self.epsilon,
                   'etaa': float(K.get_value(self.eeta)),
-                  'nesterov': self.use_nesterov,
+                  'nesterov': self.nesterov,
                   'skip_list': self.skip_list}
         base_config = super(LARS, self).get_config()
         return dict(list(base_config.items()) + list(config.items()))
@@ -92,7 +92,7 @@ class LARS(Optimizer):
             v = self.momentum * m - scaled_lr * g  # velocity
             self.updates.append(K.update(m, v))
 
-            if self.use_nesterov:
+            if self.nesterov:
                 new_p = p + self.momentum * v - scaled_lr * g
             else:
                 new_p = p + v
