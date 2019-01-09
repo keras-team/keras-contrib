@@ -63,7 +63,7 @@ class LARS(Optimizer):
                   'momentum': float(K.get_value(self.momentum)),
                   'weight_decay': float(K.get_value(self.weight_decay)),
                   'epsilon': self.epsilon,
-                  'etaa': float(K.get_value(self.eeta)),
+                  'eeta': float(K.get_value(self.eeta)),
                   'nesterov': self.nesterov,
                   'skip_list': self.skip_list}
         base_config = super(LARS, self).get_config()
