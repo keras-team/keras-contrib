@@ -17,7 +17,7 @@ class LARS(Optimizer):
     Note, LARS scaling is currently only enabled for dense tensors.
 
     Args:
-        learning_rate: A `Tensor` or floating point value. The base learning rate.
+        lr: A `Tensor` or floating point value. The base learning rate.
         momentum: A floating point value. Momentum hyperparameter.
         weight_decay: A floating point value. Weight decay hyperparameter.
         eeta: LARS coefficient as used in the paper. Dfault set to LARS
@@ -30,7 +30,7 @@ class LARS(Optimizer):
             'var' is skipped from LARS scaling. For a typical classification model
             with batch normalization, the skip_list is ['batch_normalization',
             'bias']
-        use_nesterov: when set to True, nesterov momentum will be enabled
+        nesterov: when set to True, nesterov momentum will be enabled
     """
     def __init__(
       self,
@@ -47,6 +47,7 @@ class LARS(Optimizer):
             raise ValueError("momentum should be positive: %s" % momentum)
         if weight_decay < 0.0:
             raise ValueError("weight_decay is not positive: %s" % weight_decay)
+        print(kwargs)
         super(LARS, self).__init__(**kwargs)
         with K.name_scope(self.__class__.__name__):
             self.iterations = K.variable(0, dtype='int64', name='iterations')
