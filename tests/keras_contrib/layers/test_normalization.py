@@ -9,6 +9,7 @@ from keras_contrib.layers import normalization
 from keras.models import Sequential, Model
 from keras import backend as K
 from keras_contrib import backend as KC
+from keras_contrib.layers.base_layer import is_tf_keras
 
 input_1 = np.arange(10)
 input_2 = np.zeros(10)
@@ -223,6 +224,11 @@ def basic_batchrenorm_test():
                input_shape=(3, 4, 2))
 
 
+@pytest.mark.xfail(is_tf_keras,
+                   reason='tf.keras not in sync. Waiting for '
+                          'https://github.com/tensorflow/tensorflow/issues/24827 '
+                          'to be fixed.',
+                   strict=True)
 def test_batchrenorm_mode_0_or_2():
     for training in [1, 0, None]:
         ip = Input(shape=(10,))
@@ -280,6 +286,11 @@ def test_batchrenorm_mode_0_convnet():
     assert_allclose(np.std(out, axis=(0, 2, 3)), 1.0, atol=1e-1)
 
 
+@pytest.mark.xfail(is_tf_keras,
+                   reason='tf.keras not in sync. Waiting for '
+                          'https://github.com/tensorflow/tensorflow/issues/24827 '
+                          'to be fixed.',
+                   strict=True)
 def test_shared_batchrenorm():
     '''Test that a BN layer can be shared
     across different data streams.
@@ -329,6 +340,11 @@ def test_batchrenorm_clipping_schedule():
     assert_allclose([r_max, d_max], [3, 5], atol=1e-1)
 
 
+@pytest.mark.xfail(is_tf_keras,
+                   reason='tf.keras not in sync. Waiting for '
+                          'https://github.com/tensorflow/tensorflow/issues/24827 '
+                          'to be fixed.',
+                   strict=True)
 def test_batchrenorm_get_config():
     '''Test that get_config works on a model with a batchrenorm layer.'''
     x = Input(shape=(10,))
