@@ -47,8 +47,7 @@ def get_data_callbacks(num_train=train_samples,
                          num_classes=num_classes)
 
 
-@pytest.mark.parametrize('update_freq', ['batch', 'epoch', 9])
-def test_TensorBoard(tmpdir, update_freq):
+def test_TensorBoard(tmpdir):
     np.random.seed(np.random.randint(1, 1e7))
     filepath = str(tmpdir / 'logs')
 
@@ -87,8 +86,7 @@ def test_TensorBoard(tmpdir, update_freq):
                                    embeddings_freq=embeddings_freq,
                                    embeddings_layer_names=['dense_1'],
                                    embeddings_data=X_test,
-                                   batch_size=5,
-                                   update_freq=update_freq)]
+                                   batch_size=5)]
 
     # fit without validation data
     model.fit(X_train, y_train, batch_size=batch_size,
