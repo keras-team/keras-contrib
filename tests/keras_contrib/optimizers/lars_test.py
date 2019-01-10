@@ -3,4 +3,4 @@ from keras_contrib.tests import optimizers
 from keras_contrib.optimizers import lars
 
 optimizers._test_optimizer(lars.LARS(0.01))
-optimizers._test_optimizer(lars.LARS(0.01, nesterov = True))
+optimizers._test_optimizer(lars.LARS(0.01, nesterov=True))
