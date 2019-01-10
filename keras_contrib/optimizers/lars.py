@@ -32,16 +32,16 @@ class LARS(Optimizer):
             'bias']
         nesterov: when set to True, nesterov momentum will be enabled
     """
-    def __init__(
-      self,
-      lr,
-      momentum=0.9,
-      weight_decay=0.0001,
-      eeta=0.001,
-      epsilon=0.0,
-      skip_list=None,
-      nesterov=False,
-      **kwargs):
+
+    def __init__(self,
+                 lr,
+                 momentum=0.9,
+                 weight_decay=0.0001,
+                 eeta=0.001,
+                 epsilon=0.0,
+                 skip_list=None,
+                 nesterov=False,
+                 **kwargs):
 
         if momentum < 0.0:
             raise ValueError("momentum should be positive: %s" % momentum)
@@ -76,13 +76,13 @@ class LARS(Optimizer):
         self.updates = [K.update_add(self.iterations, 1)]
         scaled_lr = self.lr
         if self.skip_list is None or not any(p in params.name
-                                              for p in self.skip_list):
+                                             for p in self.skip_list):
             w_norm = K.sqrt(K.sum([K.sum(K.square(w)) for w in weights]))
             g_norm = K.sqrt(K.sum([K.sum(K.square(g)) for g in grads]))
             scaled_lr = K.switch(K.greater(w_norm * g_norm, K.zeros([1])),
                                  K.expand_dims((self.eeta * w_norm / (g_norm +
-                                         self.weight_decay * w_norm +
-                                         self.epsilon)) * self.lr),
+                                                                      self.weight_decay * w_norm +
+                                                                      self.epsilon)) * self.lr),
                                  K.ones([1]) * self.lr)
 
         # momentum
