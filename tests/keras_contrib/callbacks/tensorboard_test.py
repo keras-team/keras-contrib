@@ -79,18 +79,15 @@ def test_TensorBoard(tmpdir):
                   metrics=['accuracy', DummyStatefulMetric()])
 
     # we must generate new callbacks for each test, as they aren't stateless
-    def callbacks_factory(histogram_freq, embeddings_freq=1):
+    def callbacks_factory(histogram_freq):
         return [TensorBoardGrouped(log_dir=filepath,
                                    histogram_freq=histogram_freq,
                                    write_images=True, write_grads=True,
-                                   embeddings_freq=embeddings_freq,
-                                   embeddings_layer_names=['dense_1'],
-                                   embeddings_data=X_test,
                                    batch_size=5)]
 
     # fit without validation data
     model.fit(X_train, y_train, batch_size=batch_size,
-              callbacks=callbacks_factory(histogram_freq=0, embeddings_freq=0),
+              callbacks=callbacks_factory(histogram_freq=0),
               epochs=3)
 
     # fit with validation data and accuracy
@@ -101,8 +98,7 @@ def test_TensorBoard(tmpdir):
     # fit generator without validation data
     train_generator = data_generator(X_train, y_train, batch_size)
     model.fit_generator(train_generator, len(X_train), epochs=2,
-                        callbacks=callbacks_factory(histogram_freq=0,
-                                                    embeddings_freq=0))
+                        callbacks=callbacks_factory(histogram_freq=0))
 
     # fit generator with validation data and accuracy
     train_generator = data_generator(X_train, y_train, batch_size)
