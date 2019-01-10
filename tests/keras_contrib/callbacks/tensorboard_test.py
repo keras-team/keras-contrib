@@ -5,7 +5,7 @@ import shutil
 from keras.utils import to_categorical
 from keras.layers import Layer, Input, Dense, Dropout, BatchNormalization
 from keras_contrib.utils.test_utils import to_list, unpack_singleton
-from keras.utils.test_utils import get_test_data
+from keras_contrib.utils.test_utils import get_test_data
 from keras import Model
 from keras import backend as K
 from keras_contrib.callbacks import TensorBoardGrouped
