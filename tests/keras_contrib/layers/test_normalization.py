@@ -318,6 +318,11 @@ def test_shared_batchrenorm():
     new_model.train_on_batch(x, x)
 
 
+@pytest.mark.xfail(is_tf_keras,
+                   reason='tf.keras not in sync. Waiting for '
+                          'https://github.com/tensorflow/tensorflow/issues/24827 '
+                          'to be fixed.',
+                   strict=True)
 def test_batchrenorm_clipping_schedule():
     '''Test that the clipping schedule isn't fixed at r_max=1, d_max=0'''
     inp = Input(shape=(10,))
