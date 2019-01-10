@@ -4,7 +4,7 @@ import os
 import shutil
 from keras.utils import to_categorical
 from keras.layers import Layer, Input, Dense, Dropout, BatchNormalization
-from keras.utils.generic_utils import to_list, unpack_singleton
+from keras_contrib.utils.test_utils import to_list, unpack_singleton
 from keras.utils.test_utils import get_test_data
 from keras import Model
 from keras import backend as K

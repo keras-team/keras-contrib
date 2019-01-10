@@ -162,3 +162,46 @@ def has_arg(fn, name, accept_all=False):
             return False
         return (parameter.kind in (inspect.Parameter.POSITIONAL_OR_KEYWORD,
                                    inspect.Parameter.KEYWORD_ONLY))
+
+
+def to_list(x, allow_tuple=False):
+    """Normalizes a list/tensor into a list.
+
+    Copy of the keras-team/keras function.
+
+    If a tensor is passed, we return
+    a list of size 1 containing the tensor.
+
+    # Arguments
+        x: target object to be normalized.
+        allow_tuple: If False and x is a tuple,
+            it will be converted into a list
+            with a single element (the tuple).
+            Else converts the tuple to a list.
+
+    # Returns
+        A list.
+    """
+    if isinstance(x, list):
+        return x
+    if allow_tuple and isinstance(x, tuple):
+        return list(x)
+    return [x]
+
+
+def unpack_singleton(x):
+    """Gets the first element if the iterable has only one value.
+
+    Copy of the keras-team/keras function.
+
+    Otherwise return the iterable.
+
+    # Argument:
+        x: A list or tuple.
+
+    # Returns:
+        The same iterable or the first element.
+    """
+    if len(x) == 1:
+        return x[0]
+    return x
