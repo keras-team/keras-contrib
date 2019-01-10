@@ -49,7 +49,8 @@ class TfKerasCompatibleLayer(Layer):
 
         # ensure that we can return tuples and
         # still be compatible with tf.keras.
-        #self.compute_output_shape = make_return_tensorshape(self.compute_output_shape)
+        # self.compute_output_shape =
+        # make_return_tensorshape(self.compute_output_shape)
         self.build = make_manipulate_tuple(self.build)
 
         super(TfKerasCompatibleLayer, self).__init__(**kwargs)
@@ -62,7 +63,7 @@ class TfKerasCompatibleLayer(Layer):
                    regularizer=None,
                    trainable=True,
                    constraint=None):
-        #shape = to_tensorshape(shape)
+        # shape = to_tensorshape(shape)
         return super(TfKerasCompatibleLayer, self).add_weight(name,
                                                               shape,
                                                               dtype=dtype,
