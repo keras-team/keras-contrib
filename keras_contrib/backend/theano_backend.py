@@ -1,6 +1,5 @@
 from theano import tensor as T
 from theano.sandbox.neighbours import images2neibs
-import numpy as np
 
 try:
     import theano.sparse as th_sparse_module
@@ -12,14 +11,8 @@ except ImportError:
     from theano.sandbox.softsign import softsign as T_softsign
 from keras.backend import theano_backend as KTH
 from keras.backend.common import image_data_format
-from keras.backend.theano_backend import _preprocess_conv3d_input
-from keras.backend.theano_backend import _preprocess_conv3d_kernel
-from keras.backend.theano_backend import _preprocess_conv3d_filter_shape
-from keras.backend.theano_backend import _preprocess_padding
-from keras.backend.theano_backend import _postprocess_conv3d_output
 from keras.backend.theano_backend import _preprocess_conv2d_input
 from keras.backend.theano_backend import _postprocess_conv2d_output
-from keras.backend.theano_backend import logsumexp
 
 py_all = all
 
@@ -77,16 +70,20 @@ def conv2d(x, kernel, strides=(1, 1), padding='valid', data_format='channels_fir
 
     if padding == 'same':
         if np_kernel.shape[2] % 2 == 0:
-            conv_out = conv_out[:, :, :(x.shape[2] + strides[0] - 1) // strides[0], :]
+            end = (x.shape[2] + strides[0] - 1) // strides[0]
+            conv_out = conv_out[:, :, :end, :]
         if np_kernel.shape[3] % 2 == 0:
-            conv_out = conv_out[:, :, :, :(x.shape[3] + strides[1] - 1) // strides[1]]
+            end = (x.shape[3] + strides[1] - 1) // strides[1]
+            conv_out = conv_out[:, :, :, :end]
 
     if data_format == 'channels_last':
         conv_out = conv_out.dimshuffle((0, 2, 3, 1))
     return conv_out
 
 
-def extract_image_patches(X, ksizes, strides, padding='valid', data_format='channels_first'):
+def extract_image_patches(X, ksizes, strides,
+                          padding='valid',
+                          data_format='channels_first'):
     '''
     Extract the patches from an image
     Parameters
@@ -115,17 +112,21 @@ def extract_image_patches(X, ksizes, strides, padding='valid', data_format='chan
     num_channels = xs[-3]
     patches = images2neibs(X, ksizes, strides, padding)
     # Theano is sorting by channel
-    patches = KTH.reshape(patches, (batch, num_channels, num_rows * num_cols, patch_size, patch_size))
+    new_shape = (batch, num_channels, num_rows * num_cols, patch_size, patch_size)
+    patches = KTH.reshape(patches, new_shape)
     patches = KTH.permute_dimensions(patches, (0, 2, 1, 3, 4))
     # arrange in a 2d-grid (rows, cols, channels, px, py)
-    patches = KTH.reshape(patches, (batch, num_rows, num_cols, num_channels, patch_size, patch_size))
+    new_shape = (batch, num_rows, num_cols, num_channels, patch_size, patch_size)
+    patches = KTH.reshape(patches, new_shape)
     if data_format == 'channels_last':
         patches = KTH.permute_dimensions(patches, [0, 1, 2, 4, 5, 3])
     return patches
 
 
 def depth_to_space(input, scale, data_format=None):
-    ''' Uses phase shift algorithm to convert channels/depth for spatial resolution '''
+    """Uses phase shift algorithm to convert
+    channels/depth for spatial resolution
+    """
     if data_format is None:
         data_format = image_data_format()
     data_format = data_format.lower()

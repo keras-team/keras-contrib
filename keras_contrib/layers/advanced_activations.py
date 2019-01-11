@@ -1,11 +1,10 @@
-import numpy as np
 from keras import initializers
 from keras import regularizers
 from keras import constraints
-from keras.engine import Layer
-from keras.engine import InputSpec
-from .. import backend as K
-from keras.utils.generic_utils import get_custom_objects
+from keras.layers import Layer
+from keras.layers import InputSpec
+from keras import backend as K
+from keras.utils import get_custom_objects
 
 
 class PTReLU(Layer):
@@ -117,16 +116,20 @@ get_custom_objects().update({'PTReLU': PTReLU})
 
 class PELU(Layer):
     """Parametric Exponential Linear Unit.
+
     It follows:
     `f(x) = alphas * (exp(x / betas) - 1) for x < 0`,
     `f(x) = (alphas / betas) * x for x >= 0`,
     where `alphas` & `betas` are learned arrays with the same shape as x.
+
     # Input shape
         Arbitrary. Use the keyword argument `input_shape`
         (tuple of integers, does not include the samples axis)
         when using this layer as the first layer in a model.
+
     # Output shape
         Same shape as the input.
+
     # Arguments
         alphas_initializer: initialization function for the alpha variable weights.
         betas_initializer: initialization function for the beta variable weights.
@@ -139,8 +142,10 @@ class PELU(Layer):
             and you wish to share parameters across space
             so that each filter only has one set of parameters,
             set `shared_axes=[1, 2]`.
+
     # References
-        - [PARAMETRIC EXPONENTIAL LINEAR UNIT FOR DEEP CONVOLUTIONAL NEURAL NETWORKS](https://arxiv.org/abs/1605.09332v3)
+        - [Parametric exponential linear unit for deep convolutional neural networks](
+           https://arxiv.org/abs/1605.09332v3)
     """
 
     def __init__(self, alpha_initializer='ones',
@@ -176,12 +181,12 @@ class PELU(Layer):
 
         param_shape = tuple(param_shape)
         # Initialised as ones to emulate the default ELU
-        self.alpha = self.add_weight(param_shape,
+        self.alpha = self.add_weight(shape=param_shape,
                                      name='alpha',
                                      initializer=self.alpha_initializer,
                                      regularizer=self.alpha_regularizer,
                                      constraint=self.alpha_constraint)
-        self.beta = self.add_weight(param_shape,
+        self.beta = self.add_weight(shape=param_shape,
                                     name='beta',
                                     initializer=self.beta_initializer,
                                     regularizer=self.beta_regularizer,
@@ -201,7 +206,8 @@ class PELU(Layer):
             pos = K.relu(x) * (K.pattern_broadcast(self.alpha, self.param_broadcast) /
                                K.pattern_broadcast(self.beta, self.param_broadcast))
             neg = (K.pattern_broadcast(self.alpha, self.param_broadcast) *
-                   (K.exp((-K.relu(-x)) / K.pattern_broadcast(self.beta, self.param_broadcast)) - 1))
+                   (K.exp((-K.relu(-x))
+                          / K.pattern_broadcast(self.beta, self.param_broadcast)) - 1))
         else:
             pos = K.relu(x) * self.alpha / self.beta
             neg = self.alpha * (K.exp((-K.relu(-x)) / self.beta) - 1)
@@ -254,7 +260,8 @@ class SReLU(Layer):
             set `shared_axes=[1, 2]`.
 
     # References
-        - [Deep Learning with S-shaped Rectified Linear Activation Units](http://arxiv.org/abs/1512.07030)
+        - [Deep Learning with S-shaped Rectified Linear Activation Units](
+           http://arxiv.org/abs/1512.07030)
     """
 
     def __init__(self, t_left_initializer='zeros',
@@ -286,19 +293,19 @@ class SReLU(Layer):
 
         param_shape = tuple(param_shape)
 
-        self.t_left = self.add_weight(param_shape,
+        self.t_left = self.add_weight(shape=param_shape,
                                       name='t_left',
                                       initializer=self.t_left_initializer)
 
-        self.a_left = self.add_weight(param_shape,
+        self.a_left = self.add_weight(shape=param_shape,
                                       name='a_left',
                                       initializer=self.a_left_initializer)
 
-        self.t_right = self.add_weight(param_shape,
+        self.t_right = self.add_weight(shape=param_shape,
                                        name='t_right',
                                        initializer=self.t_right_initializer)
 
-        self.a_right = self.add_weight(param_shape,
+        self.a_right = self.add_weight(shape=param_shape,
                                        name='a_right',
                                        initializer=self.a_right_initializer)
 
@@ -359,12 +366,14 @@ class Swish(Layer):
 
     # Arguments
         beta: float >= 0. Scaling factor
-            if set to 1 and trainable set to False (default), Swish equals the SiLU activation (Elfwing et al., 2017)
+            if set to 1 and trainable set to False (default),
+            Swish equals the SiLU activation (Elfwing et al., 2017)
         trainable: whether to learn the scaling factor during training or not
 
     # References
         - [Searching for Activation Functions](https://arxiv.org/abs/1710.05941)
-        - [Sigmoid-weighted linear units for neural network function approximation in reinforcement learning](https://arxiv.org/abs/1702.03118)
+        - [Sigmoid-weighted linear units for neural network function
+           approximation in reinforcement learning](https://arxiv.org/abs/1702.03118)
     """
 
     def __init__(self, beta=1.0, trainable=False, **kwargs):
@@ -398,8 +407,10 @@ class SineReLU(Layer):
 
     It allows an oscilation in the gradients when the weights are negative.
     The oscilation can be controlled with a parameter, which makes it be close
-    or equal to zero. The functional is diferentiable at any point due to its derivative.
-    For instance, at 0, the derivative of 'sin(0) - cos(0)' is 'cos(0) + sin(0)' which is 1.
+    or equal to zero. The functional is diferentiable at any point due to
+    its derivative.
+    For instance, at 0, the derivative of 'sin(0) - cos(0)'
+    is 'cos(0) + sin(0)' which is 1.
 
     # Input shape
         Arbitrary. Use the keyword argument `input_shape`
@@ -410,14 +421,21 @@ class SineReLU(Layer):
         Same shape as the input.
 
     # Arguments
-        epsilon: float. Hyper-parameter used to control the amplitude of the sinusoidal wave when weights are negative.
-                 The default value, 0.0025, since it works better for CNN layers and those are the most used layers nowadays.
-                 When using Dense Networks, try something around 0.006.
+        epsilon: float. Hyper-parameter used to control the amplitude of the
+            sinusoidal wave when weights are negative.
+            The default value, 0.0025, since it works better for CNN layers and
+            those are the most used layers nowadays.
+            When using Dense Networks, try something around 0.006.
 
     # References:
-        - SineReLU: An Alternative to the ReLU Activation Function. This function was
-        first introduced at the Codemotion Amsterdam 2018 and then at the DevDays, in Vilnius, Lithuania.
-        It has been extensively tested with Deep Nets, CNNs, LSTMs, Residual Nets and GANs, based
+        - [SineReLU: An Alternative to the ReLU Activation Function](
+           https://medium.com/@wilder.rodrigues/sinerelu-an-alternative-to-the-relu-activation-function-e46a6199997d).
+
+        This function was
+        first introduced at the Codemotion Amsterdam 2018 and then at
+        the DevDays, in Vilnius, Lithuania.
+        It has been extensively tested with Deep Nets, CNNs,
+        LSTMs, Residual Nets and GANs, based
         on the MNIST, Kaggle Toxicity and IMDB datasets.
 
     # Performance:
@@ -425,23 +443,35 @@ class SineReLU(Layer):
         - Fashion MNIST
           * Mean of 6 runs per Activation Function
             * Fully Connection Network
-              - SineReLU: loss mean -> 0.3522; accuracy mean -> 89.18; mean of std loss -> 0.08375204467435822
-              - LeakyReLU: loss mean-> 0.3553; accuracy mean -> 88.98; mean of std loss -> 0.0831161868455245
-              - ReLU: loss mean -> 0.3519; accuracy mean -> 88.84; mean of std loss -> 0.08358816501301362
+              - SineReLU: loss mean -> 0.3522; accuracy mean -> 89.18;
+                  mean of std loss -> 0.08375204467435822
+              - LeakyReLU: loss mean-> 0.3553; accuracy mean -> 88.98;
+              mean of std loss -> 0.0831161868455245
+              - ReLU: loss mean -> 0.3519; accuracy mean -> 88.84;
+              mean of std loss -> 0.08358816501301362
             * Convolutional Neural Network
-              - SineReLU: loss mean -> 0.2180; accuracy mean -> 92.49; mean of std loss -> 0.0781155784858847
-              - LeakyReLU: loss mean -> 0.2205; accuracy mean -> 92.37; mean of std loss -> 0.09273670474788205
-              - ReLU: loss mean -> 0.2144; accuracy mean -> 92.45; mean of std loss -> 0.09396114585977
+              - SineReLU: loss mean -> 0.2180; accuracy mean -> 92.49;
+              mean of std loss -> 0.0781155784858847
+              - LeakyReLU: loss mean -> 0.2205; accuracy mean -> 92.37;
+              mean of std loss -> 0.09273670474788205
+              - ReLU: loss mean -> 0.2144; accuracy mean -> 92.45;
+              mean of std loss -> 0.09396114585977
         - MNIST
           * Mean of 6 runs per Activation Function
             * Fully Connection Network
-              - SineReLU: loss mean -> 0.0623; accuracy mean -> 98.53; mean of std loss -> 0.06012015231824904
-              - LeakyReLU: loss mean-> 0.0623; accuracy mean -> 98.50; mean of std loss -> 0.06052147632835356
-              - ReLU: loss mean -> 0.0605; accuracy mean -> 98.49; mean of std loss -> 0.059599885665016096
+              - SineReLU: loss mean -> 0.0623; accuracy mean -> 98.53;
+              mean of std loss -> 0.06012015231824904
+              - LeakyReLU: loss mean-> 0.0623; accuracy mean -> 98.50;
+              mean of std loss -> 0.06052147632835356
+              - ReLU: loss mean -> 0.0605; accuracy mean -> 98.49;
+              mean of std loss -> 0.059599885665016096
             * Convolutional Neural Network
-              - SineReLU: loss mean -> 0.0198; accuracy mean -> 99.51; mean of std loss -> 0.0425338329550847
-              - LeakyReLU: loss mean -> 0.0216; accuracy mean -> 99.40; mean of std loss -> 0.04834468835196667
-              - ReLU: loss mean -> 0.0185; accuracy mean -> 99.49; mean of std loss -> 0.05503719489690131
+              - SineReLU: loss mean -> 0.0198; accuracy mean -> 99.51;
+              mean of std loss -> 0.0425338329550847
+              - LeakyReLU: loss mean -> 0.0216; accuracy mean -> 99.40;
+              mean of std loss -> 0.04834468835196667
+              - ReLU: loss mean -> 0.0185; accuracy mean -> 99.49;
+              mean of std loss -> 0.05503719489690131
 
     # Jupyter Notebooks
         - https://github.com/ekholabs/DLinK/blob/master/notebooks/keras

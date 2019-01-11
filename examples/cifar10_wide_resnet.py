@@ -46,12 +46,14 @@ model.summary()
 
 model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['acc'])
 print('Finished compiling')
-
-model.fit_generator(generator.flow(trainX, trainY, batch_size=batch_size), steps_per_epoch=len(trainX) // batch_size,
+model_checkpoint = callbacks.ModelCheckpoint('WRN-28-8 Weights.h5',
+                                             monitor='val_acc',
+                                             save_best_only=True,
+                                             save_weights_only=True)
+model.fit_generator(generator.flow(trainX, trainY, batch_size=batch_size),
+                    steps_per_epoch=len(trainX) // batch_size,
                     epochs=epochs,
-                    callbacks=[
-                        callbacks.ModelCheckpoint('WRN-28-8 Weights.h5', monitor='val_acc', save_best_only=True,
-                                                  save_weights_only=True)],
+                    callbacks=[model_checkpoint],
                     validation_data=(testX, testY))
 
 scores = model.evaluate(testX, testY, batch_size)

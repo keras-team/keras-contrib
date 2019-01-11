@@ -3,7 +3,8 @@
 
 # Reference
 
-- [Residual Networks of Residual Networks: Multilevel Residual Networks](https://arxiv.org/abs/1608.02908)
+- [Residual Networks of Residual Networks: Multilevel Residual Networks](
+https://arxiv.org/abs/1608.02908)
 
 """
 from __future__ import print_function
@@ -24,10 +25,11 @@ from keras.engine.topology import get_source_inputs
 from keras_applications.imagenet_utils import _obtain_input_shape
 import keras.backend as K
 
-TH_WEIGHTS_PATH = 'https://github.com/titu1994/Residual-of-Residual-Networks/releases/download/v0.2/ror_wrn_40_2_th_kernels_th_dim_ordering.h5'
-TF_WEIGHTS_PATH = 'https://github.com/titu1994/Residual-of-Residual-Networks/releases/download/v0.2/ror_wrn_40_2_tf_kernels_tf_dim_ordering.h5'
-TH_WEIGHTS_PATH_NO_TOP = 'https://github.com/titu1994/Residual-of-Residual-Networks/releases/download/v0.2/ror_wrn_40_2_th_kernels_th_dim_ordering_no_top.h5'
-TF_WEIGHTS_PATH_NO_TOP = 'https://github.com/titu1994/Residual-of-Residual-Networks/releases/download/v0.2/ror_wrn_40_2_tf_kernels_tf_dim_ordering_no_top.h5'
+base = 'https://github.com/titu1994/Residual-of-Residual-Networks/releases/download/'
+TH_WEIGHTS_PATH = base + 'v0.2/ror_wrn_40_2_th_kernels_th_dim_ordering.h5'
+TF_WEIGHTS_PATH = base + 'v0.2/ror_wrn_40_2_tf_kernels_tf_dim_ordering.h5'
+TH_WEIGHTS_PATH_NO_TOP = base + 'v0.2/ror_wrn_40_2_th_kernels_th_dim_ordering_no_top.h5'
+TF_WEIGHTS_PATH_NO_TOP = base + 'v0.2/ror_wrn_40_2_tf_kernels_tf_dim_ordering_no_top.h5'
 
 
 def ResidualOfResidual(depth=40, width=2, dropout_rate=0.0,
@@ -117,11 +119,13 @@ def ResidualOfResidual(depth=40, width=2, dropout_rate=0.0,
 
             if K.image_dim_ordering() == 'th':
                 if include_top:
-                    weights_path = get_file('ror_wrn_40_2_th_kernels_th_dim_ordering.h5',
+                    weights_path = get_file('ror_wrn_40_2_th_'
+                                            'kernels_th_dim_ordering.h5',
                                             TH_WEIGHTS_PATH,
                                             cache_subdir='models')
                 else:
-                    weights_path = get_file('ror_wrn_40_2_th_kernels_th_dim_ordering_no_top.h5',
+                    weights_path = get_file('ror_wrn_40_2_th_kernels_'
+                                            'th_dim_ordering_no_top.h5',
                                             TH_WEIGHTS_PATH_NO_TOP,
                                             cache_subdir='models')
 
@@ -139,11 +143,13 @@ def ResidualOfResidual(depth=40, width=2, dropout_rate=0.0,
                     convert_all_kernels_in_model(model)
             else:
                 if include_top:
-                    weights_path = get_file('ror_wrn_40_2_tf_kernels_tf_dim_ordering_no_top.h5',
+                    weights_path = get_file('ror_wrn_40_2_tf_kernels_'
+                                            'tf_dim_ordering_no_top.h5',
                                             TF_WEIGHTS_PATH,
                                             cache_subdir='models')
                 else:
-                    weights_path = get_file('ror_wrn_40_2_tf_kernels_tf_dim_ordering_no_top.h5',
+                    weights_path = get_file('ror_wrn_40_2_tf_kernels_'
+                                            'tf_dim_ordering_no_top.h5',
                                             TF_WEIGHTS_PATH_NO_TOP,
                                             cache_subdir='models')
 
@@ -160,12 +166,17 @@ def __initial_conv_block(input, k=1, dropout=0.0, initial=False):
 
     channel_axis = 1 if K.image_dim_ordering() == 'th' else -1
 
-    # Check if input number of filters is same as 16 * k, else create convolution2d for this input
+    # Check if input number of filters is same as 16 * k,
+    # else create convolution2d for this input
     if initial:
         if K.image_dim_ordering() == 'th':
-            init = Conv2D(16 * k, (1, 1), kernel_initializer='he_normal', padding='same')(init)
+            init = Conv2D(16 * k, (1, 1),
+                          kernel_initializer='he_normal',
+                          padding='same')(init)
         else:
-            init = Conv2D(16 * k, (1, 1), kernel_initializer='he_normal', padding='same')(init)
+            init = Conv2D(16 * k, (1, 1),
+                          kernel_initializer='he_normal',
+                          padding='same')(init)
 
     x = BatchNormalization(axis=channel_axis)(input)
     x = Activation('relu')(x)
@@ -187,30 +198,36 @@ def __conv_block(input, nb_filters=32, k=1, dropout=0.0):
 
     channel_axis = 1 if K.image_dim_ordering() == 'th' else -1
 
-    # Check if input number of filters is same as 32 * k, else create convolution2d for this input
+    # Check if input number of filters is same as 32 * k,
+    # else create convolution2d for this input
     if K.image_dim_ordering() == 'th':
         if init._keras_shape[1] != nb_filters * k:
-            init = Conv2D(nb_filters * k, (1, 1), kernel_initializer='he_normal', padding='same')(init)
+            init = Conv2D(nb_filters * k, (1, 1),
+                          kernel_initializer='he_normal', padding='same')(init)
     else:
         if init._keras_shape[-1] != nb_filters * k:
-            init = Conv2D(nb_filters * k, (1, 1), kernel_initializer='he_normal', padding='same')(init)
+            init = Conv2D(nb_filters * k, (1, 1),
+                          kernel_initializer='he_normal', padding='same')(init)
 
     x = BatchNormalization(axis=channel_axis)(input)
     x = Activation('relu')(x)
-    x = Conv2D(nb_filters * k, (3, 3), padding='same', kernel_initializer='he_normal')(x)
+    x = Conv2D(nb_filters * k, (3, 3), padding='same',
+               kernel_initializer='he_normal')(x)
 
     if dropout > 0.0:
         x = Dropout(dropout)(x)
 
     x = BatchNormalization(axis=channel_axis)(x)
     x = Activation('relu')(x)
-    x = Conv2D(nb_filters * k, (3, 3), padding='same', kernel_initializer='he_normal')(x)
+    x = Conv2D(nb_filters * k, (3, 3), padding='same',
+               kernel_initializer='he_normal')(x)
 
     m = add([init, x])
     return m
 
 
-def __create_pre_residual_of_residual(nb_classes, img_input, include_top, depth=28, width=1, dropout=0.0):
+def __create_pre_residual_of_residual(nb_classes, img_input, include_top,
+                                      depth=28, width=1, dropout=0.0):
     '''
     Creates a Residual Network of Residual Network with specified parameters
 
@@ -218,7 +235,8 @@ def __create_pre_residual_of_residual(nb_classes, img_input, include_top, depth=
               model = ResidualOfResidual(depth=28, width=1) # Pre-RoR-3
 
               To create a RoR-WRN model, use k > 1
-              model = ResidualOfResidual(depth=28, width=10) # Pre-RoR-3,  RoR-3-WRN-28-10
+              model = ResidualOfResidual(depth=28, width=10)
+              # Pre-RoR-3,  RoR-3-WRN-28-10
 
     Args:
         nb_classes: number of classes

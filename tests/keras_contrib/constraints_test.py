@@ -1,9 +1,7 @@
 import pytest
 import numpy as np
-from numpy.testing import assert_allclose
 
 from keras import backend as K
-from keras_contrib import backend as KC
 from keras_contrib import constraints
 
 

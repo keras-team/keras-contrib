@@ -1,22 +1,25 @@
-from keras.engine import Layer, InputSpec
+from keras.layers import Layer, InputSpec
 from keras import initializers, regularizers, constraints
-from .. import backend as K
-from keras.utils.generic_utils import get_custom_objects
-import numpy as np
+from keras import backend as K
+from keras_contrib import backend as KC
+from keras.utils import get_custom_objects
 
 
 class InstanceNormalization(Layer):
-    """Instance normalization layer (Lei Ba et al, 2016, Ulyanov et al., 2016).
+    """Instance normalization layer.
+
     Normalize the activations of the previous layer at each step,
     i.e. applies a transformation that maintains the mean activation
     close to 0 and the activation standard deviation close to 1.
+
     # Arguments
         axis: Integer, the axis that should be normalized
             (typically the features axis).
             For instance, after a `Conv2D` layer with
             `data_format="channels_first"`,
             set `axis=1` in `InstanceNormalization`.
-            Setting `axis=None` will normalize all values in each instance of the batch.
+            Setting `axis=None` will normalize all values in each
+            instance of the batch.
             Axis 0 is the batch dimension. `axis` cannot be set to 0 to avoid errors.
         epsilon: Small float added to variance to avoid dividing by zero.
         center: If True, add offset of `beta` to normalized tensor.
@@ -32,15 +35,19 @@ class InstanceNormalization(Layer):
         gamma_regularizer: Optional regularizer for the gamma weight.
         beta_constraint: Optional constraint for the beta weight.
         gamma_constraint: Optional constraint for the gamma weight.
+
     # Input shape
         Arbitrary. Use the keyword argument `input_shape`
         (tuple of integers, does not include the samples axis)
-        when using this layer as the first layer in a model.
+        when using this layer as the first layer in a Sequential model.
+
     # Output shape
         Same shape as input.
+
     # References
         - [Layer Normalization](https://arxiv.org/abs/1607.06450)
-        - [Instance Normalization: The Missing Ingredient for Fast Stylization](https://arxiv.org/abs/1607.08022)
+        - [Instance Normalization: The Missing Ingredient for Fast Stylization](
+        https://arxiv.org/abs/1607.08022)
     """
     def __init__(self,
                  axis=None,
@@ -104,7 +111,7 @@ class InstanceNormalization(Layer):
         input_shape = K.int_shape(inputs)
         reduction_axes = list(range(0, len(input_shape)))
 
-        if (self.axis is not None):
+        if self.axis is not None:
             del reduction_axes[self.axis]
 
         del reduction_axes[0]
@@ -147,9 +154,11 @@ get_custom_objects().update({'InstanceNormalization': InstanceNormalization})
 
 class BatchRenormalization(Layer):
     """Batch renormalization layer (Sergey Ioffe, 2017).
+
     Normalize the activations of the previous layer at each batch,
     i.e. applies a transformation that maintains the mean activation
     close to 0 and the activation standard deviation close to 1.
+
     # Arguments
         axis: Integer, the axis that should be normalized
             (typically the features axis).
@@ -173,35 +182,43 @@ class BatchRenormalization(Layer):
             `[(input_shape,), (input_shape,)]`
             Note that the order of this list is [gamma, beta, mean, std]
         beta_initializer: name of initialization function for shift parameter
-            (see [initializers](../initializers.md)), or alternatively,
+            (see [initializers](https://keras.io/initializers)), or alternatively,
             Theano/TensorFlow function to use for weights initialization.
             This parameter is only relevant if you don't pass a `weights` argument.
         gamma_initializer: name of initialization function for scale parameter (see
-            [initializers](../initializers.md)), or alternatively,
+            [initializers](https://keras.io/initializers)), or alternatively,
             Theano/TensorFlow function to use for weights initialization.
             This parameter is only relevant if you don't pass a `weights` argument.
         moving_mean_initializer: Initializer for the moving mean.
         moving_variance_initializer: Initializer for the moving variance.
-        gamma_regularizer: instance of [WeightRegularizer](../regularizers.md)
-            (eg. L1 or L2 regularization), applied to the gamma vector.
-        beta_regularizer: instance of [WeightRegularizer](../regularizers.md),
-            applied to the beta vector.
+        gamma_regularizer: instance of [WeightRegularizer](
+            https://keras.io/regularizers) (eg. L1 or L2 regularization),
+            applied to the gamma vector.
+        beta_regularizer: instance of [WeightRegularizer](
+            https://keras.io/regularizers), applied to the beta vector.
         beta_constraint: Optional constraint for the beta weight.
         gamma_constraint: Optional constraint for the gamma weight.
+
     # Input shape
         Arbitrary. Use the keyword argument `input_shape`
         (tuple of integers, does not include the samples axis)
         when using this layer as the first layer in a model.
+
     # Output shape
         Same shape as input.
+
     # References
-        - [Batch Normalization: Accelerating Deep Network Training by Reducing Internal Covariate Shift](https://arxiv.org/abs/1502.03167)
+        - [Batch Normalization: Accelerating Deep Network Training by
+        Reducing Internal Covariate Shift](https://arxiv.org/abs/1502.03167)
     """
 
-    def __init__(self, axis=-1, momentum=0.99, center=True, scale=True, epsilon=1e-3,
-                 r_max_value=3., d_max_value=5., t_delta=1e-3, weights=None, beta_initializer='zero',
+    def __init__(self, axis=-1, momentum=0.99, center=True,
+                 scale=True, epsilon=1e-3,
+                 r_max_value=3., d_max_value=5.,
+                 t_delta=1e-3, weights=None, beta_initializer='zero',
                  gamma_initializer='one', moving_mean_initializer='zeros',
-                 moving_variance_initializer='ones', gamma_regularizer=None, beta_regularizer=None,
+                 moving_variance_initializer='ones',
+                 gamma_regularizer=None, beta_regularizer=None,
                  beta_constraint=None, gamma_constraint=None, **kwargs):
         if axis != -1 and K.backend() == 'tensorflow':
             raise NotImplementedError('There is currently a bug '
@@ -222,7 +239,8 @@ class BatchRenormalization(Layer):
         self.beta_initializer = initializers.get(beta_initializer)
         self.gamma_initializer = initializers.get(gamma_initializer)
         self.moving_mean_initializer = initializers.get(moving_mean_initializer)
-        self.moving_variance_initializer = initializers.get(moving_variance_initializer)
+        self.moving_variance_initializer = initializers.get(
+            moving_variance_initializer)
         self.beta_constraint = constraints.get(beta_constraint)
         self.gamma_constraint = constraints.get(gamma_constraint)
 
@@ -232,15 +250,15 @@ class BatchRenormalization(Layer):
         dim = input_shape[self.axis]
         if dim is None:
             raise ValueError('Axis ' + str(self.axis) + ' of '
-                                                        'input tensor should have a defined dimension '
-                                                        'but the layer received an input with shape ' +
+                             'input tensor should have a defined dimension '
+                             'but the layer received an input with shape ' +
                              str(input_shape) + '.')
         self.input_spec = InputSpec(ndim=len(input_shape),
                                     axes={self.axis: dim})
         shape = (dim,)
 
         if self.scale:
-            self.gamma = self.add_weight(shape,
+            self.gamma = self.add_weight(shape=shape,
                                          initializer=self.gamma_initializer,
                                          regularizer=self.gamma_regularizer,
                                          constraint=self.gamma_constraint,
@@ -249,7 +267,7 @@ class BatchRenormalization(Layer):
             self.gamma = None
 
         if self.center:
-            self.beta = self.add_weight(shape,
+            self.beta = self.add_weight(shape=shape,
                                         initializer=self.beta_initializer,
                                         regularizer=self.beta_regularizer,
                                         constraint=self.beta_constraint,
@@ -257,13 +275,16 @@ class BatchRenormalization(Layer):
         else:
             self.beta = None
 
-        self.running_mean = self.add_weight(shape, initializer=self.moving_mean_initializer,
+        self.running_mean = self.add_weight(shape=shape,
+                                            initializer=self.moving_mean_initializer,
                                             name='{}_running_mean'.format(self.name),
                                             trainable=False)
 
-        self.running_variance = self.add_weight(shape, initializer=self.moving_variance_initializer,
-                                                name='{}_running_std'.format(self.name),
-                                                trainable=False)
+        self.running_variance = self.add_weight(
+            shape=shape,
+            initializer=self.moving_variance_initializer,
+            name='{}_running_std'.format(self.name),
+            trainable=False)
 
         self.r_max = K.variable(1, name='{}_r_max'.format(self.name))
 
@@ -288,13 +309,15 @@ class BatchRenormalization(Layer):
         broadcast_shape = [1] * len(input_shape)
         broadcast_shape[self.axis] = input_shape[self.axis]
 
-        mean_batch, var_batch = K.moments(inputs, reduction_axes, shift=None, keep_dims=False)
+        mean_batch, var_batch = KC.moments(inputs, reduction_axes,
+                                           shift=None, keep_dims=False)
         std_batch = (K.sqrt(var_batch + self.epsilon))
 
         r = std_batch / (K.sqrt(self.running_variance + self.epsilon))
         r = K.stop_gradient(K.clip(r, 1 / self.r_max, self.r_max))
 
-        d = (mean_batch - self.running_mean) / K.sqrt(self.running_variance + self.epsilon)
+        d = (mean_batch - self.running_mean) / K.sqrt(self.running_variance
+                                                      + self.epsilon)
         d = K.stop_gradient(K.clip(d, -self.d_max, self.d_max))
 
         if sorted(reduction_axes) == range(K.ndim(inputs))[:-1]:
@@ -310,15 +333,22 @@ class BatchRenormalization(Layer):
             broadcast_gamma = K.reshape(self.gamma, broadcast_shape)
 
             x_normed_batch = (inputs - broadcast_mean) / broadcast_std
-            x_normed = (x_normed_batch * broadcast_r + broadcast_d) * broadcast_gamma + broadcast_beta
+            x_normed = (x_normed_batch * broadcast_r
+                        + broadcast_d) * broadcast_gamma + broadcast_beta
 
         # explicit update to moving mean and standard deviation
-        self.add_update([K.moving_average_update(self.running_mean, mean_batch, self.momentum),
-                         K.moving_average_update(self.running_variance, std_batch ** 2, self.momentum)], inputs)
+        mean_update = K.moving_average_update(self.running_mean,
+                                              mean_batch,
+                                              self.momentum)
+        variance_update = K.moving_average_update(self.running_variance,
+                                                  std_batch ** 2,
+                                                  self.momentum)
+        self.add_update([mean_update, variance_update], inputs)
 
         # update r_max and d_max
         r_val = self.r_max_value / (1 + (self.r_max_value - 1) * K.exp(-self.t))
-        d_val = self.d_max_value / (1 + ((self.d_max_value / 1e-3) - 1) * K.exp(-(2 * self.t)))
+        d_val = (self.d_max_value
+                 / (1 + ((self.d_max_value / 1e-3) - 1) * K.exp(-(2 * self.t))))
 
         self.add_update([K.update(self.r_max, r_val),
                          K.update(self.d_max, d_val),
@@ -337,8 +367,10 @@ class BatchRenormalization(Layer):
                     return x_normed_running
                 else:
                     # need broadcasting
-                    broadcast_running_mean = K.reshape(self.running_mean, broadcast_shape)
-                    broadcast_running_std = K.reshape(self.running_variance, broadcast_shape)
+                    broadcast_running_mean = K.reshape(self.running_mean,
+                                                       broadcast_shape)
+                    broadcast_running_std = K.reshape(self.running_variance,
+                                                      broadcast_shape)
                     broadcast_beta = K.reshape(self.beta, broadcast_shape)
                     broadcast_gamma = K.reshape(self.gamma, broadcast_shape)
                     x_normed_running = K.batch_normalization(
@@ -350,25 +382,29 @@ class BatchRenormalization(Layer):
 
             # pick the normalized form of inputs corresponding to the training phase
             # for batch renormalization, inference time remains same as batchnorm
-            x_normed = K.in_train_phase(x_normed, normalize_inference, training=training)
+            x_normed = K.in_train_phase(x_normed, normalize_inference,
+                                        training=training)
 
             return x_normed
 
     def get_config(self):
-        config = {'epsilon': self.epsilon,
-                  'axis': self.axis,
-                  'center': self.center,
-                  'scale': self.scale,
-                  'momentum': self.momentum,
-                  'gamma_regularizer': initializers.serialize(self.gamma_regularizer),
-                  'beta_regularizer': initializers.serialize(self.beta_regularizer),
-                  'moving_mean_initializer': initializers.serialize(self.moving_mean_initializer),
-                  'moving_variance_initializer': initializers.serialize(self.moving_variance_initializer),
-                  'beta_constraint': constraints.serialize(self.beta_constraint),
-                  'gamma_constraint': constraints.serialize(self.gamma_constraint),
-                  'r_max_value': self.r_max_value,
-                  'd_max_value': self.d_max_value,
-                  't_delta': self.t_delta}
+        config = {
+            'epsilon': self.epsilon,
+            'axis': self.axis,
+            'center': self.center,
+            'scale': self.scale,
+            'momentum': self.momentum,
+            'gamma_regularizer': initializers.serialize(self.gamma_regularizer),
+            'beta_regularizer': initializers.serialize(self.beta_regularizer),
+            'moving_mean_initializer': initializers.serialize(
+                self.moving_mean_initializer),
+            'moving_variance_initializer': initializers.serialize(
+                self.moving_variance_initializer),
+            'beta_constraint': constraints.serialize(self.beta_constraint),
+            'gamma_constraint': constraints.serialize(self.gamma_constraint),
+            'r_max_value': self.r_max_value,
+            'd_max_value': self.d_max_value,
+            't_delta': self.t_delta}
         base_config = super(BatchRenormalization, self).get_config()
         return dict(list(base_config.items()) + list(config.items()))
 
@@ -377,16 +413,24 @@ get_custom_objects().update({'BatchRenormalization': BatchRenormalization})
 
 
 class GroupNormalization(Layer):
-    """Group normalization layer
-    Group Normalization divides the channels into groups and computes within each group
-    the mean and variance for normalization. Group Normalization's computation is independent
+    """Group normalization layer.
+
+    Group Normalization divides the channels into groups and computes
+    within each group
+    the mean and variance for normalization.
+    Group Normalization's computation is independent
      of batch sizes, and its accuracy is stable in a wide range of batch sizes.
+
     Relation to Layer Normalization:
     If the number of groups is set to 1, then this operation becomes identical to
     Layer Normalization.
+
     Relation to Instance Normalization:
-    If the number of groups is set to the input dimension (number of groups is equal
-    to number of channels), then this operation becomes identical to Instance Normalization.
+    If the number of groups is set to the
+    input dimension (number of groups is equal
+    to number of channels), then this operation becomes
+    identical to Instance Normalization.
+
     # Arguments
         groups: Integer, the number of groups for Group Normalization.
             Can be in the range [1, N] where N is the input dimension.
@@ -410,12 +454,15 @@ class GroupNormalization(Layer):
         gamma_regularizer: Optional regularizer for the gamma weight.
         beta_constraint: Optional constraint for the beta weight.
         gamma_constraint: Optional constraint for the gamma weight.
+
     # Input shape
         Arbitrary. Use the keyword argument `input_shape`
         (tuple of integers, does not include the samples axis)
         when using this layer as the first layer in a model.
+
     # Output shape
         Same shape as input.
+
     # References
         - [Group Normalization](https://arxiv.org/abs/1803.08494)
     """
@@ -510,7 +557,8 @@ class GroupNormalization(Layer):
         inputs = K.reshape(inputs, group_shape)
 
         group_reduction_axes = list(range(len(group_axes)))
-        mean, variance = K.moments(inputs, group_reduction_axes[2:], keep_dims=True)
+        mean, variance = KC.moments(inputs, group_reduction_axes[2:],
+                                    keep_dims=True)
         inputs = (inputs - mean) / (K.sqrt(variance + self.epsilon))
 
         # prepare broadcast shape

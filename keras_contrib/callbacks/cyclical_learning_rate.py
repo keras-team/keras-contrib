@@ -1,4 +1,6 @@
-from keras.callbacks import *
+from keras.callbacks import Callback
+from keras import backend as K
+import numpy as np
 
 
 class CyclicLR(Callback):
@@ -62,7 +64,8 @@ class CyclicLR(Callback):
 
     # References
 
-      - [Cyclical Learning Rates for Training Neural Networks](https://arxiv.org/abs/1506.01186)
+      - [Cyclical Learning Rates for Training Neural Networks](
+      https://arxiv.org/abs/1506.01186)
     """
 
     def __init__(
@@ -76,8 +79,10 @@ class CyclicLR(Callback):
             scale_mode='cycle'):
         super(CyclicLR, self).__init__()
 
-        assert mode in ['triangular', 'triangular2',
-                        'exp_range'], "mode must be one of 'triangular', 'triangular2', or 'exp_range'"
+        if mode not in ['triangular', 'triangular2',
+                        'exp_range']:
+            raise KeyError("mode must be one of 'triangular', "
+                           "'triangular2', or 'exp_range'")
         self.base_lr = base_lr
         self.max_lr = max_lr
         self.step_size = step_size
@@ -91,7 +96,7 @@ class CyclicLR(Callback):
                 self.scale_fn = lambda x: 1 / (2.**(x - 1))
                 self.scale_mode = 'cycle'
             elif self.mode == 'exp_range':
-                self.scale_fn = lambda x: gamma**(x)
+                self.scale_fn = lambda x: gamma ** x
                 self.scale_mode = 'iterations'
         else:
             self.scale_fn = scale_fn

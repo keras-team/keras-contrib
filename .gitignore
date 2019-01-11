@@ -98,3 +98,13 @@ ENV/
 
 *.DS_Store
 
+contrib-docs/site/*
+contrib-docs/sources/*
+contrib-docs/theme/fonts/*
+contrib-docs/theme/img/*
+
+.pytest_cache/*
+/.vs/keras-contrib/v15/.suo
+/.vs/ProjectSettings.json
+/.vs/slnx.sqlite
+/.vs/VSWorkspaceState.json

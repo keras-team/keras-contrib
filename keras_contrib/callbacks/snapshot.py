@@ -43,7 +43,8 @@ class SnapshotModelCheckpoint(Callback):
 
 class SnapshotCallbackBuilder:
     """Callback builder for snapshot ensemble training of a model.
-    From the paper "Snapshot Ensembles: Train 1, Get M For Free" (https://openreview.net/pdf?id=BJYwwY9ll)
+    From the paper "Snapshot Ensembles: Train 1, Get M For Free" (
+    https://openreview.net/pdf?id=BJYwwY9ll)
 
     Creates a list of callbacks, which are provided when training a model
     so as to save the model weights at certain epochs, and then sharply
@@ -77,10 +78,13 @@ class SnapshotCallbackBuilder:
         if not os.path.exists('weights/'):
             os.makedirs('weights/')
 
-        callback_list = [ModelCheckpoint('weights/%s-Best.h5' % model_prefix, monitor='val_acc',
+        callback_list = [ModelCheckpoint('weights/%s-Best.h5' % model_prefix,
+                                         monitor='val_acc',
                                          save_best_only=True, save_weights_only=True),
                          LearningRateScheduler(schedule=self._cosine_anneal_schedule),
-                         SnapshotModelCheckpoint(self.T, self.M, fn_prefix='weights/%s' % model_prefix)]
+                         SnapshotModelCheckpoint(self.T,
+                                                 self.M,
+                                                 fn_prefix='weights/%s' % model_prefix)]
 
         return callback_list
 

@@ -22,11 +22,8 @@ from keras.layers import Input
 from keras.layers import Activation
 from keras.layers import Reshape
 from keras.layers import Dense
-from keras.layers import Flatten
 from keras.layers import Conv2D
 from keras.layers import MaxPooling2D
-from keras.layers import AveragePooling2D
-from keras.layers.pooling import GlobalAveragePooling2D
 from keras.layers import GlobalMaxPooling2D
 from keras.layers import GlobalAveragePooling2D
 from keras.layers import Dropout
