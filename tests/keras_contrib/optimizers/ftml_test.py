@@ -4,6 +4,7 @@ from keras_contrib.layers.base_layer import is_tf_keras
 from keras_contrib.tests import optimizers
 from keras_contrib.optimizers import ftml
 
+
 @pytest.mark.xfail(is_tf_keras,
                    reason='TODO fix this.',
                    strict=True)

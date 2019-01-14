@@ -5,6 +5,7 @@ from keras_contrib.layers.base_layer import is_tf_keras
 from keras import backend as K
 import numpy as np
 
+
 @pytest.mark.xfail(is_tf_keras,
                    reason='TODO fix this.',
                    strict=True)
