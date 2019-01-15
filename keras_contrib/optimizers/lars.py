@@ -87,7 +87,7 @@ class LARS(Optimizer):
 
         # momentum
         #shapes = [K.int_shape(p) for p in params]
-        moments = = [K.zeros(K.int_shape(p), dtype=K.dtype(p)) for p in params]
+        moments = [K.zeros(K.int_shape(p), dtype=K.dtype(p)) for p in params]
         self.weights = [self.iterations] + moments
         for p, g, m in zip(params, grads, moments):
             v = self.momentum * m - scaled_lr * g  # velocity
