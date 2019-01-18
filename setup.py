@@ -4,8 +4,6 @@ import os
 
 
 if os.environ.get('USE_TF_KERAS', None) == '1':
-    from convert_to_tf_keras import convert_to_tf_keras
-    convert_to_tf_keras()
     name = 'tf_keras_contrib'
     install_requires = []
 else:
