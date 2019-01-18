@@ -27,15 +27,6 @@ def from_tensorshape(shape):
         return shape
 
 
-def make_return_tensorshape(func):
-    @functools.wraps(func)
-    def new_func(*args, **kwargs):
-        shape = func(*args, **kwargs)
-        shape = to_tensorshape(shape)
-        return shape
-    return new_func
-
-
 def make_manipulate_tuple(func):
     @functools.wraps(func)
     def new_func(input_shape):
@@ -49,8 +40,6 @@ class TfKerasCompatibleLayer(Layer):
 
         # ensure that we can return tuples and
         # still be compatible with tf.keras.
-        # self.compute_output_shape =
-        # make_return_tensorshape(self.compute_output_shape)
         self.build = make_manipulate_tuple(self.build)
 
         super(TfKerasCompatibleLayer, self).__init__(**kwargs)
@@ -63,7 +52,6 @@ class TfKerasCompatibleLayer(Layer):
                    regularizer=None,
                    trainable=True,
                    constraint=None):
-        # shape = to_tensorshape(shape)
         return super(TfKerasCompatibleLayer, self).add_weight(name,
                                                               shape,
                                                               dtype=dtype,
