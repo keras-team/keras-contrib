@@ -190,11 +190,12 @@ else:
 def to_tuple(shape):
     """This functions is here to fix an inconsistency between keras and tf.keras.
 
-    In tf.keras, the input_shape argument is an object with Dimensions object.
-    In keras, the input_shape is a simple suple.
+    In tf.keras, the input_shape argument is an tuple with `Dimensions` objects.
+    In keras, the input_shape is a simple tuple of ints or `None`.
 
-    We'll work with tuples to be consistent with keras-team/keras. So we must apply
-    this function to all input_shapes of the build methods in custom layers.
+    We'll work with tuples of ints or `None` to be consistent
+    with keras-team/keras. So we must apply this function to
+    all input_shapes of the build methods in custom layers.
     """
     if is_tf_keras:
         import tensorflow as tf
