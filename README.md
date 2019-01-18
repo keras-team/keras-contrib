@@ -9,6 +9,7 @@ As the community contributions in Keras-Contrib are tested, used, validated, and
 ---
 ## Installation
 
+#### Install keras_contrib for keras-team/keras
 For instructions on how to install Keras, 
 see [the Keras installation page](https://keras.io/#installation).
 
@@ -22,6 +23,25 @@ Alternatively, using pip:
 
 ```shell
 sudo pip install git+https://www.github.com/keras-team/keras-contrib.git
+```
+
+to uninstall:
+```pip
+pip uninstall keras_contrib
+```
+
+#### Install keras_contrib for tensorflow.keras
+
+```shell
+git clone https://www.github.com/keras-team/keras-contrib.git
+cd keras-contrib
+python convert_to_tf_keras.py
+USE_TF_KERAS=1 python setup.py install
+```
+
+to uninstall:
+```shell
+pip uninstall tf_keras_contrib
 ```
 
 For contributor guidelines see [CONTRIBUTING.md](https://github.com/keras-team/keras-contrib/blob/master/CONTRIBUTING.md)
