@@ -12,6 +12,7 @@ from keras.layers import Layer
 from keras.utils import get_custom_objects
 from keras_contrib.utils.test_utils import to_tuple
 
+
 class CosineDense(Layer):
     """A cosine normalized densely-connected NN layer
 
