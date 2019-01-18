@@ -1,9 +1,8 @@
-from keras.layers import InputSpec
+from keras.layers import Layer, InputSpec
 from keras import initializers, regularizers, constraints
 from keras import backend as K
 from keras_contrib import backend as KC
 from keras.utils import get_custom_objects
-from keras.layers import Layer
 from keras_contrib.utils.test_utils import to_tuple
 
 
