@@ -1,4 +1,5 @@
 import os
+import sys
 
 list_conversions = [('import keras.', 'import tensorflow.keras.'),
                     ('import keras ', 'from tensorflow import keras '),
@@ -52,5 +53,7 @@ def convert_to_keras_team_keras():
 
 
 if __name__ == '__main__':
-    convert_to_tf_keras()
-    # convert_to_keras_team_keras()
+    if '--revert' in sys.argv:
+        convert_to_keras_team_keras()
+    else:
+        convert_to_tf_keras()
