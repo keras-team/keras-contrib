@@ -162,3 +162,17 @@ def has_arg(fn, name, accept_all=False):
             return False
         return (parameter.kind in (inspect.Parameter.POSITIONAL_OR_KEYWORD,
                                    inspect.Parameter.KEYWORD_ONLY))
+
+
+def to_list(x, allow_tuple=False):
+    if isinstance(x, list):
+        return x
+    if allow_tuple and isinstance(x, tuple):
+        return list(x)
+    return [x]
+
+
+def unpack_singleton(x):
+    if len(x) == 1:
+        return x[0]
+    return x
