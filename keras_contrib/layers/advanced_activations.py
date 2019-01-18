@@ -1,10 +1,11 @@
 from keras import initializers
 from keras import regularizers
 from keras import constraints
-from .base_layer import TfKerasCompatibleLayer as Layer
+from keras.layers import Layer
 from keras.layers import InputSpec
 from keras import backend as K
 from keras.utils import get_custom_objects
+from keras_contrib.utils.test_utils import to_tuple
 
 
 class PELU(Layer):
@@ -65,6 +66,7 @@ class PELU(Layer):
             self.shared_axes = list(shared_axes)
 
     def build(self, input_shape):
+        input_shape = to_tuple(input_shape)
         param_shape = list(input_shape[1:])
         self.param_broadcast = [False] * len(param_shape)
         if self.shared_axes is not None:
@@ -181,6 +183,7 @@ class SReLU(Layer):
             self.shared_axes = list(shared_axes)
 
     def build(self, input_shape):
+        input_shape = to_tuple(input_shape)
         param_shape = list(input_shape[1:])
         self.param_broadcast = [False] * len(param_shape)
         if self.shared_axes is not None:
@@ -284,6 +287,7 @@ class Swish(Layer):
         self.trainable = trainable
 
     def build(self, input_shape):
+        input_shape = to_tuple(input_shape)
         self.scaling_factor = K.variable(self.beta,
                                          dtype=K.floatx(),
                                          name='scaling_factor')

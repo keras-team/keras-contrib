@@ -3,7 +3,8 @@ from keras import initializers, regularizers, constraints
 from keras import backend as K
 from keras_contrib import backend as KC
 from keras.utils import get_custom_objects
-from .base_layer import TfKerasCompatibleLayer as Layer
+from keras.layers import Layer
+from keras_contrib.utils.test_utils import to_tuple
 
 
 class InstanceNormalization(Layer):
@@ -76,6 +77,7 @@ class InstanceNormalization(Layer):
         self.gamma_constraint = constraints.get(gamma_constraint)
 
     def build(self, input_shape):
+        input_shape = to_tuple(input_shape)
         ndim = len(input_shape)
         if self.axis == 0:
             raise ValueError('Axis cannot be zero')

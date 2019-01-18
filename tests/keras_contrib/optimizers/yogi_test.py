@@ -2,7 +2,7 @@ from __future__ import print_function
 import pytest
 from keras_contrib.tests import optimizers
 from keras_contrib.optimizers import Yogi
-from keras_contrib.layers.base_layer import is_tf_keras
+from keras_contrib.utils.test_utils import is_tf_keras
 
 
 def test_yogi():

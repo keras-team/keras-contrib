@@ -1,6 +1,6 @@
 import pytest
 import numpy as np
-from keras_contrib.layers.base_layer import is_tf_keras
+from keras_contrib.utils.test_utils import is_tf_keras
 from numpy.testing import assert_allclose
 from keras.layers import Conv2D
 from keras.models import Sequential

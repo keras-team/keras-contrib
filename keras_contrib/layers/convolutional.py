@@ -8,11 +8,12 @@ from keras import activations
 from keras import initializers
 from keras import regularizers
 from keras import constraints
-from .base_layer import TfKerasCompatibleLayer as Layer
+from keras.layers import Layer
 from keras.layers import InputSpec
 from keras.utils import get_custom_objects
 from keras_contrib.utils.conv_utils import conv_output_length
 from keras_contrib.utils.conv_utils import normalize_data_format
+from keras_contrib.utils.test_utils import to_tuple
 import numpy as np
 
 
@@ -129,6 +130,7 @@ class CosineConvolution2D(Layer):
         super(CosineConvolution2D, self).__init__(**kwargs)
 
     def build(self, input_shape):
+        input_shape = to_tuple(input_shape)
         if self.data_format == 'channels_first':
             stack_size = input_shape[1]
             self.kernel_shape = (self.filters, stack_size, self.nb_row, self.nb_col)

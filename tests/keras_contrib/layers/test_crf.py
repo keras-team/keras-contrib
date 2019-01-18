@@ -12,7 +12,7 @@ from keras_contrib.metrics import crf_accuracy
 from keras_contrib.metrics import crf_marginal_accuracy
 from keras_contrib.metrics import crf_viterbi_accuracy
 from keras_contrib.layers import CRF
-from keras_contrib.layers.base_layer import is_tf_keras
+from keras_contrib.utils.test_utils import is_tf_keras
 
 nb_samples, timesteps, embedding_dim, output_dim = 2, 10, 4, 5
 embedding_num = 12
