@@ -11,14 +11,6 @@ else:
     raise KeyError('Cannot detect if using keras or tf.keras.')
 
 
-def to_tensorshape(shape):
-    if is_tf_keras:
-        import tensorflow as tf
-        return tf.TensorShape(shape)
-    else:
-        return shape
-
-
 def from_tensorshape(shape):
     if is_tf_keras:
         import tensorflow as tf
