@@ -365,7 +365,8 @@ class Capsule(Layer):
     
        Example usage :
        gru = GRU(100, return_sequences=True)(x)
-       capsule = Capsule(num_capsule=10, dim_capsule=10, routings=4, share_weights=True)(gru)'''
+       capsule = Capsule(num_capsule=10, dim_capsule=10, routings=4, share_weights=True)(gru)
+       features = Flatten()(capsule)'''
        
     def __init__(self, num_capsule, dim_capsule, routings=3, kernel_size=(9, 1), share_weights=True,
                  activation='default', **kwargs):
