@@ -351,14 +351,24 @@ class SubPixelUpscaling(Layer):
 
 get_custom_objects().update({'SubPixelUpscaling': SubPixelUpscaling})
 
+
+"""the squashing function.
+   we use 0.5 in stead of 1 in hinton's paper.
+   if 1, the norm of vector will be zoomed out.
+   if 0.5, the norm will be zoomed in while original norm is less than 0.5
+   and be zoomed out while original norm is greater than 0.5"""
+
 def squash(x, axis=-1):
-    # s_squared_norm is really small
-    # s_squared_norm = K.sum(K.square(x), axis, keepdims=True) + K.epsilon()
-    # scale = K.sqrt(s_squared_norm)/ (0.5 + s_squared_norm)
-    # return scale * x
-    s_squared_norm = K.sum(K.square(x), axis, keepdims=True)
-    scale = K.sqrt(s_squared_norm + K.epsilon())
-    return x / scale
+    s_squared_norm = K.sum(K.square(x), axis, keepdims=True) + K.epsilon()
+    scale = K.sqrt(s_squared_norm) / (0.5 + s_squared_norm)
+    return scale * x
+
+"""define our own softmax function instead of K.softmax
+   because K.softmax can not specify axis."""
+
+def softmax(x, axis=-1):
+    ex = K.exp(x - K.max(x, axis=axis, keepdims=True))
+    return ex / K.sum(ex, axis=axis, keepdims=True)
 
 class Capsule(Layer):
     """Capsule Layer implementation in Keras
@@ -393,6 +403,7 @@ class Capsule(Layer):
            dim_capsules : Dimensions of the vector output of each Capsule (int)
            routings : Number of dynamic routings in the Capsule Layer (int)
            share_weights : Whether to share weights between Capsules or not (boolean)
+           activation : Activation function (default : squash actvation)
            
        # Input shape
             3D tensor with shape:
@@ -449,8 +460,7 @@ class Capsule(Layer):
             b = K.batch_dot(outputs, hat_inputs, [2, 3])
         with
             b += K.batch_dot(outputs, hat_inputs, [2, 3])
-        to realize a standard routing.
-        """
+        to realize a standard routing."""
 
         if self.share_weights:
             hat_inputs = K.conv1d(inputs, self.kernel)
