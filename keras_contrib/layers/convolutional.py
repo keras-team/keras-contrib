@@ -438,9 +438,9 @@ class Capsule(Layer):
 
     def call(self, u_vecs):
         if self.share_weights:
-            u_hat_vecs = K.conv1d(u_vecs, self.W)
+            u_hat_vecs = KC.conv1d(u_vecs, self.W)
         else:
-            u_hat_vecs = K.local_conv1d(u_vecs, self.W, [1], [1])
+            u_hat_vecs = KC.local_conv1d(u_vecs, self.W, [1], [1])
 
         batch_size = K.shape(u_vecs)[0]
         input_num_capsule = K.shape(u_vecs)[1]
