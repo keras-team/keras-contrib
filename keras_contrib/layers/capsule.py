@@ -1,3 +1,17 @@
+# -*- coding: utf-8 -*-
+from __future__ import absolute_import
+from functools import partial
+
+from keras import backend as K
+from keras_contrib import backend as KC
+from keras import activations
+from keras import initializers
+from keras import regularizers
+from keras import constraints
+from keras.layers import Layer
+from keras.utils import get_custom_objects
+import numpy as np
+
 def squash(x, axis=-1):
     s_squared_norm = K.sum(K.square(x), axis, keepdims=True) + K.epsilon()
     scale = K.sqrt(s_squared_norm)/ (0.5 + s_squared_norm)
@@ -123,3 +137,5 @@ class Capsule(Layer):
     
  
 get_custom_objects().update({'Capsule': Capsule})
+
+
