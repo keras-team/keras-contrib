@@ -149,7 +149,7 @@ class Capsule(Layer):
         b = K.zeros_like(u_hat_vecs[:, :, :, 0])
 
         for i in range(self.routings):
-            b = K.permute_dimensions(b, (0, 2, 1))  # shape = [None, input_num_capsule, num_capsule]
+            b = K.permute_dimensions(b, (0, 2, 1))
             c = K.softmax(b)
 
             c = K.permute_dimensions(c, (0, 2, 1))
