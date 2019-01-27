@@ -174,4 +174,3 @@ class Capsule(Layer):
         return dict(list(base_config.items()) + list(config.items()))
 
 get_custom_objects().update({'Capsule': Capsule})
-
