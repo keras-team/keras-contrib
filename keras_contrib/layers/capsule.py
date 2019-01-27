@@ -20,7 +20,7 @@ def softmax(x, axis=-1):
 
 
 class Capsule(Layer):
-     """Capsule Layer implementation in Keras
+    """Capsule Layer implementation in Keras
        The Capsule Layer is a Neural Network Layer which helps
        modeling relationships in image and sequential data better
        than just CNNs or RNNs. It achieves this by understanding
@@ -49,28 +49,42 @@ class Capsule(Layer):
            maxlen = 72
            max_features = 120000
            input_text = Input(shape=(maxlen,))
-           embedding = Embedding(max_features, embed_size, weights=[
-                                 embedding_matrix], trainable=False)(input_text)
-           bi_gru = Bidirectional(GRU(64, return_seqeunces=True))(embedding)
-           capsule = Capsule(num_capsule=5, dim_capsule=5,
-                             routings=4, share_weights=True)(bi_gru)
+           embedding = Embedding(max_features,
+                                 embed_size,
+                                 weights=[embedding_matrix],
+                                 trainable=False)(input_text)
+           bi_gru = Bidirectional(GRU(64,
+                                      return_seqeunces=True))(embedding)
+           capsule = Capsule(num_capsule=5,
+                             dim_capsule=5,
+                             routings=4,
+                             share_weights=True)(bi_gru)
        # Arguments
            num_capsule : Number of Capsules (int)
            dim_capsules : Dimensions of the vector output of each Capsule (int)
            routings : Number of dynamic routings in the Capsule Layer (int)
-           share_weights : Whether to share weights between Capsules or not (boolean)
+           share_weights : Whether to share weights between Capsules or not
+           (boolean)
+
        # Input shape
             3D tensor with shape:
-            (batch_size, input_num_capsule, input_dim_capsule) 
+            (batch_size, input_num_capsule, input_dim_capsule)
             [any 3-D Tensor with the first dimension as batch_size]
        # Output shape
             3D tensor with shape:
             (batch_size, num_capsule, dim_capsule)
        # References
-        - [Dynamic-Routing-Between-Capsules](https://arxiv.org/pdf/1710.09829.pdf)
+        - [Dynamic-Routing-Between-Capsules]
+          (https://arxiv.org/pdf/1710.09829.pdf)
         - [Keras-Examples-CIFAR10-CNN-Capsule]"""
 
-    def __init__(self, num_capsule, dim_capsule, routings=3, share_weights=True, activation='squash', **kwargs):
+    def __init__(self,
+                 num_capsule,
+                 dim_capsule,
+                 routings=3,
+                 share_weights=True,
+                 activation='squash',
+                 **kwargs):
         super(Capsule, self).__init__(**kwargs)
         self.num_capsule = num_capsule
         self.dim_capsule = dim_capsule
@@ -86,8 +100,10 @@ class Capsule(Layer):
         input_dim_capsule = input_shape[-1]
         if self.share_weights:
             self.W = self.add_weight(name='capsule_kernel',
-                                     shape=(1, input_dim_capsule,
-                                            self.num_capsule * self.dim_capsule),
+                                     shape=(1,
+                                            input_dim_capsule,
+                                            self.num_capsule * /
+                                            self.dim_capsule),
                                      initializer='glorot_uniform',
                                      trainable=True)
         else:
@@ -95,7 +111,8 @@ class Capsule(Layer):
             self.W = self.add_weight(name='capsule_kernel',
                                      shape=(input_num_capsule,
                                             input_dim_capsule,
-                                            self.num_capsule * self.dim_capsule),
+                                            self.num_capsule * /
+                                            self.dim_capsule),
                                      initializer='glorot_uniform',
                                      trainable=True)
 
@@ -107,12 +124,13 @@ class Capsule(Layer):
 
         batch_size = K.shape(u_vecs)[0]
         input_num_capsule = K.shape(u_vecs)[1]
-        u_hat_vecs = K.reshape(u_hat_vecs, (batch_size, input_num_capsule,
-                                            self.num_capsule, self.dim_capsule))
+        u_hat_vecs = K.reshape(u_hat_vecs, (batch_size,
+                                            input_num_capsule,
+                                            self.num_capsule,
+                                            self.dim_capsule))
         u_hat_vecs = K.permute_dimensions(u_hat_vecs, (0, 2, 1, 3))
-        # final u_hat_vecs.shape = [None, num_capsule, input_num_capsule, dim_capsule]
+        b = K.zeros_like(u_hat_vecs[:, :, :, 0])
 
-        b = K.zeros_like(u_hat_vecs[:,:,:,0]) #shape = [None, num_capsule, input_num_capsule]
         for i in range(self.routings):
             c = softmax(b, axis=1)
             o = K.batch_dot(c, u_hat_vecs, [2, 2])
@@ -128,18 +146,15 @@ class Capsule(Layer):
 
     def compute_output_shape(self, input_shape):
         return (None, self.num_capsule, self.dim_capsule)
-    
+
     def get_config(self):
         config = {'num_capsule': self.num_capsule,
                   'dim_capsule': self.dim_capsule,
                   'routings': self.routings,
-                  'share_weights': self.share_weights, 
+                  'share_weights': self.share_weights,
                   'activation': activations.serialize(self.activation)}
-        
+
         base_config = super(Capsule, self).get_config()
         return dict(list(base_config.items()) + list(config.items()))
-    
- 
-get_custom_objects().update({'Capsule': Capsule})
-​
 
+get_custom_objects().update({'Capsule': Capsule})
