@@ -25,7 +25,7 @@ def softmax(x, axis=-1):
 
 
 class Capsule(Layer):
-    """Capsule Layer implementation in Keras
+    '''Capsule Layer implementation in Keras
     The Capsule Layer is a Neural Network Layer which helps
     modeling relationships in image and sequential data better. 
     It achieves this by understanding the spatial relationships 
@@ -92,7 +92,8 @@ class Capsule(Layer):
        # References
         - [Dynamic-Routing-Between-Capsules]
           (https://arxiv.org/pdf/1710.09829.pdf)
-        - [Keras-Examples-CIFAR10-CNN-Capsule]"""
+        - [Keras-Examples-CIFAR10-CNN-Capsule]
+        '''
 
     def __init__(
         self,
