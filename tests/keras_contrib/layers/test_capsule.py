@@ -42,6 +42,7 @@ def test_capsule_correctness():
     model.add(capsule.Capsule(1, 1, 1, True, 'squash'))
 
     model.compile(loss='mse', optimizer='rmsprop')
+    init_out = model.predict(X) # mock predict call to initialize weights
     model.set_weights([np.zeros((1, 1, 1))])
     out = model.predict(X)
     assert_allclose(out, np.zeros((1, 1, 1), dtype=K.floatx()), atol=1e-5)
