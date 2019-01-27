@@ -98,9 +98,9 @@ ENV/
 
 *.DS_Store
 
-contrib-docs/site/*
-contrib-docs/sources/*
-contrib-docs/theme/fonts/*
-contrib-docs/theme/img/*
+contrib_docs/site/*
+contrib_docs/sources/*
+contrib_docs/theme/fonts/*
+contrib_docs/theme/img/*
 
 .pytest_cache/*
