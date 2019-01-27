@@ -63,7 +63,7 @@ PAGES = [
     {
         'page': 'layers/convolutional.md',
         'classes': [
-            layers.CosineConvolution2D,
+            layers.CosineConv2D,
             layers.SubPixelUpscaling,
         ],
     },
