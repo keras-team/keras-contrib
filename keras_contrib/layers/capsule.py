@@ -42,24 +42,37 @@ class Capsule(Layer):
        (Bidirectional or Unidirectional) for NLP applications
        # Example usage :
            1). Computer Vision
+
            input_image = Input(shape=(None, None, 3))
-           conv_2d = Conv2D(64, (3, 3), activation='relu')(input_image)
-           capsule = Capsule(num_capsule=10, dim_capsule=16,
-                             routings=3, share_weights=True)(conv_2d)
+
+           conv_2d = Conv2D(64,
+                            (3, 3),
+                            activation='relu')(input_image)
+
+           capsule = Capsule(num_capsule=10,
+                             dim_capsule=16,
+                             routings=3,
+                             share_weights=True)(conv_2d)
+
            2). NLP
            maxlen = 72
            max_features = 120000
+
            input_text = Input(shape=(maxlen,))
+
            embedding = Embedding(max_features,
                                  embed_size,
                                  weights=[embedding_matrix],
                                  trainable=False)(input_text)
+
            bi_gru = Bidirectional(GRU(64,
                                       return_seqeunces=True))(embedding)
+
            capsule = Capsule(num_capsule=5,
                              dim_capsule=5,
                              routings=4,
                              share_weights=True)(bi_gru)
+
        # Arguments
            num_capsule : Number of Capsules (int)
            dim_capsules : Dimensions of the vector output of each Capsule (int)
@@ -71,9 +84,11 @@ class Capsule(Layer):
             3D tensor with shape:
             (batch_size, input_num_capsule, input_dim_capsule)
             [any 3-D Tensor with the first dimension as batch_size]
+
        # Output shape
             3D tensor with shape:
             (batch_size, num_capsule, dim_capsule)
+
        # References
         - [Dynamic-Routing-Between-Capsules]
           (https://arxiv.org/pdf/1710.09829.pdf)
