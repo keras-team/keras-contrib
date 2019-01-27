@@ -162,3 +162,4 @@ class Capsule(Layer):
 
 
 get_custom_objects().update({'Capsule': Capsule})
+
