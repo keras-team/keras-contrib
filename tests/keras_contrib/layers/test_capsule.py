@@ -1,1 +1,50 @@
+import pytest
+import numpy as np
+from numpy.testing import assert_allclose
 
+from keras_contrib.utils.test_utils import layer_test
+from keras import backend as K
+from keras_contrib import backend as KC
+from keras_contrib.layers import capsule
+from keras.models import Sequential
+
+
+@pytest.mark.parametrize('num_capsule', 1)
+@pytest.mark.parametrize('dim_capsule', 1)
+@pytest.mark.parametrize('routings', 1)
+@pytest.mark.parametrize('share_weights', True)
+@pytest.mark.parametrize('activation', 'squash')
+def test_capsule(num_capsule,
+                 dim_capsule,
+                 routings,
+                 share_weights,
+                 activation):
+
+    num_samples = 100
+    num_rows = 256
+    num_cols = 256
+
+    kwargs = {'num_capsule': num_capsule,
+              'dim_capsule': dim_capsule,
+              'routings': routings,
+              'share_weights': share_weights,
+              'activation': activation}
+
+    layer_test(capsule.Capsule,
+               kwargs=kwargs,
+               input_shape=(num_samples, num_rows, num_cols))
+
+
+def test_capsule_correctness():
+    X = np.random.random((1, 1, 1))
+
+    model = Sequential()
+    model.add(capsule.Capsule(1, 1, 1, True, 'squash'))
+
+    model.compile(loss='mse', optimizer='rmsprop')
+    model.set_weights([np.zeros((1, 1, 1))])
+    out = model.predict(X)
+    assert_allclose(out, np.zeros((1, 1, 1), dtype=K.floatx()), atol=1e-5)
+
+if __name__ == '__main__':
+    pytest.main([__file__])
