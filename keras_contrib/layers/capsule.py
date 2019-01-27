@@ -21,7 +21,6 @@ def softmax(x, axis=-1):
 
 class Capsule(Layer):
     """Capsule Layer implementation in Keras
-
        The Capsule Layer is a Neural Network Layer which helps
        modeling relationships in image and sequential data better
        than just CNNs or RNNs. It achieves this by understanding
@@ -42,53 +41,41 @@ class Capsule(Layer):
        (Bidirectional or Unidirectional) for NLP applications
        # Example usage :
            1). Computer Vision
-
            input_image = Input(shape=(None, None, 3))
-
            conv_2d = Conv2D(64,
                             (3, 3),
                             activation='relu')(input_image)
-
            capsule = Capsule(num_capsule=10,
                              dim_capsule=16,
                              routings=3,
                              share_weights=True)(conv_2d)
-
            2). NLP
            maxlen = 72
            max_features = 120000
-
            input_text = Input(shape=(maxlen,))
-
            embedding = Embedding(max_features,
                                  embed_size,
                                  weights=[embedding_matrix],
                                  trainable=False)(input_text)
-
            bi_gru = Bidirectional(GRU(64,
                                       return_seqeunces=True))(embedding)
-
            capsule = Capsule(num_capsule=5,
                              dim_capsule=5,
                              routings=4,
                              share_weights=True)(bi_gru)
-
        # Arguments
            num_capsule : Number of Capsules (int)
            dim_capsules : Dimensions of the vector output of each Capsule (int)
            routings : Number of dynamic routings in the Capsule Layer (int)
            share_weights : Whether to share weights between Capsules or not
            (boolean)
-
        # Input shape
             3D tensor with shape:
             (batch_size, input_num_capsule, input_dim_capsule)
             [any 3-D Tensor with the first dimension as batch_size]
-
        # Output shape
             3D tensor with shape:
             (batch_size, num_capsule, dim_capsule)
-
        # References
         - [Dynamic-Routing-Between-Capsules]
           (https://arxiv.org/pdf/1710.09829.pdf)
@@ -172,5 +159,6 @@ class Capsule(Layer):
 
         base_config = super(Capsule, self).get_config()
         return dict(list(base_config.items()) + list(config.items()))
+
 
 get_custom_objects().update({'Capsule': Capsule})
