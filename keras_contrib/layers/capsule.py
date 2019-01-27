@@ -61,13 +61,14 @@ class Capsule(Layer):
            share_weights : Whether to share weights between Capsules or not (boolean)
        # Input shape
             3D tensor with shape:
-            (batch_size, input_num_capsule, input_dim_capsule) [any 3-D Tensor with the first dimension as batch_size]
+            (batch_size, input_num_capsule, input_dim_capsule) 
+            [any 3-D Tensor with the first dimension as batch_size]
        # Output shape
             3D tensor with shape:
             (batch_size, num_capsule, dim_capsule)
        # References
         - [Dynamic-Routing-Between-Capsules](https://arxiv.org/pdf/1710.09829.pdf)
-        - [Keras-Examples-CIFAR10-CNN-Capsule](https://github.com/keras-team/keras/blob/master/examples/cifar10_cnn_capsule.py)"""
+        - [Keras-Examples-CIFAR10-CNN-Capsule]"""
 
     def __init__(self, num_capsule, dim_capsule, routings=3, share_weights=True, activation='squash', **kwargs):
         super(Capsule, self).__init__(**kwargs)
@@ -141,3 +142,4 @@ class Capsule(Layer):
  
 get_custom_objects().update({'Capsule': Capsule})
 ​
+
