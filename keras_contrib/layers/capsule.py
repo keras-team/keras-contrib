@@ -21,35 +21,30 @@ def softmax(x, axis=-1):
 
 class Capsule(Layer):
      """Capsule Layer implementation in Keras
-
        The Capsule Layer is a Neural Network Layer which helps
-       modeling relationships in image and sequential data better 
-       than just CNNs or RNNs. It achieves this by understanding 
-       the spatial relationships between objects (in images) 
+       modeling relationships in image and sequential data better
+       than just CNNs or RNNs. It achieves this by understanding
+       the spatial relationships between objects (in images)
        or words (in text) by encoding additional information
-       about the image or text, such as angle of rotation, 
-       thickness and brightness, relative proportions etc. 
+       about the image or text, such as angle of rotation,
+       thickness and brightness, relative proportions etc.
        This layer can be used instead of pooling layers to
        lower dimensions and still capture important information
-       about the relationships and structures within the data. 
-       A normal pooling layer would lose a lot of 
+       about the relationships and structures within the data.
+       A normal pooling layer would lose a lot of
        this information.
-
-       This layer can be used on the output of any layer 
-       which has a 3-D output (including batch_size). For example, 
-       in image classification, it can be used on the output of a 
-       Conv2D layer for Computer Vision applications. Also, 
-       it can be used on the output of a GRU or LSTM Layer 
+       This layer can be used on the output of any layer
+       which has a 3-D output (including batch_size). For example,
+       in image classification, it can be used on the output of a
+       Conv2D layer for Computer Vision applications. Also,
+       it can be used on the output of a GRU or LSTM Layer
        (Bidirectional or Unidirectional) for NLP applications
-
        # Example usage :
-
            1). Computer Vision
            input_image = Input(shape=(None, None, 3))
            conv_2d = Conv2D(64, (3, 3), activation='relu')(input_image)
            capsule = Capsule(num_capsule=10, dim_capsule=16,
                              routings=3, share_weights=True)(conv_2d)
-
            2). NLP
            maxlen = 72
            max_features = 120000
@@ -59,17 +54,14 @@ class Capsule(Layer):
            bi_gru = Bidirectional(GRU(64, return_seqeunces=True))(embedding)
            capsule = Capsule(num_capsule=5, dim_capsule=5,
                              routings=4, share_weights=True)(bi_gru)
-
        # Arguments
            num_capsule : Number of Capsules (int)
            dim_capsules : Dimensions of the vector output of each Capsule (int)
            routings : Number of dynamic routings in the Capsule Layer (int)
            share_weights : Whether to share weights between Capsules or not (boolean)
-
        # Input shape
             3D tensor with shape:
             (batch_size, input_num_capsule, input_dim_capsule) [any 3-D Tensor with the first dimension as batch_size]
-
        # Output shape
             3D tensor with shape:
             (batch_size, num_capsule, dim_capsule)
@@ -148,6 +140,3 @@ class Capsule(Layer):
     
  
 get_custom_objects().update({'Capsule': Capsule})
-
-
-​
