@@ -149,17 +149,17 @@ class Capsule(Layer):
         b = K.zeros_like(u_hat_vecs[:, :, :, 0])
 
         for i in range(self.routings):
-            c = softmax(b, axis=1)
-            o = K.batch_dot(c, u_hat_vecs, [2, 2])
-            if K.backend() == 'theano':
-                o = K.sum(o, axis=1)
-            if i < self.routings - 1:
-                o = K.l2_normalize(o, -1)
-                b = K.batch_dot(o, u_hat_vecs, [2, 3])
-                if K.backend() == 'theano':
-                    b = K.sum(b, axis=1)
+            b = K.permute_dimensions(b, (0, 2, 1))  # shape = [None, input_num_capsule, num_capsule]
+            c = K.softmax(b)
 
-        return self.activation(o)
+            c = K.permute_dimensions(c, (0, 2, 1))
+            b = K.permute_dimensions(b, (0, 2, 1))
+
+            outputs = self.activation(K.batch_dot(c, u_hat_vecs, [2, 2]))
+            if i < self.routings - 1:
+                b = K.batch_dot(outputs, u_hat_vecs, [2, 3])
+
+        return outputs
 
     def compute_output_shape(self, input_shape):
         return (None, self.num_capsule, self.dim_capsule)
