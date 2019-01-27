@@ -9,9 +9,9 @@ from keras_contrib.layers import capsule
 from keras.models import Sequential
 
 
-@pytest.mark.parametrize('num_capsule', 1)
-@pytest.mark.parametrize('dim_capsule', 1)
-@pytest.mark.parametrize('routings', 1)
+@pytest.mark.parametrize('num_capsule', 10)
+@pytest.mark.parametrize('dim_capsule', 10)
+@pytest.mark.parametrize('routings', 3)
 @pytest.mark.parametrize('share_weights', True)
 @pytest.mark.parametrize('activation', 'squash')
 def test_capsule(num_capsule,
