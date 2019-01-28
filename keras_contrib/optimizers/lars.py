@@ -81,20 +81,22 @@ class LARS(Optimizer):
             g_norm = K.sqrt(K.sum([K.sum(K.square(g)) for g in grads]))
             scaled_lr = K.switch(K.greater(w_norm * g_norm, K.zeros([1])),
                                  K.expand_dims((self.eeta * w_norm /
-                                                (g_norm +self.weight_decay * w_norm +
+                                                (g_norm + self.weight_decay * w_norm +
                                                  self.epsilon)) * self.lr),
                                  K.ones([1]) * self.lr)
-
+        if K.backend() == 'theano':
+            scaled_lr=scaled_lr[0] # otherwise theano raise broadcasting error
         # momentum
-        #shapes = [K.int_shape(p) for p in params]
-        moments = [K.zeros(K.int_shape(p), dtype=K.dtype(p)) for p in params]
+        moments = [K.zeros(K.int_shape(p), dtype=K.dtype(p)) for p in params]# [K.zeros(shape) for shape in shapes]
         self.weights = [self.iterations] + moments
         for p, g, m in zip(params, grads, moments):
-            v = self.momentum * m - scaled_lr * g  # velocity
+            v0 = (m * self.momentum)
+            v1 = scaled_lr * g  # velocity
+            v = v0 - v1
             self.updates.append(K.update(m, v))
 
             if self.nesterov:
-                new_p = p + self.momentum * v - scaled_lr * g
+                new_p = p + (v * self.momentum) - v1
             else:
                 new_p = p + v
 
@@ -104,6 +106,7 @@ class LARS(Optimizer):
 
             self.updates.append(K.update(p, new_p))
         return self.updates
+
 
 
 get_custom_objects().update({'LARS': LARS})
