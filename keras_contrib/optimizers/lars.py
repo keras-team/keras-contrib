@@ -85,9 +85,9 @@ class LARS(Optimizer):
                                                  self.epsilon)) * self.lr),
                                  K.ones([1]) * self.lr)
         if K.backend() == 'theano':
-            scaled_lr=scaled_lr[0] # otherwise theano raise broadcasting error
+            scaled_lr = scaled_lr[0]  # otherwise theano raise broadcasting error
         # momentum
-        moments = [K.zeros(K.int_shape(p), dtype=K.dtype(p)) for p in params]# [K.zeros(shape) for shape in shapes]
+        moments = [K.zeros(K.int_shape(p), dtype=K.dtype(p)) for p in params]
         self.weights = [self.iterations] + moments
         for p, g, m in zip(params, grads, moments):
             v0 = (m * self.momentum)
@@ -106,7 +106,5 @@ class LARS(Optimizer):
 
             self.updates.append(K.update(p, new_p))
         return self.updates
-
-
 
 get_custom_objects().update({'LARS': LARS})
