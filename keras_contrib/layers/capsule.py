@@ -14,11 +14,6 @@ def squash(x, axis=-1):
     return scale * x
 
 
-def softmax(x, axis=-1):
-    ex = K.exp(x - K.max(x, axis=axis, keepdims=True))
-    return ex / K.sum(ex, axis=axis, keepdims=True)
-
-
 class Capsule(Layer):
     """Capsule Layer implementation in Keras
 
@@ -154,7 +149,7 @@ class Capsule(Layer):
         b = K.zeros_like(u_hat_vecs[:, :, :, 0])
 
         for i in range(self.routings):
-            c = softmax(b, 1)
+            c = K.softmax(b, 1)
             o = K.batch_dot(c, u_hat_vecs, [2, 2])
             if K.backend() == 'theano' or len(K.int_shape(o)) == 4:
                 o = K.sum(o, axis=1)
