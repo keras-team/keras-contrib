@@ -568,7 +568,8 @@ class CRF(Layer):
         # matrix instead of vector is required by tf `K.rnn`
         initial_best_idx = [K.expand_dims(argmin_tables[:, 0, 0])]
         if K.backend() == 'theano':
-            initial_best_idx = [K.T.unbroadcast(initial_best_idx[0], 1)]
+            from theano import tensor as T
+            initial_best_idx = [T.unbroadcast(initial_best_idx[0], 1)]
 
         def gather_each_row(params, indices):
             n = K.shape(indices)[0]
@@ -586,7 +587,8 @@ class CRF(Layer):
             next_best_idx = gather_each_row(argmin_table, best_idx[0][:, 0])
             next_best_idx = K.expand_dims(next_best_idx)
             if K.backend() == 'theano':
-                next_best_idx = K.T.unbroadcast(next_best_idx, 1)
+                from theano import tensor as T
+                next_best_idx = T.unbroadcast(next_best_idx, 1)
             return next_best_idx, [next_best_idx]
 
         _, best_paths, _ = K.rnn(find_path, argmin_tables, initial_best_idx,
