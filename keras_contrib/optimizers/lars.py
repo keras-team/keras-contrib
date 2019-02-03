@@ -59,17 +59,6 @@ class LARS(Optimizer):
         self.skip_list = skip_list
         self.nesterov = nesterov
 
-    def get_config(self):
-        config = {'lr': float(K.get_value(self.lr)),
-                  'momentum': float(K.get_value(self.momentum)),
-                  'weight_decay': float(K.get_value(self.weight_decay)),
-                  'epsilon': self.epsilon,
-                  'eeta': float(K.get_value(self.eeta)),
-                  'nesterov': self.nesterov,
-                  'skip_list': self.skip_list}
-        base_config = super(LARS, self).get_config()
-        return dict(list(base_config.items()) + list(config.items()))
-
     def get_updates(self, loss, params):
         grads = self.get_gradients(loss, params)
         weights = self.get_weights()
@@ -107,4 +96,13 @@ class LARS(Optimizer):
             self.updates.append(K.update(p, new_p))
         return self.updates
 
-get_custom_objects().update({'LARS': LARS})
+    def get_config(self):
+        config = {'lr': float(K.get_value(self.lr)),
+                  'momentum': float(K.get_value(self.momentum)),
+                  'weight_decay': float(K.get_value(self.weight_decay)),
+                  'epsilon': self.epsilon,
+                  'eeta': float(K.get_value(self.eeta)),
+                  'nesterov': self.nesterov,
+                  'skip_list': self.skip_list}
+        base_config = super(LARS, self).get_config()
+        return dict(list(base_config.items()) + list(config.items()))
