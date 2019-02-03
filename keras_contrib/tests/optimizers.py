@@ -37,6 +37,6 @@ def _test_optimizer(optimizer, target=0.75):
     history = model.fit(x_train, y_train, epochs=2, batch_size=16, verbose=0)
     assert history.history['acc'][-1] >= target
     config = optimizers.serialize(optimizer)
-    optim = optimizers.deserialize(config)
+    optim = optimizers.deserialize(config, custom_objects={optimizer.__name__: optimizer.__class__})
     new_config = optimizers.serialize(optim)
     assert config == new_config
