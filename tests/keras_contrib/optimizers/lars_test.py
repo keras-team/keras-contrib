@@ -13,17 +13,10 @@ def test_nesterov_lars():
   
 def test_skip_list():
    X = np.random.randn(15, 30)
-   y = np.random.randn(3,size=(15,1))
+   y = np.random.randint(3,size=(15,1))
    model = Sequential()
    model.add(Dense(32, activation='relu', input_dim=30))
    model.add(Dense(1, activation='sigmoid'))
    model.compile(loss='mse', optimizer=lars.LARS(0.01,skip_list=['bias',]))
    model.fit(X, y, epochs=3)
-  
-  
 
-  
-  
-test_base_lars()
-test_nesterov_lars()
-test_skip_list()
