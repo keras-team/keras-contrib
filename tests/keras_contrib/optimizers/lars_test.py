@@ -25,5 +25,5 @@ def test_skip_list():
   
   
 test_base_lars()
-test_vesterov_lars()
+test_nesterov_lars()
 test_skip_list()
