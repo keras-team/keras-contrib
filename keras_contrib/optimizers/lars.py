@@ -66,8 +66,10 @@ class LARS(Optimizer):
         scaled_lr = self.lr
         if self.skip_list is None or not any(p in params.name
                                              for p in self.skip_list):
-            w_norm = K.sqrt(K.sum([K.sum(K.square(w)) for weight in weights]))
-            g_norm = K.sqrt(K.sum([K.sum(K.square(g)) for grad in grads]))
+            w_norm = K.sqrt(K.sum([K.sum(K.square(weight))
+                                   for weight in weights]))
+            g_norm = K.sqrt(K.sum([K.sum(K.square(grad))
+                                   for grad in grads]))
             scaled_lr = K.switch(K.greater(w_norm * g_norm, K.zeros([1])),
                                  K.expand_dims((self.eeta * w_norm /
                                                 (g_norm + self.weight_decay * w_norm +
@@ -76,7 +78,8 @@ class LARS(Optimizer):
         if K.backend() == 'theano':
             scaled_lr = scaled_lr[0]  # otherwise theano raise broadcasting error
         # momentum
-        moments = [K.zeros(K.int_shape(p), dtype=K.dtype(p)) for p in params]
+        moments = [K.zeros(K.int_shape(param), dtype=K.dtype(param))
+                   for param in params]
         self.weights = [self.iterations] + moments
         for param, grad, moment in zip(params, grads, moments):
             v0 = (moment * self.momentum)
