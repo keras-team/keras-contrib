@@ -47,7 +47,6 @@ class LARS(Optimizer):
             raise ValueError("momentum should be positive: %s" % momentum)
         if weight_decay < 0.0:
             raise ValueError("weight_decay is not positive: %s" % weight_decay)
-        print(kwargs)
         super(LARS, self).__init__(**kwargs)
         with K.name_scope(self.__class__.__name__):
             self.iterations = K.variable(0, dtype='int64', name='iterations')
@@ -59,6 +58,7 @@ class LARS(Optimizer):
         self.skip_list = skip_list
         self.nesterov = nesterov
 
+
     def get_updates(self, loss, params):
         grads = self.get_gradients(loss, params)
         weights = self.get_weights()
@@ -66,8 +66,8 @@ class LARS(Optimizer):
         scaled_lr = self.lr
         if self.skip_list is None or not any(p in params.name
                                              for p in self.skip_list):
-            w_norm = K.sqrt(K.sum([K.sum(K.square(w)) for w in weights]))
-            g_norm = K.sqrt(K.sum([K.sum(K.square(g)) for g in grads]))
+            w_norm = K.sqrt(K.sum([K.sum(K.square(w)) for weight in weights]))
+            g_norm = K.sqrt(K.sum([K.sum(K.square(g)) for grad in grads]))
             scaled_lr = K.switch(K.greater(w_norm * g_norm, K.zeros([1])),
                                  K.expand_dims((self.eeta * w_norm /
                                                 (g_norm + self.weight_decay * w_norm +
@@ -78,22 +78,22 @@ class LARS(Optimizer):
         # momentum
         moments = [K.zeros(K.int_shape(p), dtype=K.dtype(p)) for p in params]
         self.weights = [self.iterations] + moments
-        for p, g, m in zip(params, grads, moments):
-            v0 = (m * self.momentum)
-            v1 = scaled_lr * g  # velocity
-            v = v0 - v1
-            self.updates.append(K.update(m, v))
+        for param, grad, moment in zip(params, grads, moments):
+            v0 = (moment * self.momentum)
+            v1 = scaled_lr * grad  # velocity
+            veloc = v0 - v1
+            self.updates.append(K.update(moment, veloc))
 
             if self.nesterov:
-                new_p = p + (v * self.momentum) - v1
+                new_param = param + (veloc * self.momentum) - v1
             else:
-                new_p = p + v
+                new_param = param + veloc
 
             # Apply constraints.
-            if getattr(p, 'constraint', None) is not None:
-                new_p = p.constraint(new_p)
+            if getattr(param, 'constraint', None) is not None:
+                new_param = param.constraint(new_param)
 
-            self.updates.append(K.update(p, new_p))
+            self.updates.append(K.update(param, new_param))
         return self.updates
 
     def get_config(self):
