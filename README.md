@@ -9,7 +9,8 @@ As the community contributions in Keras-Contrib are tested, used, validated, and
 ---
 ## Installation
 
-For instructions on how to install Keras, see https://keras.io/#installation
+For instructions on how to install Keras, 
+see [the Keras installation page](https://keras.io/#installation).
 
 ```shell
 git clone https://www.github.com/keras-team/keras-contrib.git
@@ -23,7 +24,7 @@ Alternatively, using pip:
 sudo pip install git+https://www.github.com/keras-team/keras-contrib.git
 ```
 
-For contributor guidelines see [CONTRIBUTING.md](CONTRIBUTING.md)
+For contributor guidelines see [CONTRIBUTING.md](https://github.com/keras-team/keras-contrib/blob/master/CONTRIBUTING.md)
 
 ---
 ## Example Usage

@@ -1,11 +1,11 @@
 from __future__ import print_function
 import numpy as np
 
-from keras.utils import test_utils
+from keras_contrib.utils import test_utils
 from keras import optimizers
 from keras.models import Sequential
-from keras.layers.core import Dense, Activation
-from keras.utils.np_utils import to_categorical
+from keras.layers import Dense, Activation
+from keras.utils import to_categorical
 
 
 def get_test_data():
@@ -37,6 +37,7 @@ def _test_optimizer(optimizer, target=0.75):
     history = model.fit(x_train, y_train, epochs=2, batch_size=16, verbose=0)
     assert history.history['acc'][-1] >= target
     config = optimizers.serialize(optimizer)
-    optim = optimizers.deserialize(config)
+    custom_objects = {optimizer.__class__.__name__: optimizer.__class__}
+    optim = optimizers.deserialize(config, custom_objects)
     new_config = optimizers.serialize(optim)
     assert config == new_config

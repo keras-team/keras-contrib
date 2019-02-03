@@ -33,12 +33,8 @@ def jaccard_distance(y_true, y_pred, smooth=100):
         The Jaccard distance between the two tensors.
 
     # References
-
-    Csurka, Gabriela & Larlus, Diane & Perronnin, Florent. (2013).
-    What is a good evaluation measure for semantic segmentation?.
-    IEEE Trans. Pattern Anal. Mach. Intell.. 26. . 10.5244/C.27.32.
-
-    https://en.wikipedia.org/wiki/Jaccard_index
+        - [What is a good evaluation measure for semantic segmentation?](
+           http://www.bmva.org/bmvc/2013/Papers/paper0032/paper0032.pdf)
 
     """
     intersection = K.sum(K.abs(y_true * y_pred), axis=-1)

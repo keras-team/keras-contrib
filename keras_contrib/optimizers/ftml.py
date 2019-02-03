@@ -1,7 +1,7 @@
 from __future__ import absolute_import
 from keras.optimizers import Optimizer
 from keras import backend as K
-from keras.utils.generic_utils import get_custom_objects
+from keras.utils import get_custom_objects
 
 
 class FTML(Optimizer):
@@ -43,7 +43,7 @@ class FTML(Optimizer):
 
         lr_t = lr / (1. - K.pow(self.beta_1, t))
 
-        shapes = [K.get_variable_shape(p) for p in params]
+        shapes = [K.int_shape(p) for p in params]
         zs = [K.zeros(shape) for shape in shapes]
         vs = [K.zeros(shape) for shape in shapes]
         ds = [K.zeros(shape) for shape in shapes]

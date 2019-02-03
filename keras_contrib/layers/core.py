@@ -7,16 +7,13 @@ from keras import activations
 from keras import initializers
 from keras import regularizers
 from keras import constraints
-from keras.engine import InputSpec
-from keras.engine import Layer
-from keras.utils.generic_utils import get_custom_objects
+from keras.layers import InputSpec
+from keras.layers import Layer
+from keras.utils import get_custom_objects
 
 
 class CosineDense(Layer):
     """A cosine normalized densely-connected NN layer
-    Cosine Normalization: Using Cosine Similarity Instead
-    of Dot Product in Neural Networks
-    https://arxiv.org/pdf/1702.05870.pdf
 
     # Example
 
@@ -35,34 +32,36 @@ class CosineDense(Layer):
         # the size of the input anymore:
         model.add(CosineDense(32))
 
-        **Note that a regular Dense layer may work better as the final layer
+        # Note that a regular Dense layer may work better as the final layer
     ```
 
     # Arguments
         units: Positive integer, dimensionality of the output space.
         init: name of initialization function for the weights of the layer
-            (see [initializers](../initializers.md)),
+            (see [initializers](https://keras.io/initializers)),
             or alternatively, Theano function to use for weights
             initialization. This parameter is only relevant
             if you don't pass a `weights` argument.
         activation: name of activation function to use
-            (see [activations](../activations.md)),
-            or alternatively, elementwise Theano function.
+            (see [activations](https://keras.io/activations)),
+            or alternatively, elementwise Python function.
             If you don't specify anything, no activation is applied
             (ie. "linear" activation: a(x) = x).
         weights: list of Numpy arrays to set as initial weights.
             The list should have 2 elements, of shape `(input_dim, units)`
             and (units,) for weights and biases respectively.
-        kernel_regularizer: instance of [WeightRegularizer](../regularizers.md)
+        kernel_regularizer: instance of [WeightRegularizer](
+            https://keras.io/regularizers)
             (eg. L1 or L2 regularization), applied to the main weights matrix.
-        bias_regularizer: instance of [WeightRegularizer](../regularizers.md),
-            applied to the bias.
-        activity_regularizer: instance of [ActivityRegularizer](../regularizers.md),
-            applied to the network output.
-        kernel_constraint: instance of the [constraints](../constraints.md) module
+        bias_regularizer: instance of [WeightRegularizer](
+            https://keras.io/regularizers), applied to the bias.
+        activity_regularizer: instance of [ActivityRegularizer](
+            https://keras.io/regularizers), applied to the network output.
+        kernel_constraint: instance of the [constraints](
+            https://keras.io/constraints/) module
             (eg. maxnorm, nonneg), applied to the main weights matrix.
-        bias_constraint: instance of the [constraints](../constraints.md) module,
-            applied to the bias.
+        bias_constraint: instance of the [constraints](
+            https://keras.io/constraints/) module, applied to the bias.
         use_bias: whether to include a bias
             (i.e. make the layer affine rather than linear).
         input_dim: dimensionality of the input (integer). This argument
@@ -78,6 +77,10 @@ class CosineDense(Layer):
         nD tensor with shape: `(nb_samples, ..., units)`.
         For instance, for a 2D input with shape `(nb_samples, input_dim)`,
         the output would have shape `(nb_samples, units)`.
+
+    # References
+        - [Cosine Normalization: Using Cosine Similarity Instead
+           of Dot Product in Neural Networks](https://arxiv.org/pdf/1702.05870.pdf)
     """
 
     def __init__(self, units, kernel_initializer='glorot_uniform',
@@ -112,13 +115,13 @@ class CosineDense(Layer):
         self.input_spec = [InputSpec(dtype=K.floatx(),
                                      ndim=ndim)]
 
-        self.kernel = self.add_weight((input_dim, self.units),
+        self.kernel = self.add_weight(shape=(input_dim, self.units),
                                       initializer=self.kernel_initializer,
                                       name='{}_W'.format(self.name),
                                       regularizer=self.kernel_regularizer,
                                       constraint=self.kernel_constraint)
         if self.use_bias:
-            self.bias = self.add_weight((self.units,),
+            self.bias = self.add_weight(shape=(self.units,),
                                         initializer='zero',
                                         name='{}_b'.format(self.name),
                                         regularizer=self.bias_regularizer,
