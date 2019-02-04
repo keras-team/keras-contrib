@@ -131,25 +131,17 @@ class Capsule(Layer):
         self.routings = routings
         self.share_weights = share_weights
 
-        if type(activation) == str or activation is None:
-            self.activation = activations.get(activation)
-        else:
-            self.activation = activation
+        self.activation = activations.get(activation) \
+        if (type(activation) == str or activation is None) else activation
 
-        if type(regularizer) == str or regularizer is None:
-            self.regularizer = regularizers.get(regularizer)
-        else:
-            self.regularizer = regularizer
+        self.regularizer = regularizers.get(regularizer) \
+        if (type(regularizer) == str or regularizer is None) else regularizer
 
-        if type(initializer) == str:
-            self.initializer = initializers.get(initializer)
-        else:
-            self.initializer = initializer
+        self.initializer = initializers.get(initializer) \
+        if (type(initializer) == str) else initializer
 
-        if type(constraint) == str or constraint is None:
-            self.constraint = constraints.get(constraint)
-        else:
-            self.constraint = constraint
+        self.constraint = constraints.get(constraint) \
+        if (type(constraint) == str or constraint is None) else constraint
 
     def build(self, input_shape):
         input_dim_capsule = input_shape[-1]
