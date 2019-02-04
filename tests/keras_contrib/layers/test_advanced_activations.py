@@ -3,10 +3,7 @@ from keras_contrib.utils.test_utils import layer_test
 from keras_contrib.layers import advanced_activations
 
 
-@pytest.mark.parametrize('kwargs', [
-    {},
-    {'shared_axes': 1}
-])
+@pytest.mark.parametrize('kwargs', [{}, {'shared_axes': 1}])
 def test_pelu(kwargs):
     layer_test(advanced_activations.PELU, kwargs=kwargs,
                input_shape=(2, 3, 4))
@@ -18,10 +15,7 @@ def test_sine_relu():
                    input_shape=(2, 3, 4))
 
 
-@pytest.mark.parametrize('kwargs', [
-    {},
-    {'shared_axes': 1}
-])
+@pytest.mark.parametrize('kwargs', [{}, {'shared_axes': 1}])
 def test_srelu(kwargs):
     layer_test(advanced_activations.SReLU, kwargs=kwargs,
                input_shape=(2, 3, 4))
