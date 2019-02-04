@@ -207,3 +207,5 @@ class Capsule(Layer):
 
         base_config = super(Capsule, self).get_config()
         return dict(list(base_config.items()) + list(config.items()))
+
+get_custom_objects().update({'Capsule': Capsule})
