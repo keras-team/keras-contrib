@@ -2,13 +2,12 @@ import pytest
 import numpy as np
 from numpy.testing import assert_allclose
 
-from keras.layers import Dense, Activation, Input
+from keras.layers import Input
 from keras import regularizers
 from keras_contrib.utils.test_utils import layer_test
 from keras_contrib.layers import normalization
 from keras.models import Sequential, Model
 from keras import backend as K
-from keras_contrib import backend as KC
 
 input_1 = np.arange(10)
 input_2 = np.zeros(10)
