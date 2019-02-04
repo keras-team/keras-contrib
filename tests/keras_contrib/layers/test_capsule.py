@@ -39,7 +39,7 @@ def test_capsule_correctness():
     X = np.random.random((1, 1, 1))
 
     model = Sequential()
-    model.add(capsule.Capsule(1, 1, 1, True, 'sigmoid'))
+    model.add(capsule.Capsule(1, 1, 1, True, activation='sigmoid'))
 
     model.compile(loss='mse', optimizer='rmsprop')
     init_out = model.predict(X)  # mock predict call to initialize weights
