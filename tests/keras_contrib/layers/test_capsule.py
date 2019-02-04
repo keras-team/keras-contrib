@@ -45,7 +45,7 @@ def test_capsule_correctness():
     init_out = model.predict(X)  # mock predict call to initialize weights
     model.set_weights([np.zeros((1, 1, 1))])
     out = model.predict(X)
-    assert_allclose(out, np.zeros((1, 1, 1), dtype=K.floatx()), atol=1e-5)
+    assert_allclose(out, np.zeros((1, 1, 1), dtype=K.floatx()) + 0.5, atol=1e-5)
 
 if __name__ == '__main__':
     pytest.main([__file__])
