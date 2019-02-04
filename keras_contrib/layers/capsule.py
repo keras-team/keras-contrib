@@ -4,14 +4,11 @@ from __future__ import absolute_import
 from keras import backend as K
 from keras_contrib import backend as KC
 from keras import activations
+from keras import regularizers
+from keras import initializers
+from keras import constraints
 from keras.layers import Layer
 from keras.utils import get_custom_objects
-
-
-def squash(x, axis=-1):
-    s_squared_norm = K.sum(K.square(x), axis, keepdims=True) + K.epsilon()
-    scale = K.sqrt(s_squared_norm) / (0.5 + s_squared_norm)
-    return scale * x
 
 
 class Capsule(Layer):
@@ -38,7 +35,25 @@ class Capsule(Layer):
        in image classification, it can be used on the output of a
        Conv2D layer for Computer Vision applications. Also,
        it can be used on the output of a GRU or LSTM Layer
-       (Bidirectional or Unidirectional) for NLP applications
+       (Bidirectional or Unidirectional) for NLP applications.
+
+       The default activation function is 'linear'. But, this layer
+       is generally used with the 'squash' activation function
+       (recommended). To use the squash activation function, use :
+
+       def squash(x, axis=-1):
+           s_squared_norm = K.sum(K.square(x), axis, keepdims=True)
+                            + K.epsilon()
+           scale = K.sqrt(s_squared_norm) / (0.5 + s_squared_norm)
+           return scale * x
+
+       Then, create the capsule layer :
+
+       capsule = Capsule(num_capsule=10,
+                         dim_capsule=10,
+                         routings=3,
+                         share_weights=True,
+                         activation=squash)
 
        # Example usage :
            1). COMPUTER VISION
@@ -52,6 +67,7 @@ class Capsule(Layer):
            capsule = Capsule(num_capsule=10,
                              dim_capsule=16,
                              routings=3,
+                             activation='relu',
                              share_weights=True)(conv_2d)
 
            2). NLP
@@ -71,6 +87,7 @@ class Capsule(Layer):
            capsule = Capsule(num_capsule=5,
                              dim_capsule=5,
                              routings=4,
+                             activation='sigmoid',
                              share_weights=True)(bi_gru)
 
        # Arguments
@@ -79,6 +96,10 @@ class Capsule(Layer):
            routings : Number of dynamic routings in the Capsule Layer (int)
            share_weights : Whether to share weights between Capsules or not
            (boolean)
+           activation : Activation function for the Capsules (str)
+           regularizer : Regularizer for the weights of the Capsules (str)
+           initializer : Initializer for the weights of the Caspules (str)
+           cnstraint : Constraint for the weights of the Capsules (str)
 
        # Input shape
             3D tensor with shape:
@@ -99,20 +120,27 @@ class Capsule(Layer):
                  dim_capsule,
                  routings=3,
                  share_weights=True,
-                 activation='squash',
+                 activation=None,
+                 regularizer=None,
+                 initializer=None,
+                 constraint=None,
                  **kwargs):
         super(Capsule, self).__init__(**kwargs)
         self.num_capsule = num_capsule
         self.dim_capsule = dim_capsule
         self.routings = routings
         self.share_weights = share_weights
-        if activation == 'squash':
-            self.activation = squash
-        else:
+
+        if type(activation) == str:
             self.activation = activations.get(activation)
+        else:
+            self.activation = activation
+
+        self.regularizer = regularizer
+        self.initializer = initializer
+        self.constraint = constraint
 
     def build(self, input_shape):
-        super(Capsule, self).build(input_shape)
         input_dim_capsule = input_shape[-1]
         if self.share_weights:
             self.W = self.add_weight(name='capsule_kernel',
@@ -120,7 +148,10 @@ class Capsule(Layer):
                                             input_dim_capsule,
                                             self.num_capsule *
                                             self.dim_capsule),
-                                     initializer='glorot_uniform',
+                                     activation=self.activation,
+                                     initializer=self.initializer,
+                                     regularizer=self.regularizer,
+                                     constraint=self.constraint,
                                      trainable=True)
         else:
             input_num_capsule = input_shape[-2]
@@ -129,8 +160,13 @@ class Capsule(Layer):
                                             input_dim_capsule,
                                             self.num_capsule *
                                             self.dim_capsule),
-                                     initializer='glorot_uniform',
+                                     activation=self.activation,
+                                     initializer=self.initializer,
+                                     regularizer=self.regularizer,
+                                     constraint=self.constraint,
                                      trainable=True)
+
+        self.build = True
 
     def call(self, u_vecs):
         if self.share_weights:
@@ -151,12 +187,12 @@ class Capsule(Layer):
         for i in range(self.routings):
             c = K.softmax(b, 1)
             o = K.batch_dot(c, u_hat_vecs, [2, 2])
-            if K.backend() == 'theano' or len(K.int_shape(o)) == 4:
+            if len(K.int_shape(o)) == 4:
                 o = K.sum(o, axis=1)
             if i < self.routings - 1:
                 o = K.l2_normalize(o, -1)
                 b = K.batch_dot(o, u_hat_vecs, [2, 3])
-                if K.backend() == 'theano' or len(K.int_shape(b)) == 4:
+                if len(K.int_shape(b)) == 4:
                     b = K.sum(b, axis=1)
 
         return self.activation(o)
@@ -173,5 +209,3 @@ class Capsule(Layer):
 
         base_config = super(Capsule, self).get_config()
         return dict(list(base_config.items()) + list(config.items()))
-
-get_custom_objects().update({'Capsule': Capsule})
