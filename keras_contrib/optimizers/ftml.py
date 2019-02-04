@@ -1,7 +1,6 @@
 from __future__ import absolute_import
 from keras.optimizers import Optimizer
 from keras import backend as K
-from keras.utils import get_custom_objects
 
 
 class FTML(Optimizer):
@@ -79,6 +78,3 @@ class FTML(Optimizer):
                   'epsilon': self.epsilon}
         base_config = super(FTML, self).get_config()
         return dict(list(base_config.items()) + list(config.items()))
-
-
-get_custom_objects().update({'FTML': FTML})
