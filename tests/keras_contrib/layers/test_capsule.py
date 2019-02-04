@@ -9,11 +9,17 @@ from keras_contrib.layers import capsule
 from keras.models import Sequential
 
 
+def squash(x, axis=-1):
+    s_squared_norm = K.sum(K.square(x), axis, keepdims=True) + K.epsilon()
+    scale = K.sqrt(s_squared_norm) / (0.5 + s_squared_norm)
+    return scale * x
+
+
 @pytest.mark.parametrize('num_capsule', [10, 20])
 @pytest.mark.parametrize('dim_capsule', [10, 20])
 @pytest.mark.parametrize('routings', [3, 4])
 @pytest.mark.parametrize('share_weights', [True, False])
-@pytest.mark.parametrize('activation', ['squash', 'relu'])
+@pytest.mark.parametrize('activation', [squash, 'relu'])
 def test_capsule(num_capsule,
                  dim_capsule,
                  routings,
