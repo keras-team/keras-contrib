@@ -3,13 +3,12 @@ from keras_contrib.utils.test_utils import layer_test
 from keras_contrib.layers import advanced_activations
 
 
-def test_pelu():
-    layer_test(advanced_activations.PELU, kwargs={},
-               input_shape=(2, 3, 4))
-
-
-def test_pelu_share():
-    layer_test(advanced_activations.PELU, kwargs={'shared_axes': 1},
+@pytest.mark.parametrize('kwargs', [
+    {},
+    {'shared_axes': 1}
+])
+def test_pelu(kwargs):
+    layer_test(advanced_activations.PELU, kwargs=kwargs,
                input_shape=(2, 3, 4))
 
 
@@ -19,23 +18,18 @@ def test_sine_relu():
                    input_shape=(2, 3, 4))
 
 
-def test_srelu():
-    layer_test(advanced_activations.SReLU, kwargs={},
+@pytest.mark.parametrize('kwargs', [
+    {},
+    {'shared_axes': 1}
+])
+def test_srelu(kwargs):
+    layer_test(advanced_activations.SReLU, kwargs=kwargs,
                input_shape=(2, 3, 4))
 
 
-def test_srelu_share():
-    layer_test(advanced_activations.SReLU, kwargs={'shared_axes': 1},
-               input_shape=(2, 3, 4))
-
-
-def test_swish_constant():
-    layer_test(advanced_activations.Swish, kwargs={'beta': 1.0, 'trainable': False},
-               input_shape=(2, 3, 4))
-
-
-def test_swish_trainable():
-    layer_test(advanced_activations.Swish, kwargs={'beta': 1.0, 'trainable': True},
+@pytest.mark.parametrize('trainable', [False, True])
+def test_swish(trainable):
+    layer_test(advanced_activations.Swish, kwargs={'beta': 1.0, 'trainable': trainable},
                input_shape=(2, 3, 4))
 
 
