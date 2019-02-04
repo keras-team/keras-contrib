@@ -136,9 +136,9 @@ class Capsule(Layer):
         else:
             self.activation = activation
 
-        self.regularizer = regularizer
-        self.initializer = initializer
-        self.constraint = constraint
+        self.regularizer = regularizers.get(regularizer)
+        self.initializer = intializers.get(initializer)
+        self.constraint = constraints.get(constraint)
 
     def build(self, input_shape):
         input_dim_capsule = input_shape[-1]
