@@ -51,6 +51,7 @@ PAGES = [
         'page': 'layers/normalization.md',
         'classes': [
             layers.InstanceNormalization,
+            layers.BatchRenormalization,
             layers.GroupNormalization
         ],
     },
