@@ -47,5 +47,6 @@ def test_capsule_correctness():
     out = model.predict(X)
     assert_allclose(out, np.zeros((1, 1, 1), dtype=K.floatx()) + 0.5, atol=1e-5)
 
+
 if __name__ == '__main__':
     pytest.main([__file__])
