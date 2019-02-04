@@ -136,9 +136,20 @@ class Capsule(Layer):
         else:
             self.activation = activation
 
-        self.regularizer = regularizers.get(regularizer)
-        self.initializer = initializers.get(initializer)
-        self.constraint = constraints.get(constraint)
+        if type(regularizer) == str:
+            self.regularizer = regularizers.get(regularizer)
+        else:
+            self.regularizer = regularizer
+
+        if type(regularizer) == str:
+            self.regularizer = regularizers.get(regularizer)
+        else:
+            self.regularizer = regularizer
+
+        if type(regularizer) == str:
+            self.regularizer = regularizers.get(regularizer)
+        else:
+            self.regularizer = regularizer
 
     def build(self, input_shape):
         input_dim_capsule = input_shape[-1]
