@@ -169,34 +169,36 @@ class Capsule(Layer):
 
         self.build = True
 
-    def call(self, u_vecs):
+    def call(self, inputs):
+        # The spatially transformed input vectors
+
         if self.share_weights:
-            u_hat_vecs = K.conv1d(u_vecs, self.W)
+            u_hat_vectors = K.conv1d(inputs, self.W)
         else:
-            u_hat_vecs = K.local_conv1d(u_vecs, self.W, [1], [1])
+            u_hat_vectors = K.local_conv1d(inputs, self.W, [1], [1])
 
-        batch_size = K.shape(u_vecs)[0]
-        input_num_capsule = K.shape(u_vecs)[1]
-        u_hat_vecs = K.reshape(u_hat_vecs, (batch_size,
-                                            input_num_capsule,
-                                            self.num_capsule,
-                                            self.dim_capsule))
+        batch_size = K.shape(inputs)[0]
+        input_num_capsule = K.shape(inputs)[1]
+        u_hat_vectors = K.reshape(u_hat_vectors, (batch_size,
+                                                  input_num_capsule,
+                                                  self.num_capsule,
+                                                  self.dim_capsule))
 
-        u_hat_vecs = K.permute_dimensions(u_hat_vecs, (0, 2, 1, 3))
-        b = K.zeros_like(u_hat_vecs[:, :, :, 0])
+        u_hat_vectors = K.permute_dimensions(u_hat_vectors, (0, 2, 1, 3))
+        routing_weights = K.zeros_like(u_hat_vectors[:, :, :, 0])
 
         for i in range(self.routings):
-            c = K.softmax(b, 1)
-            o = K.batch_dot(c, u_hat_vecs, [2, 2])
-            if K.ndim(o) == 4:
-                o = K.sum(o, axis=1)
+            capsule_weights = K.softmax(routing_weights, 1)
+            outputs = K.batch_dot(capsule_weights, u_hat_vectors, [2, 2])
+            if K.ndim(outputs) == 4:
+                outputs = K.sum(outputs, axis=1)
             if i < self.routings - 1:
-                o = K.l2_normalize(o, -1)
-                b = K.batch_dot(o, u_hat_vecs, [2, 3])
-                if K.ndim(b) == 4:
-                    b = K.sum(b, axis=1)
+                outputs = K.l2_normalize(outputs, -1)
+                routing_weights = K.batch_dot(outputs, u_hat_vectors, [2, 3])
+                if K.ndim(routing_weights) == 4:
+                    routing_weights = K.sum(routing_weights, axis=1)
 
-        return self.activation(o)
+        return self.activation(outputs)
 
     def compute_output_shape(self, input_shape):
         return (None, self.num_capsule, self.dim_capsule)
