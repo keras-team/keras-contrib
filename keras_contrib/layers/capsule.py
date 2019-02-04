@@ -170,12 +170,12 @@ class Capsule(Layer):
         self.build = True
 
     def call(self, inputs):
-        # The spatially transformed input vectors
-
         if self.share_weights:
             u_hat_vectors = K.conv1d(inputs, self.W)
         else:
             u_hat_vectors = K.local_conv1d(inputs, self.W, [1], [1])
+
+        # u_hat_vectors : The spatially transformed input vectors (with local_conv_1d)
 
         batch_size = K.shape(inputs)[0]
         input_num_capsule = K.shape(inputs)[1]
