@@ -96,9 +96,9 @@ class Capsule(Layer):
            routings : Number of dynamic routings in the Capsule Layer (int)
            share_weights : Whether to share weights between Capsules or not
            (boolean)
-           activation : Activation function for the Capsules (str)
-           regularizer : Regularizer for the weights of the Capsules (str)
-           initializer : Initializer for the weights of the Caspules (str)
+           activation : Activation function for the Capsules
+           regularizer : Regularizer for the weights of the Capsules
+           initializer : Initializer for the weights of the Caspules
            constraint : Constraint for the weights of the Capsules
 
        # Input shape
