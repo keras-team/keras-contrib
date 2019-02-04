@@ -148,7 +148,6 @@ class Capsule(Layer):
                                             input_dim_capsule,
                                             self.num_capsule *
                                             self.dim_capsule),
-                                     activation=self.activation,
                                      initializer=self.initializer,
                                      regularizer=self.regularizer,
                                      constraint=self.constraint,
@@ -160,7 +159,6 @@ class Capsule(Layer):
                                             input_dim_capsule,
                                             self.num_capsule *
                                             self.dim_capsule),
-                                     activation=self.activation,
                                      initializer=self.initializer,
                                      regularizer=self.regularizer,
                                      constraint=self.constraint,
