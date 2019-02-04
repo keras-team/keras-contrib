@@ -13,6 +13,12 @@ def test_pelu_share():
                input_shape=(2, 3, 4))
 
 
+def test_sine_relu():
+    for epsilon in [0.0025, 0.0035, 0.0045]:
+        layer_test(advanced_activations.SineReLU, kwargs={'epsilon': epsilon},
+                   input_shape=(2, 3, 4))
+
+
 def test_srelu():
     layer_test(advanced_activations.SReLU, kwargs={},
                input_shape=(2, 3, 4))
