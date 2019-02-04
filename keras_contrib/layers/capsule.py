@@ -99,7 +99,7 @@ class Capsule(Layer):
            activation : Activation function for the Capsules (str)
            regularizer : Regularizer for the weights of the Capsules (str)
            initializer : Initializer for the weights of the Caspules (str)
-           cnstraint : Constraint for the weights of the Capsules (str)
+           constraint : Constraint for the weights of the Capsules
 
        # Input shape
             3D tensor with shape:
