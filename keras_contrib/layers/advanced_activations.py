@@ -4,7 +4,6 @@ from keras import constraints
 from keras.layers import Layer
 from keras.layers import InputSpec
 from keras import backend as K
-from keras.utils import get_custom_objects
 
 
 class PELU(Layer):
@@ -121,9 +120,6 @@ class PELU(Layer):
 
     def compute_output_shape(self, input_shape):
         return input_shape
-
-
-get_custom_objects().update({'PELU': PELU})
 
 
 class SReLU(Layer):
@@ -251,9 +247,6 @@ class SReLU(Layer):
         return input_shape
 
 
-get_custom_objects().update({'SReLU': SReLU})
-
-
 class Swish(Layer):
     """ Swish (Ramachandranet al., 2017)
 
@@ -302,9 +295,6 @@ class Swish(Layer):
 
     def compute_output_shape(self, input_shape):
         return input_shape
-
-
-get_custom_objects().update({'Swish': Swish})
 
 
 class SineReLU(Layer):
@@ -423,6 +413,3 @@ class SineReLU(Layer):
 
     def compute_output_shape(self, input_shape):
         return input_shape
-
-
-get_custom_objects().update({'SineReLU': SineReLU})

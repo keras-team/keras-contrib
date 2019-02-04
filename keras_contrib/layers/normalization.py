@@ -2,7 +2,6 @@ from keras.layers import Layer, InputSpec
 from keras import initializers, regularizers, constraints
 from keras import backend as K
 from keras_contrib import backend as KC
-from keras.utils import get_custom_objects
 
 
 class InstanceNormalization(Layer):
@@ -147,9 +146,6 @@ class InstanceNormalization(Layer):
         }
         base_config = super(InstanceNormalization, self).get_config()
         return dict(list(base_config.items()) + list(config.items()))
-
-
-get_custom_objects().update({'InstanceNormalization': InstanceNormalization})
 
 
 class BatchRenormalization(Layer):
@@ -409,9 +405,6 @@ class BatchRenormalization(Layer):
         return dict(list(base_config.items()) + list(config.items()))
 
 
-get_custom_objects().update({'BatchRenormalization': BatchRenormalization})
-
-
 class GroupNormalization(Layer):
     """Group normalization layer.
 
@@ -599,6 +592,3 @@ class GroupNormalization(Layer):
 
     def compute_output_shape(self, input_shape):
         return input_shape
-
-
-get_custom_objects().update({'GroupNormalization': GroupNormalization})
