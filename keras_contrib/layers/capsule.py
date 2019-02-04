@@ -120,9 +120,9 @@ class Capsule(Layer):
                  dim_capsule,
                  routings=3,
                  share_weights=True,
+                 initializer='glorot_uniform',
                  activation=None,
                  regularizer=None,
-                 initializer=None,
                  constraint=None,
                  **kwargs):
         super(Capsule, self).__init__(**kwargs)
