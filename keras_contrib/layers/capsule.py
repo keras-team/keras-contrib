@@ -137,7 +137,7 @@ class Capsule(Layer):
             self.activation = activation
 
         self.regularizer = regularizers.get(regularizer)
-        self.initializer = intializers.get(initializer)
+        self.initializer = initializers.get(initializer)
         self.constraint = constraints.get(constraint)
 
     def build(self, input_shape):
