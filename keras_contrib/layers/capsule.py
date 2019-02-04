@@ -131,12 +131,12 @@ class Capsule(Layer):
         self.routings = routings
         self.share_weights = share_weights
 
-        if type(activation) == str:
+        if type(activation) == str or activation is None:
             self.activation = activations.get(activation)
         else:
             self.activation = activation
 
-        if type(regularizer) == str:
+        if type(regularizer) == str or regularizer is None:
             self.regularizer = regularizers.get(regularizer)
         else:
             self.regularizer = regularizer
@@ -146,7 +146,7 @@ class Capsule(Layer):
         else:
             self.initializer = initializer
 
-        if type(constraint) == str:
+        if type(constraint) == str or constraint is None:
             self.constraint = constraints.get(constraint)
         else:
             self.constraint = constraint
