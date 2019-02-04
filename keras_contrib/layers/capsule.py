@@ -185,12 +185,12 @@ class Capsule(Layer):
         for i in range(self.routings):
             c = K.softmax(b, 1)
             o = K.batch_dot(c, u_hat_vecs, [2, 2])
-            if len(o._keras_shape) == 4:
+            if len(tuple(o.get_shape().as_list())) == 4:
                 o = K.sum(o, axis=1)
             if i < self.routings - 1:
                 o = K.l2_normalize(o, -1)
                 b = K.batch_dot(o, u_hat_vecs, [2, 3])
-                if len(b._keras_shape) == 4:
+                if len(tuple(b.get_shape().as_list())) == 4:
                     b = K.sum(b, axis=1)
 
         return self.activation(o)
