@@ -32,6 +32,20 @@ from keras.layers.normalization import BatchNormalization
 from keras.regularizers import l2
 from keras import backend as K
 from keras_applications.imagenet_utils import _obtain_input_shape
+from keras_applications.imagenet_utils import preprocess_input as _preprocess_input
+
+
+def preprocess_input(x, **kwargs):
+    """Preprocesses a numpy array encoding a batch of images.
+    # Arguments
+        x: a 4D numpy array consists of RGB values within [0, 255].
+        data_format: data format of the image tensor.
+    # Returns
+        Preprocessed array.
+    """
+    if 'backend' not in kwargs:
+        kwargs['backend'] = K
+    return _preprocess_input(x, mode='caffe', **kwargs)
 
 
 def _bn_relu(x, bn_name=None, relu_name=None):
@@ -279,7 +293,7 @@ def _string_to_function(identifier):
 def ResNet(input_shape=None, classes=10, block='bottleneck', residual_unit='v2', repetitions=None,
            initial_filters=64, activation='softmax', include_top=True, input_tensor=None, dropout=None,
            transition_dilation_rate=(1, 1), initial_strides=(2, 2), initial_kernel_size=(7, 7),
-           initial_pooling='max', final_pooling=None, top='classification'):
+           initial_pooling='max', final_pooling=None, top='classification', **kwargs):
     """Builds a custom ResNet like architecture. Defaults to ResNet50 v2.
 
     Args:
@@ -422,31 +436,34 @@ def ResNet(input_shape=None, classes=10, block='bottleneck', residual_unit='v2',
     return model
 
 
-def ResNet18(input_shape, classes):
+def ResNet18(input_shape=None, classes=10, **kwargs):
     """ResNet with 18 layers and v2 residual units
     """
-    return ResNet(input_shape, classes, basic_block, repetitions=[2, 2, 2, 2])
+    print("Input shape : ", input_shape)
+    print("Classes", classes)
+    print("kwargs", kwargs)
+    return ResNet(input_shape, classes, basic_block, repetitions=[2, 2, 2, 2], **kwargs)
 
 
-def ResNet34(input_shape, classes):
+def ResNet34(input_shape=None, classes=10, **kwargs):
     """ResNet with 34 layers and v2 residual units
     """
-    return ResNet(input_shape, classes, basic_block, repetitions=[3, 4, 6, 3])
+    return ResNet(input_shape, classes, basic_block, repetitions=[3, 4, 6, 3], **kwargs)
 
 
-def ResNet50(input_shape, classes):
+def ResNet50(input_shape=None, classes=10, **kwargs):
     """ResNet with 50 layers and v2 residual units
     """
-    return ResNet(input_shape, classes, bottleneck, repetitions=[3, 4, 6, 3])
+    return ResNet(input_shape, classes, bottleneck, repetitions=[3, 4, 6, 3], **kwargs)
 
 
-def ResNet101(input_shape, classes):
+def ResNet101(input_shape=None, classes=10, **kwargs):
     """ResNet with 101 layers and v2 residual units
     """
-    return ResNet(input_shape, classes, bottleneck, repetitions=[3, 4, 23, 3])
+    return ResNet(input_shape, classes, bottleneck, repetitions=[3, 4, 23, 3], **kwargs)
 
 
-def ResNet152(input_shape, classes):
+def ResNet152(input_shape=None, classes=10, **kwargs):
     """ResNet with 152 layers and v2 residual units
     """
-    return ResNet(input_shape, classes, bottleneck, repetitions=[3, 8, 36, 3])
+    return ResNet(input_shape, classes, bottleneck, repetitions=[3, 8, 36, 3], **kwargs)

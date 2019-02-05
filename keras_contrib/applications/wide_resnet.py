@@ -14,7 +14,7 @@ import warnings
 
 from keras.models import Model
 from keras.layers.core import Dense, Dropout, Activation
-from keras.layers.pooling import MaxPooling2D, GlobalAveragePooling2D
+from keras.layers.pooling import MaxPooling2D, GlobalAveragePooling2D, GlobalMaxPooling2D
 from keras.layers import Input, Conv2D
 from keras.layers.merge import add
 from keras.layers.normalization import BatchNormalization
@@ -22,6 +22,7 @@ from keras.utils.layer_utils import convert_all_kernels_in_model
 from keras.utils.data_utils import get_file
 from keras.engine.topology import get_source_inputs
 from keras_applications.imagenet_utils import _obtain_input_shape
+from keras_applications.imagenet_utils import preprocess_input as _preprocess_input
 import keras.backend as K
 
 TH_WEIGHTS_PATH = 'https://github.com/titu1994/Wide-Residual-Networks/releases/download/v1.2/wrn_28_8_th_kernels_th_dim_ordering.h5'
@@ -30,10 +31,24 @@ TH_WEIGHTS_PATH_NO_TOP = 'https://github.com/titu1994/Wide-Residual-Networks/rel
 TF_WEIGHTS_PATH_NO_TOP = 'https://github.com/titu1994/Wide-Residual-Networks/releases/download/v1.2/wrn_28_8_tf_kernels_tf_dim_ordering_no_top.h5'
 
 
+def preprocess_input(x, **kwargs):
+    """Preprocesses a numpy array encoding a batch of images.
+    # Arguments
+        x: a 4D numpy array consists of RGB values within [0, 255].
+        data_format: data format of the image tensor.
+    # Returns
+        Preprocessed array.
+    """
+    if 'backend' not in kwargs:
+        kwargs['backend'] = K
+    return _preprocess_input(x, mode='caffe', **kwargs)
+
+
 def WideResidualNetwork(depth=28, width=8, dropout_rate=0.0,
                         include_top=True, weights='cifar10',
                         input_tensor=None, input_shape=None,
-                        classes=10, activation='softmax'):
+                        classes=10, activation='softmax',
+                        pooling=None):
     """Instantiate the Wide Residual Network architecture,
         optionally loading weights pre-trained
         on CIFAR-10. Note that when using TensorFlow,
@@ -66,6 +81,17 @@ def WideResidualNetwork(depth=28, width=8, dropout_rate=0.0,
             classes: optional number of classes to classify images
                 into, only to be specified if `include_top` is True, and
                 if no `weights` argument is specified.
+            pooling: optional pooling mode for feature extraction
+                when `include_top` is `False`.
+                - `None` means that the output of the model will be
+                    the 4D tensor output of the
+                    last convolutional layer.
+                - `avg` means that global average pooling
+                    will be applied to the output of the
+                    last convolutional layer, and thus
+                    the output of the model will be a 2D tensor.
+                - `max` means that global max pooling will
+                    be applied.
 
         # Returns
             A Keras model instance.
@@ -100,7 +126,7 @@ def WideResidualNetwork(depth=28, width=8, dropout_rate=0.0,
             img_input = input_tensor
 
     x = __create_wide_residual_network(classes, img_input, include_top, depth, width,
-                                       dropout_rate, activation)
+                                       dropout_rate, activation, pooling)
 
     # Ensure that the model takes into account
     # any potential predecessors of `input_tensor`.
@@ -251,7 +277,8 @@ def ___conv4_block(input, k=1, dropout=0.0):
 
 
 def __create_wide_residual_network(nb_classes, img_input, include_top, depth=28,
-                                   width=8, dropout=0.0, activation='softmax'):
+                                   width=8, dropout=0.0, activation='softmax',
+                                   pooling=None):
     ''' Creates a Wide Residual Network with specified parameters
 
     Args:
@@ -292,5 +319,10 @@ def __create_wide_residual_network(nb_classes, img_input, include_top, depth=28,
     if include_top:
         x = GlobalAveragePooling2D()(x)
         x = Dense(nb_classes, activation=activation)(x)
+    else:
+        if pooling == 'avg':
+            x = GlobalAveragePooling2D(name='avg_pool')(x)
+        elif pooling == 'max':
+            x = GlobalMaxPooling2D(name='max_pool')(x)
 
     return x

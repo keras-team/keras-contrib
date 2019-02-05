@@ -81,7 +81,7 @@ DENSENET_161_WEIGHTS_PATH_NO_TOP = r'https://github.com/titu1994/DenseNet/releas
 DENSENET_169_WEIGHTS_PATH_NO_TOP = r'https://github.com/titu1994/DenseNet/releases/download/v3.0/DenseNet-BC-169-32-no-top.h5'
 
 
-def preprocess_input(x, data_format=None):
+def preprocess_input(x, **kwargs):
     """Preprocesses a tensor encoding a batch of images.
 
     # Arguments
@@ -91,7 +91,9 @@ def preprocess_input(x, data_format=None):
     # Returns
         Preprocessed tensor.
     """
-    x = _preprocess_input(x, data_format=data_format)
+    if 'backend' not in kwargs:
+        kwargs['backend'] = K
+    x = _preprocess_input(x, mode='caffe', **kwargs)
     x *= 0.017  # scale values
     return x
 

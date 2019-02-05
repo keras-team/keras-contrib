@@ -40,6 +40,7 @@ from keras.regularizers import l2
 from keras.utils.data_utils import get_file
 from keras.engine.topology import get_source_inputs
 from keras_applications.imagenet_utils import _obtain_input_shape
+from keras_applications.imagenet_utils import preprocess_input as _preprocess_input
 from keras import backend as K
 
 _BN_DECAY = 0.9997
@@ -53,6 +54,18 @@ NASNET_LARGE_WEIGHT_PATH = "https://github.com/titu1994/Keras-NASNet/releases/do
 NASNET_LARGE_WEIGHT_PATH_NO_TOP = "https://github.com/titu1994/Keras-NASNet/releases/download/v1.1/NASNet-large-no-top.h5"
 NASNET_LARGE_WEIGHT_PATH_WITH_auxiliary = "https://github.com/titu1994/Keras-NASNet/releases/download/v1.1/NASNet-auxiliary-large.h5"
 NASNET_LARGE_WEIGHT_PATH_WITH_auxiliary_NO_TOP = "https://github.com/titu1994/Keras-NASNet/releases/download/v1.1/NASNet-auxiliary-large-no-top.h5"
+
+
+def preprocess_input(x, **kwargs):
+    """Preprocesses a numpy array encoding a batch of images.
+    # Arguments
+        x: a 4D numpy array consists of RGB values within [0, 255].
+    # Returns
+        Preprocessed array.
+    """
+    if 'backend' not in kwargs:
+        kwargs['backend'] = K
+    return _preprocess_input(x, mode='tf', **kwargs)
 
 
 def NASNet(input_shape=None,
