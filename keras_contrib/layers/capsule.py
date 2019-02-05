@@ -8,7 +8,6 @@ from keras import regularizers
 from keras import initializers
 from keras import constraints
 from keras.layers import Layer
-from keras.utils import get_custom_objects
 
 
 class Capsule(Layer):
