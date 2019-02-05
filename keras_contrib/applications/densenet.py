@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 '''DenseNet and DenseNet-FCN models for Keras.
-
 DenseNet is a network architecture where each layer is directly connected
 to every other layer in a feed-forward fashion (within each dense block).
 For each layer, the feature maps of all preceding layers are treated as
@@ -10,13 +9,11 @@ accuracies on CIFAR10/100 (with or without data augmentation) and SVHN.
 On the large scale ILSVRC 2012 (ImageNet) dataset, DenseNet achieves a
 similar accuracy as ResNet, but using less than half the amount of
 parameters and roughly half the number of FLOPs.
-
 DenseNets support any input image size of 32x32 or greater, and are thus
 suited for CIFAR-10 or CIFAR-100 datasets. There are two types of DenseNets,
 one suited for smaller images (DenseNet) and one suited for ImageNet,
 called DenseNetImageNet. They are differentiated by the strided convolution
 and pooling operations prior to the initial dense block.
-
 The following table describes the size and accuracy of DenseNetImageNet models
 on the ImageNet dataset (single crop), for which weights are provided:
 ------------------------------------------------------------------------------------
@@ -27,20 +24,16 @@ on the ImageNet dataset (single crop), for which weights are provided:
 |   DenseNet-201    |    22.58 %            |        6.34 %         |     20.2     |
 |   DenseNet-161    |    22.20 %            |         -   %         |     28.9     |
 ------------------------------------------------------------------------------------
-
 DenseNets can be extended to image segmentation tasks as described in the
 paper "The One Hundred Layers Tiramisu: Fully Convolutional DenseNets for
 Semantic Segmentation". Here, the dense blocks are arranged and concatenated
 with long skip connections for state of the art performance on the CamVid dataset.
-
 # Reference
 - [Densely Connected Convolutional Networks](https://arxiv.org/pdf/1608.06993.pdf)
 - [The One Hundred Layers Tiramisu: Fully Convolutional DenseNets for Semantic Segmentation](https://arxiv.org/pdf/1611.09326.pdf)
-
 This implementation is based on the following reference code:
  - https://github.com/gpleiss/efficient_densenet_pytorch
  - https://github.com/liuzhuang13/DenseNet
-
 '''
 from __future__ import print_function
 from __future__ import absolute_import
@@ -81,17 +74,17 @@ DENSENET_161_WEIGHTS_PATH_NO_TOP = r'https://github.com/titu1994/DenseNet/releas
 DENSENET_169_WEIGHTS_PATH_NO_TOP = r'https://github.com/titu1994/DenseNet/releases/download/v3.0/DenseNet-BC-169-32-no-top.h5'
 
 
-def preprocess_input(x, data_format=None):
+def preprocess_input(x, **kwargs):
     """Preprocesses a tensor encoding a batch of images.
-
     # Arguments
         x: input Numpy tensor, 4D.
         data_format: data format of the image tensor.
-
     # Returns
         Preprocessed tensor.
     """
-    x = _preprocess_input(x, data_format=data_format)
+    if 'backend' not in kwargs:
+        kwargs['backend'] = K
+    x = _preprocess_input(x, mode='caffe', **kwargs)
     x *= 0.017  # scale values
     return x
 
@@ -115,12 +108,10 @@ def DenseNet(input_shape=None,
              activation='softmax',
              transition_pooling='avg'):
     '''Instantiate the DenseNet architecture.
-
     The model and the weights are compatible with both
     TensorFlow and Theano. The dimension ordering
     convention used by the model is the one
     specified in your Keras config file.
-
     # Arguments
         input_shape: optional shape tuple, only to be specified
             if `include_top` is False (otherwise the input shape
@@ -177,10 +168,8 @@ def DenseNet(input_shape=None,
             None for no pooling during scale transition blocks. Please note that this
             default differs from the DenseNetFCN paper in accordance with the DenseNet
             paper.
-
     # Returns
         A Keras model instance.
-
     # Raises
         ValueError: in case of invalid argument for `weights`,
             or invalid input shape.
@@ -350,7 +339,6 @@ def DenseNetFCN(input_shape, nb_dense_block=5, growth_rate=16, nb_layers_per_blo
                 transition up to reduce the network size.
             initial_kernel_size: The first Conv2D kernel might vary in size based on the
                 application, this parameter makes it configurable.
-
         # Returns
             A Keras model instance.
     '''
@@ -525,7 +513,6 @@ def __conv_block(ip, nb_filter, bottleneck=False, dropout_rate=None, weight_deca
     '''
     Adds a convolution layer (with batch normalization and relu),
     and optionally a bottleneck layer.
-
     # Arguments
         ip: Input tensor
         nb_filter: integer, the dimensionality of the output space
@@ -534,20 +521,17 @@ def __conv_block(ip, nb_filter, bottleneck=False, dropout_rate=None, weight_deca
         dropout_rate: dropout rate
         weight_decay: weight decay factor
         block_prefix: str, for unique layer naming
-
      # Input shape
         4D tensor with shape:
         `(samples, channels, rows, cols)` if data_format='channels_first'
         or 4D tensor with shape:
         `(samples, rows, cols, channels)` if data_format='channels_last'.
-
     # Output shape
         4D tensor with shape:
         `(samples, filters, new_rows, new_cols)` if data_format='channels_first'
         or 4D tensor with shape:
         `(samples, new_rows, new_cols, filters)` if data_format='channels_last'.
         `rows` and `cols` values might have changed due to stride.
-
     # Returns
         output tensor of block
     '''
@@ -579,7 +563,6 @@ def __dense_block(x, nb_layers, nb_filter, growth_rate, bottleneck=False, dropou
     '''
     Build a dense_block where the output of each conv_block is fed
     to subsequent ones
-
     # Arguments
         x: input keras tensor
         nb_layers: the number of conv_blocks to append to the model
@@ -594,12 +577,10 @@ def __dense_block(x, nb_layers, nb_filter, growth_rate, bottleneck=False, dropou
         return_concat_list: set to True to return the list of
             feature maps along with the actual output
         block_prefix: str, for block unique naming
-
     # Return
         If return_concat_list is True, returns a list of the output
         keras tensor, the number of filters and a list of all the
         dense blocks added to the keras tensor
-
         If return_concat_list is False, returns a list of the output
         keras tensor and the number of filters
     '''
@@ -629,7 +610,6 @@ def __transition_block(ip, nb_filter, compression=1.0, weight_decay=1e-4, block_
     Adds a pointwise convolution layer (with batch normalization and relu),
     and an average pooling layer. The number of output convolution filters
     can be reduced by appropriately reducing the compression parameter.
-
     # Arguments
         ip: input keras tensor
         nb_filter: integer, the dimensionality of the output space
@@ -638,13 +618,11 @@ def __transition_block(ip, nb_filter, compression=1.0, weight_decay=1e-4, block_
             of feature maps in the transition block.
         weight_decay: weight decay factor
         block_prefix: str, for block unique naming
-
     # Input shape
         4D tensor with shape:
         `(samples, channels, rows, cols)` if data_format='channels_first'
         or 4D tensor with shape:
         `(samples, rows, cols, channels)` if data_format='channels_last'.
-
     # Output shape
         4D tensor with shape:
         `(samples, nb_filter * compression, rows / 2, cols / 2)`
@@ -652,7 +630,6 @@ def __transition_block(ip, nb_filter, compression=1.0, weight_decay=1e-4, block_
         or 4D tensor with shape:
         `(samples, rows / 2, cols / 2, nb_filter * compression)`
         if data_format='channels_last'.
-
     # Returns
         a keras tensor
     '''
@@ -673,7 +650,6 @@ def __transition_block(ip, nb_filter, compression=1.0, weight_decay=1e-4, block_
 
 def __transition_up_block(ip, nb_filters, type='deconv', weight_decay=1E-4, block_prefix=None):
     '''Adds an upsampling block. Upsampling operation relies on the the type parameter.
-
     # Arguments
         ip: input keras tensor
         nb_filters: integer, the dimensionality of the output space
@@ -682,19 +658,16 @@ def __transition_up_block(ip, nb_filters, type='deconv', weight_decay=1E-4, bloc
             type of upsampling performed
         weight_decay: weight decay factor
         block_prefix: str, for block unique naming
-
     # Input shape
         4D tensor with shape:
         `(samples, channels, rows, cols)` if data_format='channels_first'
         or 4D tensor with shape:
         `(samples, rows, cols, channels)` if data_format='channels_last'.
-
     # Output shape
         4D tensor with shape:
         `(samples, nb_filter, rows * 2, cols * 2)` if data_format='channels_first'
         or 4D tensor with shape:
         `(samples, rows * 2, cols * 2, nb_filter)` if data_format='channels_last'.
-
     # Returns
         a keras tensor
     '''
@@ -719,7 +692,6 @@ def __create_dense_net(nb_classes, img_input, include_top, depth=40, nb_dense_bl
                        nb_layers_per_block=-1, bottleneck=False, reduction=0.0, dropout_rate=None, weight_decay=1e-4,
                        subsample_initial_block=False, pooling=None, activation='softmax', transition_pooling='avg'):
     ''' Build the DenseNet model
-
     # Arguments
         nb_classes: number of classes
         img_input: tuple of shape (channels, rows, columns) or (rows, columns, channels)
@@ -760,10 +732,8 @@ def __create_dense_net(nb_classes, img_input, include_top, depth=40, nb_dense_bl
             None for no pooling during scale transition blocks. Please note that this
             default differs from the DenseNetFCN paper in accordance with the DenseNet
             paper.
-
     # Returns
         a keras tensor
-
     # Raises
         ValueError: in case of invalid argument for `reduction`
             or `nb_dense_block`
@@ -861,7 +831,6 @@ def __create_fcn_dense_net(nb_classes, img_input, include_top, nb_dense_block=5,
                            init_conv_filters=48, input_shape=None, activation='softmax',
                            early_transition=False, transition_pooling='max', initial_kernel_size=(3, 3)):
     ''' Build the DenseNet-FCN model
-
     # Arguments
         nb_classes: number of classes
         img_input: tuple of shape (channels, rows, columns) or (rows, columns, channels)
@@ -889,10 +858,8 @@ def __create_fcn_dense_net(nb_classes, img_input, include_top, nb_dense_block=5,
             paper in accordance with the DenseNetFCN paper.
         initial_kernel_size: The first Conv2D kernel might vary in size based on the
             application, this parameter makes it configurable.
-
     # Returns
         a keras tensor
-
     # Raises
         ValueError: in case of invalid argument for `reduction`,
             `nb_dense_block` or `nb_upsampling_conv`.

@@ -1,9 +1,7 @@
 """Collection of NASNet models
-
 The reference paper:
  - [Learning Transferable Architectures for Scalable Image Recognition]
     (https://arxiv.org/abs/1707.07012)
-
 The reference implementation:
 1. TF Slim
  - https://github.com/tensorflow/models/blob/master/research/slim/nets/
@@ -40,6 +38,7 @@ from keras.regularizers import l2
 from keras.utils.data_utils import get_file
 from keras.engine.topology import get_source_inputs
 from keras_applications.imagenet_utils import _obtain_input_shape
+from keras_applications.imagenet_utils import preprocess_input as _preprocess_input
 from keras import backend as K
 
 _BN_DECAY = 0.9997
@@ -53,6 +52,18 @@ NASNET_LARGE_WEIGHT_PATH = "https://github.com/titu1994/Keras-NASNet/releases/do
 NASNET_LARGE_WEIGHT_PATH_NO_TOP = "https://github.com/titu1994/Keras-NASNet/releases/download/v1.1/NASNet-large-no-top.h5"
 NASNET_LARGE_WEIGHT_PATH_WITH_auxiliary = "https://github.com/titu1994/Keras-NASNet/releases/download/v1.1/NASNet-auxiliary-large.h5"
 NASNET_LARGE_WEIGHT_PATH_WITH_auxiliary_NO_TOP = "https://github.com/titu1994/Keras-NASNet/releases/download/v1.1/NASNet-auxiliary-large-no-top.h5"
+
+
+def preprocess_input(x, **kwargs):
+    """Preprocesses a numpy array encoding a batch of images.
+    # Arguments
+        x: a 4D numpy array consists of RGB values within [0, 255].
+    # Returns
+        Preprocessed array.
+    """
+    if 'backend' not in kwargs:
+        kwargs['backend'] = K
+    return _preprocess_input(x, mode='tf', **kwargs)
 
 
 def NASNet(input_shape=None,
@@ -77,7 +88,6 @@ def NASNet(input_shape=None,
     therefore it only works with the data format
     `image_data_format='channels_last'` in your Keras config
     at `~/.keras/keras.json`.
-
     # Arguments
         input_shape: optional shape tuple, only to be specified
             if `include_top` is False (otherwise the input shape
@@ -326,7 +336,6 @@ def NASNetLarge(input_shape=(331, 331, 3),
     therefore it only works with the data format
     `image_data_format='channels_last'` in your Keras config
     at `~/.keras/keras.json`.
-
     # Arguments
         input_shape: optional shape tuple, only to be specified
             if `include_top` is False (otherwise the input shape
@@ -409,7 +418,6 @@ def NASNetMobile(input_shape=(224, 224, 3),
     therefore it only works with the data format
     `image_data_format='channels_last'` in your Keras config
     at `~/.keras/keras.json`.
-
     # Arguments
         input_shape: optional shape tuple, only to be specified
             if `include_top` is False (otherwise the input shape
@@ -491,7 +499,6 @@ def NASNetCIFAR(input_shape=(32, 32, 3),
     therefore it only works with the data format
     `image_data_format='channels_last'` in your Keras config
     at `~/.keras/keras.json`.
-
     # Arguments
         input_shape: optional shape tuple, only to be specified
             if `include_top` is False (otherwise the input shape
@@ -561,7 +568,6 @@ def NASNetCIFAR(input_shape=(32, 32, 3),
 
 def _separable_conv_block(ip, filters, kernel_size=(3, 3), strides=(1, 1), weight_decay=5e-5, id=None):
     '''Adds 2 blocks of [relu-separable conv-batchnorm]
-
     # Arguments:
         ip: input tensor
         filters: number of output filters per layer
@@ -569,7 +575,6 @@ def _separable_conv_block(ip, filters, kernel_size=(3, 3), strides=(1, 1), weigh
         strides: strided convolution for downsampling
         weight_decay: l2 regularization weight
         id: string id
-
     # Returns:
         a Keras tensor
     '''
@@ -596,14 +601,12 @@ def _adjust_block(p, ip, filters, weight_decay=5e-5, id=None):
     Adjusts the input `p` to match the shape of the `input`
     or situations where the output number of filters needs to
     be changed
-
     # Arguments:
         p: input tensor which needs to be modified
         ip: input tensor whose shape needs to be matched
         filters: number of output filters to be matched
         weight_decay: l2 regularization weight
         id: string id
-
     # Returns:
         an adjusted Keras tensor
     '''
@@ -644,14 +647,12 @@ def _adjust_block(p, ip, filters, weight_decay=5e-5, id=None):
 
 def _normal_A(ip, p, filters, weight_decay=5e-5, id=None):
     '''Adds a Normal cell for NASNet-A (Fig. 4 in the paper)
-
     # Arguments:
         ip: input tensor `x`
         p: input tensor `p`
         filters: number of output filters
         weight_decay: l2 regularization weight
         id: string id
-
     # Returns:
         a Keras tensor
     '''
@@ -696,14 +697,12 @@ def _normal_A(ip, p, filters, weight_decay=5e-5, id=None):
 
 def _reduction_A(ip, p, filters, weight_decay=5e-5, id=None):
     '''Adds a Reduction cell for NASNet-A (Fig. 4 in the paper)
-
     # Arguments:
         ip: input tensor `x`
         p: input tensor `p`
         filters: number of output filters
         weight_decay: l2 regularization weight
         id: string id
-
     # Returns:
         a Keras tensor
     '''
@@ -753,11 +752,9 @@ def _reduction_A(ip, p, filters, weight_decay=5e-5, id=None):
 
 def _add_auxiliary_head(x, classes, weight_decay, pooling, include_top, activation):
     '''Adds an auxiliary head for training the model
-
     From section A.7 "Training of ImageNet models" of the paper, all NASNet models are
     trained using an auxiliary classifier around 2/3 of the depth of the network, with
     a loss weight of 0.4
-
     # Arguments
         x: input tensor
         classes: number of output classes
@@ -778,7 +775,6 @@ def _add_auxiliary_head(x, classes, weight_decay, pooling, include_top, activati
             layer at the top of the network.
         activation: Type of activation at the top layer.
             Can be one of 'softmax' or 'sigmoid'.
-
     # Returns
         a keras Tensor
     '''

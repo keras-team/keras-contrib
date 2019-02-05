@@ -1,17 +1,12 @@
 """ResNet v1, v2, and segmentation models for Keras.
-
 # Reference
-
 - [Deep Residual Learning for Image Recognition](https://arxiv.org/abs/1512.03385)
 - [Identity Mappings in Deep Residual Networks](https://arxiv.org/abs/1603.05027)
-
 Reference material for extended functionality:
-
 - [ResNeXt](https://arxiv.org/abs/1611.05431) for Tiny ImageNet support.
 - [Dilated Residual Networks](https://arxiv.org/pdf/1705.09914) for segmentation support.
 - [Deep Residual Learning for Instrument Segmentation in Robotic Surgery](https://arxiv.org/abs/1703.08580)
   for segmentation support.
-
 Implementation Adapted from: github.com/raghakot/keras-resnet
 """
 from __future__ import division
@@ -32,6 +27,20 @@ from keras.layers.normalization import BatchNormalization
 from keras.regularizers import l2
 from keras import backend as K
 from keras_applications.imagenet_utils import _obtain_input_shape
+from keras_applications.imagenet_utils import preprocess_input as _preprocess_input
+
+
+def preprocess_input(x, **kwargs):
+    """Preprocesses a numpy array encoding a batch of images.
+    # Arguments
+        x: a 4D numpy array consists of RGB values within [0, 255].
+        data_format: data format of the image tensor.
+    # Returns
+        Preprocessed array.
+    """
+    if 'backend' not in kwargs:
+        kwargs['backend'] = K
+    return _preprocess_input(x, mode='caffe', **kwargs)
 
 
 def _bn_relu(x, bn_name=None, relu_name=None):
@@ -132,7 +141,6 @@ def _residual_block(block_function, filters, blocks, stage,
                     dilation_rates=None, is_first_layer=False, dropout=None,
                     residual_unit=_bn_relu_conv):
     """Builds a residual block with repeating bottleneck blocks.
-
        stage: integer, current stage label, used for generating layer names
        blocks: number of blocks 'a','b'..., current block label, used for generating layer names
        transition_strides: a list of tuples for the strides of each transition
@@ -160,7 +168,6 @@ def _residual_block(block_function, filters, blocks, stage,
 
 def _block_name_base(stage, block):
     """Get the convolution name base and batch normalization name base defined by stage and block.
-
     If there are less than 26 blocks they will be labeled 'a', 'b', 'c' to match the paper and keras
     and beyond 26 blocks they will simply be numbered.
     """
@@ -212,7 +219,6 @@ def bottleneck(filters, stage, block, transition_strides=(1, 1),
                residual_unit=_bn_relu_conv):
     """Bottleneck architecture for > 34 layer resnet.
     Follows improved proposed scheme in http://arxiv.org/pdf/1603.05027v2.pdf
-
     Returns:
         A final conv layer of filters * 4
     """
@@ -279,9 +285,8 @@ def _string_to_function(identifier):
 def ResNet(input_shape=None, classes=10, block='bottleneck', residual_unit='v2', repetitions=None,
            initial_filters=64, activation='softmax', include_top=True, input_tensor=None, dropout=None,
            transition_dilation_rate=(1, 1), initial_strides=(2, 2), initial_kernel_size=(7, 7),
-           initial_pooling='max', final_pooling=None, top='classification'):
+           initial_pooling='max', final_pooling=None, top='classification', **kwargs):
     """Builds a custom ResNet like architecture. Defaults to ResNet50 v2.
-
     Args:
         input_shape: optional shape tuple, only to be specified
             if `include_top` is False (otherwise the input shape
@@ -326,7 +331,6 @@ def ResNet(input_shape=None, classes=10, block='bottleneck', residual_unit='v2',
         top: Defines final layers to evaluate based on a specific problem type. Options are
             'classification' for ImageNet style problems, 'segmentation' for problems like
             the Pascal VOC dataset, and None to exclude these layers entirely.
-
     Returns:
         The keras `Model`.
     """
@@ -422,31 +426,34 @@ def ResNet(input_shape=None, classes=10, block='bottleneck', residual_unit='v2',
     return model
 
 
-def ResNet18(input_shape, classes):
+def ResNet18(input_shape=None, classes=10, **kwargs):
     """ResNet with 18 layers and v2 residual units
     """
-    return ResNet(input_shape, classes, basic_block, repetitions=[2, 2, 2, 2])
+    print("Input shape : ", input_shape)
+    print("Classes", classes)
+    print("kwargs", kwargs)
+    return ResNet(input_shape, classes, basic_block, repetitions=[2, 2, 2, 2], **kwargs)
 
 
-def ResNet34(input_shape, classes):
+def ResNet34(input_shape=None, classes=10, **kwargs):
     """ResNet with 34 layers and v2 residual units
     """
-    return ResNet(input_shape, classes, basic_block, repetitions=[3, 4, 6, 3])
+    return ResNet(input_shape, classes, basic_block, repetitions=[3, 4, 6, 3], **kwargs)
 
 
-def ResNet50(input_shape, classes):
+def ResNet50(input_shape=None, classes=10, **kwargs):
     """ResNet with 50 layers and v2 residual units
     """
-    return ResNet(input_shape, classes, bottleneck, repetitions=[3, 4, 6, 3])
+    return ResNet(input_shape, classes, bottleneck, repetitions=[3, 4, 6, 3], **kwargs)
 
 
-def ResNet101(input_shape, classes):
+def ResNet101(input_shape=None, classes=10, **kwargs):
     """ResNet with 101 layers and v2 residual units
     """
-    return ResNet(input_shape, classes, bottleneck, repetitions=[3, 4, 23, 3])
+    return ResNet(input_shape, classes, bottleneck, repetitions=[3, 4, 23, 3], **kwargs)
 
 
-def ResNet152(input_shape, classes):
+def ResNet152(input_shape=None, classes=10, **kwargs):
     """ResNet with 152 layers and v2 residual units
     """
-    return ResNet(input_shape, classes, bottleneck, repetitions=[3, 8, 36, 3])
+    return ResNet(input_shape, classes, bottleneck, repetitions=[3, 8, 36, 3], **kwargs)
