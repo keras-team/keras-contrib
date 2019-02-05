@@ -9,10 +9,10 @@ def test_pelu(kwargs):
                input_shape=(2, 3, 4))
 
 
-def test_sine_relu():
-    for epsilon in [0.0025, 0.0035, 0.0045]:
-        layer_test(advanced_activations.SineReLU, kwargs={'epsilon': epsilon},
-                   input_shape=(2, 3, 4))
+@pytest.mark.parametrize('epsilon', [0.0025, 0.0035, 0.0045])
+def test_sine_relu(epsilon):
+    layer_test(advanced_activations.SineReLU, kwargs={'epsilon': epsilon},
+               input_shape=(2, 3, 4))
 
 
 @pytest.mark.parametrize('kwargs', [{}, {'shared_axes': 1}])

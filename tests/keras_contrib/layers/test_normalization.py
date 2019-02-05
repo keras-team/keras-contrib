@@ -30,6 +30,7 @@ def basic_instancenorm_test():
                kwargs={'scale': False, 'center': False},
                input_shape=(3, 3))
 
+
 @pytest.mark.parametrize('input_shape,axis', [((10, 1), -1),
                                               ((10,), None)])
 def test_instancenorm_correctness_rank2(input_shape, axis):
