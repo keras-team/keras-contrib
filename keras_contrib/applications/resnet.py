@@ -173,8 +173,8 @@ def _block_name_base(stage, block):
     """
     if block < 27:
         block = '%c' % (block + 97)  # 97 is the ascii number for lowercase 'a'
-    conv_name_base = 'res' + str(stage) + block + '_branch'
-    bn_name_base = 'bn' + str(stage) + block + '_branch'
+    conv_name_base = 'res' + str(stage) + str(block) + '_branch'
+    bn_name_base = 'bn' + str(stage) + str(block) + '_branch'
     return conv_name_base, bn_name_base
 
 

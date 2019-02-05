@@ -14,18 +14,18 @@ from keras_contrib.applications import wide_resnet
 DENSENET_LIST = [(densenet.DenseNetImageNet121, 1024),
                  (densenet.DenseNetImageNet169, 1664),
                  (densenet.DenseNetImageNet161, 2208),
-                 # (densenet.DenseNetImageNet201, 1920),  # DenseNet201 is too heavy to test on Travis
-                 # (densenet.DenseNetImageNet264, 2688)  # DenseNet264 is too heavy to test on Travis
-                 ]
+                 (densenet.DenseNetImageNet201, 1920),
+                 (densenet.DenseNetImageNet264, 2688)]
 
-NASNET_LIST = [(nasnet.NASNetMobile, 1056, 1000),  # NASNetLarge is too heavy to test on Travis
+# NASNetLarge is too heavy to test on Travis
+NASNET_LIST = [(nasnet.NASNetMobile, 1056, 1000),
                (nasnet.NASNetCIFAR, 768, 10)]
 
-RESNET_LIST = [resnet.ResNet18,
-               resnet.ResNet34,
-               resnet.ResNet50,
-               resnet.ResNet101,
-               resnet.ResNet152]
+RESNET_LIST = [(resnet.ResNet18, 512),
+               (resnet.ResNet34, 512),
+               (resnet.ResNet50, 2048),
+               (resnet.ResNet101, 2048),
+               (resnet.ResNet152, 2048)]
 
 WIDE_RESNET_LIST = [wide_resnet.WideResidualNetwork]
 
@@ -37,12 +37,14 @@ def keras_test(func):
     # Returns
         A function wrapping the input function.
     """
+
     @six.wraps(func)
     def wrapper(*args, **kwargs):
         output = func(*args, **kwargs)
         if K.backend() == 'tensorflow' or K.backend() == 'cntk':
             K.clear_session()
         return output
+
     return wrapper
 
 
@@ -95,6 +97,7 @@ def _get_output_shape(model_fn, preprocess_input=None):
                 x = _get_noise_input(model.input_shape[1:3])
                 x = preprocess_input(x)
                 queue.put((model.output_shape, model.predict(x)))
+
         queue = Queue()
         p = Process(target=target, args=(queue,))
         p.start()
@@ -166,11 +169,10 @@ def _test_app_pooling(app, last_dim, **kwargs):
 
 
 def test_resnet():
-    app = random.choice(RESNET_LIST)
+    app, last_dim = random.choice(RESNET_LIST)
     module = resnet
     input_shape = _get_input_shape((32, 32))[1:]  # remove batch dimension
     classes = 10
-    last_dim = 512
     app_args = dict(input_shape=input_shape,
                     classes=classes)
 
@@ -195,7 +197,7 @@ def test_wide_resnet():
     module = wide_resnet
     last_dim = 512
     classes = 10
-    _test_application_basic(app, classes,  module=module)
+    _test_application_basic(app, classes, module=module)
     _test_application_notop(app, last_dim)
     _test_application_variable_input_channels(app, last_dim)
     _test_app_pooling(app, last_dim)
