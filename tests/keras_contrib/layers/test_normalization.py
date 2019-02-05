@@ -40,7 +40,7 @@ def test_instancenorm_correctness_rank2(input_shape, axis):
     model.compile(loss='mse', optimizer='sgd')
 
     # centered on 5.0, variance 10.0
-    x = np.random.normal(loc=5.0, scale=10.0, size=(1000) + input_shape)
+    x = np.random.normal(loc=5.0, scale=10.0, size=(1000,) + input_shape)
     model.fit(x, x, epochs=4, verbose=0)
     out = model.predict(x)
     out -= K.eval(norm.beta)
