@@ -31,32 +31,16 @@ def basic_instancenorm_test():
                input_shape=(3, 3))
 
 
-def test_instancenorm_correctness_rank2():
+@pytest.mark.parametrize('input_shape,axis', [((10, 1), -1),
+                                              ((10,), None)])
+def test_instancenorm_correctness_rank2(input_shape, axis):
     model = Sequential()
-    norm = normalization.InstanceNormalization(input_shape=(10, 1), axis=-1)
+    norm = normalization.InstanceNormalization(input_shape=input_shape, axis=axis)
     model.add(norm)
     model.compile(loss='mse', optimizer='sgd')
 
     # centered on 5.0, variance 10.0
-    x = np.random.normal(loc=5.0, scale=10.0, size=(1000, 10, 1))
-    model.fit(x, x, epochs=4, verbose=0)
-    out = model.predict(x)
-    out -= K.eval(norm.beta)
-    out /= K.eval(norm.gamma)
-
-    assert_allclose(out.mean(), 0.0, atol=1e-1)
-    assert_allclose(out.std(), 1.0, atol=1e-1)
-
-
-def test_instancenorm_correctness_rank1():
-    # make sure it works with rank1 input tensor (batched)
-    model = Sequential()
-    norm = normalization.InstanceNormalization(input_shape=(10,), axis=None)
-    model.add(norm)
-    model.compile(loss='mse', optimizer='sgd')
-
-    # centered on 5.0, variance 10.0
-    x = np.random.normal(loc=5.0, scale=10.0, size=(1000, 10))
+    x = np.random.normal(loc=5.0, scale=10.0, size=(1000,) + input_shape)
     model.fit(x, x, epochs=4, verbose=0)
     out = model.predict(x)
     out -= K.eval(norm.beta)
