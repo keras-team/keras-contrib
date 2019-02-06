@@ -8,6 +8,7 @@ from keras import regularizers
 from keras import initializers
 from keras import constraints
 from keras.layers import Layer
+from keras_contrib.utils.test_utils import to_tuple
 
 
 class Capsule(Layer):
@@ -136,6 +137,7 @@ class Capsule(Layer):
         self.constraint = constraints.get(constraint)
 
     def build(self, input_shape):
+        input_shape = to_tuple(input_shape)
         input_dim_capsule = input_shape[-1]
         if self.share_weights:
             self.W = self.add_weight(name='capsule_kernel',
