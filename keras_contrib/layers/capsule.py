@@ -2,7 +2,6 @@
 from __future__ import absolute_import
 
 from keras import backend as K
-from keras_contrib import backend as KC
 from keras import activations
 from keras import regularizers
 from keras import initializers
