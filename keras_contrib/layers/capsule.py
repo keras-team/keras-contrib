@@ -39,7 +39,7 @@ class Capsule(Layer):
        is generally used with the 'squash' activation function
        (recommended). To use the squash activation function, do :
 
-       from keras_contrib import squash
+       from keras_contrib.activations import squash
 
        capsule = Capsule(num_capsule=10,
                          dim_capsule=10,
