@@ -3,6 +3,7 @@ import keras.backend as K
 import numpy as np
 from numpy.testing import assert_allclose
 
+
 def get_standard_values():
     """A set of floats used for testing squash.
     """
