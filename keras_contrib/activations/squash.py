@@ -1,3 +1,6 @@
+from keras import backend as K
+
+
 def squash(x, axis=-1):
     """
     Squash activation function (generally used in Capsule layers).
