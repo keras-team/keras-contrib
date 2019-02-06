@@ -43,8 +43,8 @@ install:
 
   - travis_retry conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION
   - source activate test-environment
-  # TODO: remove the fixed numpy version once the next version of theano is out.
-  - travis_retry pip install --only-binary=numpy,scipy,pandas numpy==1.15.4 nose scipy h5py theano pytest pytest-pep8 pandas --progress-bar off
+
+  - travis_retry pip install --only-binary=numpy,scipy,pandas numpy nose scipy h5py theano mkdocs pytest pytest-pep8 pandas --progress-bar off
   - if [[ "$USE_TF_KERAS" == "" ]]; then
       pip install git+https://github.com/keras-team/keras.git --progress-bar off;
     fi
@@ -62,14 +62,13 @@ install:
   - pip install -e .[tests] --progress-bar off
 
   # install TensorFlow (CPU version).
-  - pip install tensorflow==1.12 --progress-bar off
+  - pip install tensorflow --progress-bar off
 
   # install cntk
   - ./.travis/install_cntk.sh
 
   # Remove the current backend from the coverage exclusion.
   - sed -i "\/keras\/backend\/${KERAS_BACKEND}_backend.py/d" .coveragerc
-
 
 # command to run tests
 script:
@@ -82,7 +81,7 @@ script:
   - sed -i -e 's/"backend":[[:space:]]*"[^"]*/"backend":\ "'$KERAS_BACKEND'/g' ~/.keras/keras.json;
   - echo -e "Running tests with the following config:\n$(cat ~/.keras/keras.json)"
   - if [[ "$TEST_MODE" == "PEP8_DOC" ]]; then
-      PYTHONPATH=$PWD:$PYTHONPATH py.test --pep8 -m pep8 -n0 && py.test tests/test_documentation.py;
+      PYTHONPATH=$PWD:$PYTHONPATH py.test --pep8 -m pep8 -n0 && py.test tests/test_documentation.py && cd contrib_docs && python autogen.py && mkdocs build;
     else
       PYTHONPATH=$PWD:$PYTHONPATH py.test tests/ $PYTEST_IGNORE --cov-config .coveragerc --cov=keras_contrib tests/;
     fi

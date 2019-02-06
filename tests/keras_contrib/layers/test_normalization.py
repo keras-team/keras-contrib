@@ -2,7 +2,7 @@ import pytest
 import numpy as np
 from numpy.testing import assert_allclose
 
-from keras.layers import Dense, Activation, Input
+from keras.layers import Input
 from keras import regularizers
 from keras_contrib.utils.test_utils import layer_test
 from keras_contrib.layers import normalization
@@ -33,32 +33,16 @@ def basic_instancenorm_test():
                input_shape=(3, 3))
 
 
-def test_instancenorm_correctness_rank2():
+@pytest.mark.parametrize('input_shape,axis', [((10, 1), -1),
+                                              ((10,), None)])
+def test_instancenorm_correctness_rank2(input_shape, axis):
     model = Sequential()
-    norm = normalization.InstanceNormalization(input_shape=(10, 1), axis=-1)
+    norm = normalization.InstanceNormalization(input_shape=input_shape, axis=axis)
     model.add(norm)
     model.compile(loss='mse', optimizer='sgd')
 
     # centered on 5.0, variance 10.0
-    x = np.random.normal(loc=5.0, scale=10.0, size=(1000, 10, 1))
-    model.fit(x, x, epochs=4, verbose=0)
-    out = model.predict(x)
-    out -= K.eval(norm.beta)
-    out /= K.eval(norm.gamma)
-
-    assert_allclose(out.mean(), 0.0, atol=1e-1)
-    assert_allclose(out.std(), 1.0, atol=1e-1)
-
-
-def test_instancenorm_correctness_rank1():
-    # make sure it works with rank1 input tensor (batched)
-    model = Sequential()
-    norm = normalization.InstanceNormalization(input_shape=(10,), axis=None)
-    model.add(norm)
-    model.compile(loss='mse', optimizer='sgd')
-
-    # centered on 5.0, variance 10.0
-    x = np.random.normal(loc=5.0, scale=10.0, size=(1000, 10))
+    x = np.random.normal(loc=5.0, scale=10.0, size=(1000,) + input_shape)
     model.fit(x, x, epochs=4, verbose=0)
     out = model.predict(x)
     out -= K.eval(norm.beta)
@@ -210,152 +194,6 @@ def test_instancenorm_perchannel_correctness():
             activations = out[instance, channel]
             assert_allclose(activations.mean(), 0.0, atol=1e-1)
             assert_allclose(activations.std(), 1.0, atol=1e-1)
-
-
-def basic_batchrenorm_test():
-    from keras import regularizers
-
-    layer_test(normalization.BatchRenormalization,
-               input_shape=(3, 4, 2))
-
-    layer_test(normalization.BatchRenormalization,
-               kwargs={'gamma_regularizer': regularizers.l2(0.01),
-                       'beta_regularizer': regularizers.l2(0.01)},
-               input_shape=(3, 4, 2))
-
-
-@pytest.mark.xfail(is_tf_keras,
-                   reason='tf.keras not in sync. Waiting for '
-                          'https://github.com/tensorflow/tensorflow/issues/24827 '
-                          'to be fixed.',
-                   strict=True)
-def test_batchrenorm_mode_0_or_2():
-    for training in [1, 0, None]:
-        ip = Input(shape=(10,))
-        norm_m0 = normalization.BatchRenormalization(momentum=0.8)
-        out = norm_m0(ip, training=training)
-        model = Model(ip, out)
-        model.compile(loss='mse', optimizer='sgd')
-
-        # centered on 5.0, variance 10.0
-        X = np.random.normal(loc=5.0, scale=10.0, size=(1000, 10))
-        model.fit(X, X, epochs=4, verbose=0)
-        out = model.predict(X)
-        out -= K.eval(norm_m0.beta)
-        out /= K.eval(norm_m0.gamma)
-
-        assert_allclose(out.mean(), 0.0, atol=1e-1)
-        assert_allclose(out.std(), 1.0, atol=1e-1)
-
-
-@pytest.mark.skipif(K.backend() == 'tensorflow',
-                    reason='There is a bug with the tensorflow backend when'
-                           'axis is something else than -1.')
-def test_batchrenorm_mode_0_or_2_twice():
-    # This is a regression test for issue #4881 with the old
-    # batch normalization functions in the Theano backend.
-    model = Sequential()
-    model.add(normalization.BatchRenormalization(input_shape=(10, 5, 5), axis=1))
-    model.add(normalization.BatchRenormalization(input_shape=(10, 5, 5), axis=1))
-    model.compile(loss='mse', optimizer='sgd')
-
-    X = np.random.normal(loc=5.0, scale=10.0, size=(20, 10, 5, 5))
-    model.fit(X, X, epochs=1, verbose=0)
-    model.predict(X)
-
-
-@pytest.mark.skipif(K.backend() == 'tensorflow',
-                    reason='There is a bug with the tensorflow backend when'
-                           'axis is something else than -1.')
-def test_batchrenorm_mode_0_convnet():
-    model = Sequential()
-    norm_m0 = normalization.BatchRenormalization(axis=1,
-                                                 input_shape=(3, 4, 4),
-                                                 momentum=0.8)
-    model.add(norm_m0)
-    model.compile(loss='mse', optimizer='sgd')
-
-    # centered on 5.0, variance 10.0
-    X = np.random.normal(loc=5.0, scale=10.0, size=(1000, 3, 4, 4))
-    model.fit(X, X, epochs=4, verbose=0)
-    out = model.predict(X)
-    out -= np.reshape(K.eval(norm_m0.beta), (1, 3, 1, 1))
-    out /= np.reshape(K.eval(norm_m0.gamma), (1, 3, 1, 1))
-
-    assert_allclose(np.mean(out, axis=(0, 2, 3)), 0.0, atol=1e-1)
-    assert_allclose(np.std(out, axis=(0, 2, 3)), 1.0, atol=1e-1)
-
-
-@pytest.mark.xfail(is_tf_keras,
-                   reason='tf.keras not in sync. Waiting for '
-                          'https://github.com/tensorflow/tensorflow/issues/24827 '
-                          'to be fixed.',
-                   strict=True)
-def test_shared_batchrenorm():
-    '''Test that a BN layer can be shared
-    across different data streams.
-    '''
-    # Test single layer reuse
-    bn = normalization.BatchRenormalization(input_shape=(10,))
-    x1 = Input(shape=(10,))
-    bn(x1)
-
-    x2 = Input(shape=(10,))
-    y2 = bn(x2)
-
-    x = np.random.normal(loc=5.0, scale=10.0, size=(2, 10))
-    model = Model(x2, y2)
-    assert len(model.updates) == 5
-    model.compile('sgd', 'mse')
-    model.train_on_batch(x, x)
-
-    # Test model-level reuse
-    x3 = Input(shape=(10,))
-    y3 = model(x3)
-    new_model = Model(x3, y3)
-    assert len(model.updates) == 5
-    new_model.compile('sgd', 'mse')
-    new_model.train_on_batch(x, x)
-
-
-@pytest.mark.xfail(is_tf_keras,
-                   reason='tf.keras not in sync. Waiting for '
-                          'https://github.com/tensorflow/tensorflow/issues/24827 '
-                          'to be fixed.',
-                   strict=True)
-def test_batchrenorm_clipping_schedule():
-    '''Test that the clipping schedule isn't fixed at r_max=1, d_max=0'''
-    inp = Input(shape=(10,))
-    bn = normalization.BatchRenormalization(t_delta=1.)
-    out = bn(inp)
-    model = Model(inp, out)
-    model.compile('sgd', 'mse')
-
-    x = np.random.normal(5, 10, size=(2, 10))
-    y = np.random.normal(5, 10, size=(2, 10))
-
-    r_max, d_max = K.get_value(bn.r_max), K.get_value(bn.d_max)
-    assert r_max == 1
-    assert d_max == 0
-
-    for i in range(10):
-        model.train_on_batch(x, y)
-
-    r_max, d_max = K.get_value(bn.r_max), K.get_value(bn.d_max)
-    assert_allclose([r_max, d_max], [3, 5], atol=1e-1)
-
-
-@pytest.mark.xfail(is_tf_keras,
-                   reason='tf.keras not in sync. Waiting for '
-                          'https://github.com/tensorflow/tensorflow/issues/24827 '
-                          'to be fixed.',
-                   strict=True)
-def test_batchrenorm_get_config():
-    '''Test that get_config works on a model with a batchrenorm layer.'''
-    x = Input(shape=(10,))
-    y = normalization.BatchRenormalization()(x)
-    model = Model(x, y)
-    model.get_config()
 
 
 def test_basic_groupnorm():
