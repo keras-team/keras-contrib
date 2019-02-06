@@ -8,8 +8,6 @@ from keras_contrib.utils.test_utils import layer_test
 from keras_contrib.layers import normalization
 from keras.models import Sequential, Model
 from keras import backend as K
-from keras_contrib import backend as KC
-from keras_contrib.utils.test_utils import is_tf_keras
 
 input_1 = np.arange(10)
 input_2 = np.zeros(10)
