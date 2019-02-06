@@ -37,21 +37,13 @@ class Capsule(Layer):
 
        The default activation function is 'linear'. But, this layer
        is generally used with the 'squash' activation function
-       (recommended). To use the squash activation function, use :
-
-       def squash(x, axis=-1):
-           s_squared_norm = K.sum(K.square(x), axis, keepdims=True)
-                            + K.epsilon()
-           scale = K.sqrt(s_squared_norm) / (0.5 + s_squared_norm)
-           return scale * x
-
-       Then, create the capsule layer :
+       (recommended). To use the squash activation function, do :
 
        capsule = Capsule(num_capsule=10,
                          dim_capsule=10,
                          routings=3,
                          share_weights=True,
-                         activation=squash)
+                         activation='squash')
 
        # Example usage :
            1). COMPUTER VISION
