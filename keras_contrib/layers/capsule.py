@@ -40,11 +40,13 @@ class Capsule(Layer):
        is generally used with the 'squash' activation function
        (recommended). To use the squash activation function, do :
 
+       from keras_contrib import squash
+
        capsule = Capsule(num_capsule=10,
                          dim_capsule=10,
                          routings=3,
                          share_weights=True,
-                         activation='squash')
+                         activation=squash)
 
        # Example usage :
            1). COMPUTER VISION
@@ -122,8 +124,7 @@ class Capsule(Layer):
         self.routings = routings
         self.share_weights = share_weights
 
-        self.activation = squash if activation == 'squash' \
-            else activations.get(activation)
+        self.activation = activations.get(activation)
         self.regularizer = regularizers.get(regularizer)
         self.initializer = initializers.get(initializer)
         self.constraint = constraints.get(constraint)
