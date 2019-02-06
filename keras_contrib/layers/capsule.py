@@ -2,7 +2,6 @@
 from __future__ import absolute_import
 
 from keras import backend as K
-from keras_contrib import backend as KC
 from keras import activations
 from keras import regularizers
 from keras import initializers
@@ -200,7 +199,10 @@ class Capsule(Layer):
                   'dim_capsule': self.dim_capsule,
                   'routings': self.routings,
                   'share_weights': self.share_weights,
-                  'activation': activations.serialize(self.activation)}
+                  'activation': activations.serialize(self.activation),
+                  'regularizer': regularizers.serialize(self.regularizer),
+                  'initializer': initializers.serialize(self.initializer),
+                  'constraint': constraints.serialize(self.constraint)}
 
         base_config = super(Capsule, self).get_config()
         return dict(list(base_config.items()) + list(config.items()))
