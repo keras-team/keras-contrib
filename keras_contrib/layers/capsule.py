@@ -3,7 +3,6 @@ from __future__ import absolute_import
 
 from keras import backend as K
 from keras import activations
-from keras_contrib.activations import squash
 from keras import regularizers
 from keras import initializers
 from keras import constraints
