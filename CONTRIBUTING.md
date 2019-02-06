@@ -95,7 +95,10 @@ python convert_to_tf_keras.py --revert
 
 Note that you are strongly encouraged to commit your code before in case the parsing would go wrong. To discard all the changes you made since the previous commit:
 ```
-git reset --hard
+# saves a copy of your current codebase in the git stash and comes back to the previous commit
+git reset && git stash
+
+git stash pop # get your copy back from the git stash if you need to.
 ```
 
 ## A Note for Contributors
