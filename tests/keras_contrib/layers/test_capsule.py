@@ -13,7 +13,7 @@ from keras.models import Sequential
 @pytest.mark.parametrize('dim_capsule', [10, 20])
 @pytest.mark.parametrize('routings', [3, 4])
 @pytest.mark.parametrize('share_weights', [True, False])
-@pytest.mark.parametrize('activation', ['squash', 'relu'])
+@pytest.mark.parametrize('activation', ['sigmoid', 'relu'])
 def test_capsule(num_capsule,
                  dim_capsule,
                  routings,
