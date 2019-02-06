@@ -200,7 +200,10 @@ class Capsule(Layer):
                   'dim_capsule': self.dim_capsule,
                   'routings': self.routings,
                   'share_weights': self.share_weights,
-                  'activation': activations.serialize(self.activation)}
+                  'activation': activations.serialize(self.activation),
+                  'regularizer': regularizers.serialize(self.regularizer),
+                  'initializer': initializers.serialize(self.initializer),
+                  'constraint': activations.serialize(self.constraint)}
 
         base_config = super(Capsule, self).get_config()
         return dict(list(base_config.items()) + list(config.items()))
