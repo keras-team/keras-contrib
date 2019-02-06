@@ -3,6 +3,7 @@ from __future__ import absolute_import
 
 from keras import backend as K
 from keras import activations
+from keras_contrib.activations import squash
 from keras import regularizers
 from keras import initializers
 from keras import constraints
@@ -121,7 +122,8 @@ class Capsule(Layer):
         self.routings = routings
         self.share_weights = share_weights
 
-        self.activation = activations.get(activation)
+        self.activation = squash if activation == 'squash' \
+            else activations.get(activation)
         self.regularizer = regularizers.get(regularizer)
         self.initializer = initializers.get(initializer)
         self.constraint = constraints.get(constraint)
