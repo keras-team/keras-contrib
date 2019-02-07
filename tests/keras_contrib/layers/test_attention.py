@@ -16,8 +16,8 @@ def test_attention(step_dim,
                    activation):
 
     num_samples = 100
-    num_rows = 64
-    num_cols = 64
+    num_rows = step_dim
+    num_cols = features_dim
 
     kwargs = {'step_dim': step_dim,
               'features_dim': features_dim,
