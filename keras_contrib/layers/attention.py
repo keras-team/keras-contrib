@@ -165,7 +165,7 @@ class Attention(Layer):
         if mask is not None:
             attention_weights *= K.cast(mask, K.floatx())
 
-        attention_weights /= K.cast(K.sum(attention_weights, axis=1, keepdims=True) + K.epsilon(),
+        attention_weights /= K.cast(K.sum(attention_weights, axis=1, keepdims=True) + K.epsilon(), \
                                     K.floatx())
 
         attention_weights = K.expand_dims(attention_weights)
@@ -173,7 +173,7 @@ class Attention(Layer):
         return K.sum(weighted_output, axis=1)
 
     def compute_output_shape(self, input_shape):
-        return (input_shape[0],  self.features_dim)
+        return (input_shape[0], self.features_dim)
 
     def get_config(self):
         config = {'activation': activations.serialize(self.activation),
