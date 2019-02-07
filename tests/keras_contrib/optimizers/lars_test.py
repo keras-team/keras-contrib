@@ -7,8 +7,8 @@ from keras.layers import Dense
 
 
 def test_base_lars():
-    optimizers._test_optimizer(lars.LARS(0.01))
+    optimizers._test_optimizer(lars.lars(0.01))
 
 
 def test_nesterov_lars():
-    optimizers._test_optimizer(lars.LARS(0.01, nesterov=True))
+    optimizers._test_optimizer(lars.lars(0.01, nesterov=True))
