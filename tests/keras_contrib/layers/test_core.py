@@ -55,5 +55,44 @@ def test_cosinedense_correctness():
     assert_allclose(out, -np.ones((1, 1), dtype=K.floatx()), atol=1e-5)
 
 
+def test_drop_connect_dense():
+    layer_test(core.DropConnectDense,
+               prob=0.1,
+               kwargs={'units': 3},
+               input_shape=(3, 2))
+
+    layer_test(core.DropConnectDense,
+               prob=0.2
+               kwargs={'units': 3},
+               input_shape=(3, 4, 2))
+
+    layer_test(core.DropConnectDense,
+               prob=0.4
+               kwargs={'units': 3},
+               input_shape=(None, None, 2))
+
+    layer_test(core.DropConnectDense,
+               prob=0.05
+               kwargs={'units': 3},
+               input_shape=(3, 4, 5, 2))
+
+    layer_test(core.DropConnectDense,
+               prob=0.075
+               kwargs={'units': 3,
+                       'kernel_regularizer': regularizers.l2(0.01),
+                       'bias_regularizer': regularizers.l1(0.01),
+                       'activity_regularizer': regularizers.L1L2(l1=0.01, l2=0.01),
+                       'kernel_constraint': constraints.MaxNorm(1),
+                       'bias_constraint': constraints.max_norm(1)},
+               input_shape=(3, 2))
+
+    layer = core.DropConnectDense(3,
+                                  prob=0.15
+                                  kernel_regularizer=regularizers.l1(0.01),
+                                  bias_regularizer='l1')
+    layer.build((None, 4))
+    assert len(layer.losses) == 2
+
+
 if __name__ == '__main__':
     pytest.main([__file__])
