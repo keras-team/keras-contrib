@@ -178,6 +178,7 @@ class CosineDense(Layer):
         base_config = super(CosineDense, self).get_config()
         return dict(list(base_config.items()) + list(config.items()))
 
+
 class DropConnectDense(Dense):
     """
     An implementation of DropConnectDense layer in Keras.
@@ -209,3 +210,11 @@ class DropConnectDense(Dense):
         if self.bias:
             output += self.b
         return self.activation(output)
+
+    def compute_output_shape(self, input_shape):
+        return self.compute_output_shape(input_shape)
+
+    def get_config(self):
+        config = self.get_config()
+        config['prob'] = self.prob
+        return config
