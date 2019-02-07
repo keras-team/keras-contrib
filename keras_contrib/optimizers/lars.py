@@ -51,7 +51,6 @@ class LARS(Optimizer):
         self.epsilon = epsilon
         self.nesterov = nesterov
 
-
     def get_updates(self, loss, params):
         grads = self.get_gradients(loss, params)
         weights = self.get_weights()
