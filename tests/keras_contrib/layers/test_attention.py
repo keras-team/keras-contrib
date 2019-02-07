@@ -7,6 +7,7 @@ from keras import backend as K
 from keras_contrib.layers import attention
 from keras.models import Sequential
 
+
 @pytest.mark.parametrize('activation', ['tanh', 'relu'])
 @pytest.mark.parametrize('weight_initializer', ['glorot_uniform', 'glorot_normal'])
 @pytest.mark.parametrize('bias_initializer', ['zeros', 'ones'])
@@ -25,7 +26,8 @@ def test_attention(activation,
     layer_test(attention.Attention,
                kwargs=kwargs,
                input_shape=(num_samples, num_rows, num_cols))
-    
+
+
 def test_attention_correctness():
     X = np.random.random((100, 1, 1))
 
@@ -41,5 +43,3 @@ def test_attention_correctness():
 
 if __name__ == '__main__':
     pytest.main([__file__])
-    
-    
