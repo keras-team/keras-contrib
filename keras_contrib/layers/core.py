@@ -8,6 +8,7 @@ from keras import initializers
 from keras import regularizers
 from keras import constraints
 from keras.layers import InputSpec
+from keras.layers import Dense
 from keras.layers import Layer
 
 
@@ -176,3 +177,35 @@ class CosineDense(Layer):
         }
         base_config = super(CosineDense, self).get_config()
         return dict(list(base_config.items()) + list(config.items()))
+
+class DropConnectDense(Dense):
+    """
+    An implementation of DropConnectDense layer in Keras.
+
+    This layer drops connections between a Dense layer and
+    the next layer randomly with a given probability (rather
+    than dropping activations as in classic Dropout).
+
+    All the arguments, inputs, outputs, functions etc are
+    inherited from the Dense base layer (see the docs in the
+    Keras repo).
+
+    The only extra argument is 'prob', the dropout rate.
+    """
+
+    def __init__(self, prob=0.1, *args, **kwargs):
+        self.prob = prob
+        if 0. < self.prob < 1.:
+            self.uses_learning_phase = True
+        super(DropConnectDense, self).__init__(*args, **kwargs)
+
+    def call(self, x, mask=None):
+        if 0. < self.prob < 1.:
+            self.kernel = K.in_train_phase(K.dropout(self.kernel, self.prob),
+                                           self.kernel)
+            self.b = K.in_train_phase(K.dropout(self.b, self.prob), self.b)
+
+        output = K.dot(x, self.W)
+        if self.bias:
+            output += self.b
+        return self.activation(output)
