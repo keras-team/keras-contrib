@@ -156,7 +156,7 @@ class Attention(Layer):
         else:
             dot_products = K.dot(inputs, self.W)
 
-        if self.bias:
+        if self.use_bias:
             dot_products += self.b
 
         dot_products = self.activation(dot_products)
