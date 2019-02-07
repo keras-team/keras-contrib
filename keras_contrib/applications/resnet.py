@@ -8,12 +8,13 @@
 Reference material for extended functionality:
 
 - [ResNeXt](https://arxiv.org/abs/1611.05431) for Tiny ImageNet support.
-- [Dilated Residual Networks](https://arxiv.org/pdf/1705.09914) for segmentation support.
-- [Deep Residual Learning for Instrument Segmentation in Robotic Surgery](https://arxiv.org/abs/1703.08580)
+- [Dilated Residual Networks](https://arxiv.org/pdf/1705.09914) for segmentation support
+- [Deep Residual Learning for Instrument Segmentation in
+   Robotic Surgery](https://arxiv.org/abs/1703.08580)
   for segmentation support.
 
 Implementation Adapted from: github.com/raghakot/keras-resnet
-"""
+"""  # pylint: disable=E501
 from __future__ import division
 
 import six
@@ -69,8 +70,9 @@ def _conv_bn_relu(**conv_params):
 
 
 def _bn_relu_conv(**conv_params):
-    """Helper to build a BN -> relu -> conv residual unit with full pre-activation function.
-    This is the ResNet v2 scheme proposed in http://arxiv.org/pdf/1603.05027v2.pdf
+    """Helper to build a BN -> relu -> conv residual unit with full pre-activation
+    function. This is the ResNet v2 scheme proposed in
+    http://arxiv.org/pdf/1603.05027v2.pdf
     """
     filters = conv_params["filters"]
     kernel_size = conv_params["kernel_size"]
@@ -122,7 +124,8 @@ def _shortcut(input_feature, residual, conv_name_base=None, bn_name_base=None):
                           name=conv_name_base)(input_feature)
         if bn_name_base is not None:
             bn_name_base = bn_name_base + '1'
-        shortcut = BatchNormalization(axis=CHANNEL_AXIS, name=bn_name_base)(shortcut)
+        shortcut = BatchNormalization(axis=CHANNEL_AXIS,
+                                      name=bn_name_base)(shortcut)
 
     return add([shortcut, residual])
 
@@ -134,9 +137,11 @@ def _residual_block(block_function, filters, blocks, stage,
     """Builds a residual block with repeating bottleneck blocks.
 
        stage: integer, current stage label, used for generating layer names
-       blocks: number of blocks 'a','b'..., current block label, used for generating layer names
+       blocks: number of blocks 'a','b'..., current block label, used for generating
+            layer names
        transition_strides: a list of tuples for the strides of each transition
-       transition_dilation_rates: a list of tuples for the dilation rate of each transition
+       transition_dilation_rates: a list of tuples for the dilation rate of each
+            transition
     """
     if transition_dilation_rates is None:
         transition_dilation_rates = [(1, 1)] * blocks
@@ -147,10 +152,11 @@ def _residual_block(block_function, filters, blocks, stage,
 
     def f(x):
         for i in range(blocks):
+            is_first_block = is_first_layer and i == 0
             x = block_function(filters=filters, stage=stage, block=i,
                                transition_strides=transition_strides[i],
                                dilation_rate=dilation_rates[i],
-                               is_first_block_of_first_layer=(is_first_layer and i == 0),
+                               is_first_block_of_first_layer=is_first_block,
                                dropout=dropout,
                                residual_unit=residual_unit)(x)
         return x
@@ -159,10 +165,11 @@ def _residual_block(block_function, filters, blocks, stage,
 
 
 def _block_name_base(stage, block):
-    """Get the convolution name base and batch normalization name base defined by stage and block.
+    """Get the convolution name base and batch normalization name base defined by
+    stage and block.
 
-    If there are less than 26 blocks they will be labeled 'a', 'b', 'c' to match the paper and keras
-    and beyond 26 blocks they will simply be numbered.
+    If there are less than 26 blocks they will be labeled 'a', 'b', 'c' to match the
+    paper and keras and beyond 26 blocks they will simply be numbered.
     """
     if block < 27:
         block = '%c' % (block + 97)  # 97 is the ascii number for lowercase 'a'
@@ -276,10 +283,11 @@ def _string_to_function(identifier):
     return identifier
 
 
-def ResNet(input_shape=None, classes=10, block='bottleneck', residual_unit='v2', repetitions=None,
-           initial_filters=64, activation='softmax', include_top=True, input_tensor=None, dropout=None,
-           transition_dilation_rate=(1, 1), initial_strides=(2, 2), initial_kernel_size=(7, 7),
-           initial_pooling='max', final_pooling=None, top='classification'):
+def ResNet(input_shape=None, classes=10, block='bottleneck', residual_unit='v2',
+           repetitions=None, initial_filters=64, activation='softmax', include_top=True,
+           input_tensor=None, dropout=None, transition_dilation_rate=(1, 1),
+           initial_strides=(2, 2), initial_kernel_size=(7, 7), initial_pooling='max',
+           final_pooling=None, top='classification'):
     """Builds a custom ResNet like architecture. Defaults to ResNet50 v2.
 
     Args:
@@ -294,10 +302,11 @@ def ResNet(input_shape=None, classes=10, block='bottleneck', residual_unit='v2',
         block: The block function to use. This is either `'basic'` or `'bottleneck'`.
             The original paper used `basic` for layers < 50.
         repetitions: Number of repetitions of various block units.
-            At each block unit, the number of filters are doubled and the input size is halved.
-            Default of None implies the ResNet50v2 values of [3, 4, 6, 3].
-        residual_unit: the basic residual unit, 'v1' for conv bn relu, 'v2' for bn relu conv.
-            See [Identity Mappings in Deep Residual Networks](https://arxiv.org/abs/1603.05027)
+            At each block unit, the number of filters are doubled and the input size
+            is halved. Default of None implies the ResNet50v2 values of [3, 4, 6, 3].
+        residual_unit: the basic residual unit, 'v1' for conv bn relu, 'v2' for bn relu
+            conv. See [Identity Mappings in
+            Deep Residual Networks](https://arxiv.org/abs/1603.05027)
             for details.
         dropout: None for no dropout, otherwise rate of dropout from 0 to 1.
             Based on [Wide Residual Networks.(https://arxiv.org/pdf/1605.07146) paper.
@@ -305,14 +314,14 @@ def ResNet(input_shape=None, classes=10, block='bottleneck', residual_unit='v2',
             segmentation of images use a dilation rate of (2, 2).
         initial_strides: Stride of the very first residual unit and MaxPooling2D call,
             with default (2, 2), set to (1, 1) for small images like cifar.
-        initial_kernel_size: kernel size of the very first convolution, (7, 7) for imagenet
-            and (3, 3) for small image datasets like tiny imagenet and cifar.
+        initial_kernel_size: kernel size of the very first convolution, (7, 7) for
+            imagenet and (3, 3) for small image datasets like tiny imagenet and cifar.
             See [ResNeXt](https://arxiv.org/abs/1611.05431) paper for details.
         initial_pooling: Determine if there will be an initial pooling layer,
             'max' for imagenet and None for small image datasets.
             See [ResNeXt](https://arxiv.org/abs/1611.05431) paper for details.
-        final_pooling: Optional pooling mode for feature extraction at the final model layer
-            when `include_top` is `False`.
+        final_pooling: Optional pooling mode for feature extraction at the final
+            model layer when `include_top` is `False`.
             - `None` means that the output of the model
                 will be the 4D tensor output of the
                 last convolutional layer.
@@ -323,9 +332,10 @@ def ResNet(input_shape=None, classes=10, block='bottleneck', residual_unit='v2',
                 2D tensor.
             - `max` means that global max pooling will
                 be applied.
-        top: Defines final layers to evaluate based on a specific problem type. Options are
-            'classification' for ImageNet style problems, 'segmentation' for problems like
-            the Pascal VOC dataset, and None to exclude these layers entirely.
+        top: Defines final layers to evaluate based on a specific problem type. Options
+            are 'classification' for ImageNet style problems, 'segmentation' for
+            problems like the Pascal VOC dataset, and None to exclude these layers
+            entirely.
 
     Returns:
         The keras `Model`.
@@ -375,7 +385,8 @@ def ResNet(input_shape=None, classes=10, block='bottleneck', residual_unit='v2',
                                       require_flatten=include_top)
 
     img_input = Input(shape=input_shape, tensor=input_tensor)
-    x = _conv_bn_relu(filters=initial_filters, kernel_size=initial_kernel_size, strides=initial_strides)(img_input)
+    x = _conv_bn_relu(filters=initial_filters, kernel_size=initial_kernel_size,
+                      strides=initial_strides)(img_input)
     if initial_pooling == 'max':
         x = MaxPooling2D(pool_size=(3, 3), strides=initial_strides, padding="same")(x)
 
@@ -401,7 +412,8 @@ def ResNet(input_shape=None, classes=10, block='bottleneck', residual_unit='v2',
     # Classifier block
     if include_top and top is 'classification':
         x = GlobalAveragePooling2D()(x)
-        x = Dense(units=classes, activation=activation, kernel_initializer="he_normal")(x)
+        x = Dense(units=classes, activation=activation,
+                  kernel_initializer="he_normal")(x)
     elif include_top and top is 'segmentation':
         x = Conv2D(classes, (1, 1), activation='linear', padding='same')(x)
 
