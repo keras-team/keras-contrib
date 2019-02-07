@@ -91,7 +91,7 @@ class Attention(Layer):
     def __init__(self,
                  activation=None,
                  weight_initializer='glorot_uniform',
-                 bias_initializer='zero',
+                 bias_initializer='zeros',
                  weight_regularizer=None,
                  bias_regularizer=None,
                  weight_constraint=None,
