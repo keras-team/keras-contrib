@@ -32,7 +32,7 @@ def test_attention_correctness():
     X = np.random.random((100, 1, 1))
 
     model = Sequential()
-    model.add(attention.Attention(activation='sigmoid'))
+    model.add(attention.Attention(step_dim=1, features_dim=1, activation='sigmoid'))
 
     model.compile(loss='mse', optimizer='rmsprop')
     init_out = model.predict(X)  # mock predict call to initialize weights
