@@ -50,7 +50,8 @@ class Attention(Layer):
            bi_gru = Bidirectional(GRU(64,
                                       return_seqeunces=True))(embedding)
 
-           attention = Attention(activation='tanh')(bi_gru)
+           shape = K.int_shape(bi_gru)
+           attention = Attention(shape[1], shape[2], activation='tanh')(bi_gru)
 
        2). Computer Vision
 
@@ -60,9 +61,12 @@ class Attention(Layer):
                             (3, 3),
                             activation='relu')(input_image)
 
-           attention = Attention(activation='sigmoid')(conv_2d)
+           shape = K.int_shape(conv_2d)
+           attention = Attention(shape[1], shape[2], activation='sigmoid')(conv_2d)
 
    # Arguments
+       step_dim : Second dimension of 3D input (int)
+       features_dim : Thrid dimension of 3D output (int)
        activation : Activation applied on dot products
        weight_initializer : Initializer for weights
        bias_initializer : Initializer for biases
@@ -89,6 +93,8 @@ class Attention(Layer):
     """
 
     def __init__(self,
+                 step_dim,
+                 features_dim,
                  activation=None,
                  weight_initializer='glorot_uniform',
                  bias_initializer='zeros',
@@ -113,14 +119,12 @@ class Attention(Layer):
         self.bias_constraint = constraints.get(bias_constraint)
 
         self.use_bias = use_bias
-        self.step_dim = 0
-        self.features_dim = 0
+        self.step_dim = step_dim
+        self.features_dim = features_dim
         super(Attention, self).__init__(**kwargs)
 
     def build(self, input_shape):
         assert len(input_shape) == 3
-        self.step_dim = input_shape[1]
-        self.features_dim = input_shape[2]
 
         # The weight tensor
         self.W = self.add_weight((input_shape[-1],),
