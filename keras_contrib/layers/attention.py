@@ -174,8 +174,8 @@ class Attention(Layer):
         weighted_output = inputs * attention_weights
         return K.sum(weighted_output, axis=1)
 
-    def compute_output_shape(self):
-        return (self.step_dim, self.features_dim)
+    def compute_output_shape(self, input_shape):
+        return (input_shape[0], self.features_dim)
 
     def get_config(self):
         config = {'activation': activations.serialize(self.activation),
