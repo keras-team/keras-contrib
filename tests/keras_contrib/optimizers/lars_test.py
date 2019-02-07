@@ -5,9 +5,10 @@ from keras_contrib.optimizers import lars
 from keras.models import Sequential
 from keras.layers import Dense
 
-def test_base_lars():
-  optimizers._test_optimizer(lars.LARS(0.01))
-  
-def test_nesterov_lars():
-  optimizers._test_optimizer(lars.LARS(0.01, nesterov=True))
 
+def test_base_lars():
+    optimizers._test_optimizer(lars.LARS(0.01))
+
+
+def test_nesterov_lars():
+    optimizers._test_optimizer(lars.LARS(0.01, nesterov=True))
