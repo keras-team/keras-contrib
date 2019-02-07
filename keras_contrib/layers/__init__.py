@@ -9,6 +9,7 @@ from .convolutional import CosineConv2D
 from .convolutional import SubPixelUpscaling
 
 from .core import CosineDense
+from .core import DropConnectDense
 
 from .crf import CRF
 
