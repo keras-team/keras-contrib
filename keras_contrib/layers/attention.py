@@ -142,17 +142,17 @@ class Attention(Layer):
     def compute_mask(self, input, input_mask=None):
         return None
 
-    def call(self, x, mask=None):
+    def call(self, inputs, mask=None):
         features_dim = self.features_dim
         step_dim = self.step_dim
 
         if K.backend() == 'tensorflow':
-            dot_products = K.reshape(K.dot(K.reshape(x, (-1, features_dim)),
+            dot_products = K.reshape(K.dot(K.reshape(inputs, (-1, features_dim)),
                                            K.reshape(self.W, (features_dim, 1))),
                                      (-1, step_dim))
 
         else:
-            dot_products = K.dot(x, self.W)
+            dot_products = K.dot(inputs, self.W)
 
         if self.bias:
             dot_products += self.b
@@ -167,7 +167,7 @@ class Attention(Layer):
                                     K.floatx())
 
         attention_weights = K.expand_dims(attention_weights)
-        weighted_output = x * attention_weights
+        weighted_output = inputs * attention_weights
         return K.sum(weighted_output, axis=1)
 
     def compute_output_shape(self, input_shape):
