@@ -69,7 +69,7 @@ class Attention(Layer):
        bias_regularizer : Regularizer for biases
        weight_constraint : Constraint on weights
        bias_constraint : Constraint on biases
-       bias : Whether or not there should be bias (boolean)
+       use_bias : Whether or not there should be bias (boolean)
 
    # Input shape
        3D tensor with shape:
@@ -95,7 +95,7 @@ class Attention(Layer):
                  bias_regularizer=None,
                  weight_constraint=None,
                  bias_constraint=None,
-                 bias=True, **kwargs):
+                 use_bias=True, **kwargs):
 
         self.supports_masking = True
 
@@ -110,7 +110,7 @@ class Attention(Layer):
         self.weight_constraint = constraints.get(weight_constraint)
         self.bias_constraint = constraints.get(bias_constraint)
 
-        self.bias = bias
+        self.use_bias = use_bias
         self.step_dim = 0
         self.features_dim = 0
         super(Attention, self).__init__(**kwargs)
@@ -127,7 +127,7 @@ class Attention(Layer):
                                  regularizer=self.weight_regularizer,
                                  constraint=self.weight_constraint)
 
-        if self.bias:
+        if self.use_bias:
             # The bias tensor
             self.b = self.add_weight((input_shape[1],),
                                      initializer=self.bias_initializer,
@@ -181,7 +181,7 @@ class Attention(Layer):
                   'bias_regularizer': regularizers.serialize(self.bias_regularizer),
                   'weight_constraint': constraints.serialize(self.weight_constraint),
                   'bias_constraint': constraints.serialize(self.bias_constraint),
-                  'bias': self.bias}
+                  'use_bias': self.use_bias}
 
         base_config = super(Capsule, self).get_config()
         return dict(list(base_config.items()) + list(config.items()))
