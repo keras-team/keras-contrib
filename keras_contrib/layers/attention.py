@@ -165,7 +165,9 @@ class Attention(Layer):
         if mask is not None:
             attention_weights *= K.cast(mask, K.floatx())
 
-        attention_weights /= K.cast(K.sum(attention_weights, axis=1, keepdims=True) + K.epsilon(), \
+        attention_weights /= K.cast(K.sum(attention_weights,
+                                          axis=1,
+                                          keepdims=True) + K.epsilon(),
                                     K.floatx())
 
         attention_weights = K.expand_dims(attention_weights)
