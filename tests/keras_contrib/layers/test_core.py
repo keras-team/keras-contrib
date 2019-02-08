@@ -15,7 +15,7 @@ from keras_contrib.utils.test_utils import layer_test
 from numpy.testing import assert_allclose
 
 
-sys.setrecursionlimit(100000)
+sys.setrecursionlimit(10000)
 
 
 @pytest.mark.parametrize('input_shape', [(3, 2),
