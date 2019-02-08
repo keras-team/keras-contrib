@@ -1,5 +1,5 @@
 from keras import backend as K
-from keras.layers import Wrapper
+from keras.layers.wrappers import Wrapper
 
 
 class DropConnect(Wrapper):
