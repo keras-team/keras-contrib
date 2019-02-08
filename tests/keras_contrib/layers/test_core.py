@@ -61,10 +61,8 @@ def test_cosinedense_correctness():
 @pytest.mark.parametrize('units', [20, 60])
 @pytest.mark.parametrize('activation', ['sigmoid', 'relu'])
 @pytest.mark.parametrize('prob', [0.1, 0.2])
-@pytest.mark.parametrize('input_shape', [(3, 2),
-                                         (3, 4, 2),
-                                         (None, None, 2),
-                                         (3, 4, 5, 2)])
+@pytest.mark.parametrize('input_shape', [(None, 2),
+                                         (None, 5)])
 def test_drop_connect_dense(units,
                             activation,
                             prob,
