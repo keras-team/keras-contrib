@@ -72,7 +72,8 @@ script:
   - sed -i -e 's/"backend":[[:space:]]*"[^"]*/"backend":\ "'$KERAS_BACKEND'/g' ~/.keras/keras.json;
   - echo -e "Running tests with the following config:\n$(cat ~/.keras/keras.json)"
   - if [[ "$TEST_MODE" == "PEP8_DOC" ]]; then
-      PYTHONPATH=$PWD:$PYTHONPATH py.test --pep8 -m pep8 -n0 && py.test tests/test_documentation.py && cd contrib_docs && python autogen.py && mkdocs build;
+      PYTHONPATH=$PWD:$PYTHONPATH py.test --pep8 -m pep8 -n0 && py.test tests/tooling/ && cd contrib_docs && python autogen.py && mkdocs build;
     else
-      PYTHONPATH=$PWD:$PYTHONPATH py.test tests/ --cov-config .coveragerc --cov=keras_contrib tests/;
+      PYTHONPATH=$PWD:$PYTHONPATH py.test tests/ --ignore=tests/tooling/
+    --cov-config .coveragerc --cov=keras_contrib tests/;
     fi
