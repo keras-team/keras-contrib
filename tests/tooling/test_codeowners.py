@@ -57,6 +57,7 @@ pattern_exclude = [
     '__init__.py'
 ]
 
+# TODO: remove those files or find them owners.
 exclude = [
     'examples/cifar10_clr.py',
     'examples/cifar10_densenet.py',
