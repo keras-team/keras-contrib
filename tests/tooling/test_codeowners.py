@@ -5,7 +5,7 @@ try:
 except ImportError:
     import pathlib2 as pathlib
 
-path_to_keras_contrib = pathlib.Path(__file__).resolve().parents[1]
+path_to_keras_contrib = pathlib.Path(__file__).resolve().parents[2]
 path_to_codeowners = path_to_keras_contrib / 'CODEOWNERS'
 
 
