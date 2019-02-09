@@ -98,6 +98,7 @@ exclude = [
 ]
 exclude = [path_to_keras_contrib / x for x in exclude]
 
+
 @pytest.mark.parametrize('directory', directories_to_test)
 def test_all_files_have_owners(directory):
     files_with_owners = [x[0] for x in parse_codeowners()]
