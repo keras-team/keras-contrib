@@ -52,13 +52,7 @@ model.fit(x=np.random.random((100, 10)), y=np.random.random((100, 100)), epochs=
 # Save our model
 model.save('example.h5')
 ```
-```python
-from keras.models import load_model
-from keras_contrib.layers.advanced_activations import PELU
 
-# Load our model
-model = load_model('example.h5')
-```
 
 ### A Common "Gotcha"
 
@@ -69,11 +63,10 @@ As Keras-Contrib is external to the Keras core, loading a model requires a bit m
 from keras.models import load_model
 
 # Recommended method; requires knowledge of the underlying architecture of the model
-from keras_contrib.layers.advanced_activations import PELU
-
-# Not recommended; however this will correctly find the necessary contrib modules
-from keras_contrib import *
+from keras_contrib.layers import PELU
+from keras_contrib.layers import GroupNormalization
 
 # Load our model
-model = load_model('example.h5')
+custom_objects = {'PELU': PELU, 'GroupNormalization': GroupNormalization}
+model = load_model('example.h5', custom_objects)
 ```

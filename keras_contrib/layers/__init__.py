@@ -12,6 +12,7 @@ from .core import CosineDense
 
 from .crf import CRF
 
+from .capsule import Capsule
+
 from .normalization import InstanceNormalization
-from .normalization import BatchRenormalization
 from .normalization import GroupNormalization

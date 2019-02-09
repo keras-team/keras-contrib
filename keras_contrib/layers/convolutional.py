@@ -10,7 +10,6 @@ from keras import regularizers
 from keras import constraints
 from keras.layers import Layer
 from keras.layers import InputSpec
-from keras.utils import get_custom_objects
 from keras_contrib.utils.conv_utils import conv_output_length
 from keras_contrib.utils.conv_utils import normalize_data_format
 import numpy as np
@@ -251,8 +250,6 @@ class CosineConvolution2D(Layer):
 
 
 CosineConv2D = CosineConvolution2D
-get_custom_objects().update({'CosineConvolution2D': CosineConvolution2D})
-get_custom_objects().update({'CosineConv2D': CosineConv2D})
 
 
 class SubPixelUpscaling(Layer):
@@ -347,6 +344,3 @@ class SubPixelUpscaling(Layer):
                   'data_format': self.data_format}
         base_config = super(SubPixelUpscaling, self).get_config()
         return dict(list(base_config.items()) + list(config.items()))
-
-
-get_custom_objects().update({'SubPixelUpscaling': SubPixelUpscaling})

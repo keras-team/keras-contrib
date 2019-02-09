@@ -97,7 +97,8 @@ def layer_test(layer_cls, kwargs={}, input_shape=None, input_dtype=None,
 
     # test serialization, weight setting at model level
     model_config = model.get_config()
-    recovered_model = model.__class__.from_config(model_config)
+    custom_objects = {layer.__class__.__name__: layer.__class__}
+    recovered_model = model.__class__.from_config(model_config, custom_objects)
     if model.weights:
         weights = model.get_weights()
         recovered_model.set_weights(weights)
@@ -162,3 +163,17 @@ def has_arg(fn, name, accept_all=False):
             return False
         return (parameter.kind in (inspect.Parameter.POSITIONAL_OR_KEYWORD,
                                    inspect.Parameter.KEYWORD_ONLY))
+
+
+def to_list(x, allow_tuple=False):
+    if isinstance(x, list):
+        return x
+    if allow_tuple and isinstance(x, tuple):
+        return list(x)
+    return [x]
+
+
+def unpack_singleton(x):
+    if len(x) == 1:
+        return x[0]
+    return x

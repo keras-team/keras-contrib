@@ -4,7 +4,6 @@ from keras import constraints
 from keras.layers import Layer
 from keras.layers import InputSpec
 from keras import backend as K
-from keras.utils import get_custom_objects
 
 
 class PTReLU(Layer):
@@ -111,7 +110,8 @@ class PTReLU(Layer):
         base_config = super(PTReLU, self).get_config()
         return dict(list(base_config.items()) + list(config.items()))
 
-get_custom_objects().update({'PTReLU': PTReLU})
+    def compute_output_shape(self, input_shape):
+        return input_shape
 
 
 class PELU(Layer):
@@ -226,7 +226,8 @@ class PELU(Layer):
         base_config = super(PELU, self).get_config()
         return dict(list(base_config.items()) + list(config.items()))
 
-get_custom_objects().update({'PELU': PELU})
+    def compute_output_shape(self, input_shape):
+        return input_shape
 
 
 class SReLU(Layer):
@@ -350,7 +351,8 @@ class SReLU(Layer):
         base_config = super(SReLU, self).get_config()
         return dict(list(base_config.items()) + list(config.items()))
 
-get_custom_objects().update({'SReLU': SReLU})
+    def compute_output_shape(self, input_shape):
+        return input_shape
 
 
 class Swish(Layer):
@@ -399,7 +401,8 @@ class Swish(Layer):
         base_config = super(Swish, self).get_config()
         return dict(list(base_config.items()) + list(config.items()))
 
-get_custom_objects().update({'Swish': Swish})
+    def compute_output_shape(self, input_shape):
+        return input_shape
 
 
 class SineReLU(Layer):
@@ -518,5 +521,3 @@ class SineReLU(Layer):
 
     def compute_output_shape(self, input_shape):
         return input_shape
-
-get_custom_objects().update({'SineReLU': SineReLU})

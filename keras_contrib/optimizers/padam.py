@@ -1,6 +1,5 @@
 from keras import backend as K
 from keras.optimizers import Optimizer
-from keras.utils import get_custom_objects
 
 
 class Padam(Optimizer):
@@ -53,8 +52,8 @@ class Padam(Optimizer):
 
         lr = self.lr
         if self.initial_decay > 0:
-            lr *= (1. / (1. + self.decay * K.cast(self.iterations,
-                                                  K.dtype(self.decay))))
+            lr = lr * (1. / (1. + self.decay * K.cast(self.iterations,
+                                                      K.dtype(self.decay))))
 
         t = K.cast(self.iterations, K.floatx()) + 1
         lr_t = lr * (K.sqrt(1. - K.pow(self.beta_2, t)) /
@@ -101,6 +100,3 @@ class Padam(Optimizer):
                   'partial': self.partial}
         base_config = super(Padam, self).get_config()
         return dict(list(base_config.items()) + list(config.items()))
-
-
-get_custom_objects().update({'Padam': Padam})
