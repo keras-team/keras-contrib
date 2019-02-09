@@ -2,7 +2,7 @@
 
 
 # activations
-
+keras_contrib/activations/squash.py @SriRangaTarun
 
 # applications
 
