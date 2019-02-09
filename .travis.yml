@@ -40,7 +40,7 @@ install:
   - travis_retry conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION
   - source activate test-environment
 
-  - travis_retry pip install --only-binary=numpy,scipy,pandas numpy nose scipy h5py theano mkdocs pytest pytest-pep8 pandas --progress-bar off
+  - travis_retry pip install --only-binary=numpy,scipy,pandas numpy nose scipy h5py theano mkdocs pytest pytest-pep8 pandas pygithub --progress-bar off
   - pip install git+https://github.com/keras-team/keras.git --progress-bar off
 
   # set library path
@@ -72,7 +72,8 @@ script:
   - sed -i -e 's/"backend":[[:space:]]*"[^"]*/"backend":\ "'$KERAS_BACKEND'/g' ~/.keras/keras.json;
   - echo -e "Running tests with the following config:\n$(cat ~/.keras/keras.json)"
   - if [[ "$TEST_MODE" == "PEP8_DOC" ]]; then
-      PYTHONPATH=$PWD:$PYTHONPATH py.test --pep8 -m pep8 -n0 && py.test tests/test_documentation.py && cd contrib_docs && python autogen.py && mkdocs build;
+      PYTHONPATH=$PWD:$PYTHONPATH py.test --pep8 -m pep8 -n0 && py.test tests/tooling/ && cd contrib_docs && python autogen.py && mkdocs build;
     else
-      PYTHONPATH=$PWD:$PYTHONPATH py.test tests/ --cov-config .coveragerc --cov=keras_contrib tests/;
+      PYTHONPATH=$PWD:$PYTHONPATH py.test tests/ --ignore=tests/tooling/
+    --cov-config .coveragerc --cov=keras_contrib tests/;
     fi
