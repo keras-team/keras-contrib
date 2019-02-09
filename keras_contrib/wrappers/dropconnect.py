@@ -10,7 +10,7 @@ class DropConnect(Wrapper):
     than dropping activations as in classic Dropout).
 
     This wrapper can be used to drop the connections from
-    any Keras layer (Dense, LSTM etc)
+    any Keras layer with weights and biases (Dense, LSTM etc)
 
     #Example usage
         dense = DropConnect(Dense(10, activation='sigmoid'), prob=0.05)
@@ -47,3 +47,6 @@ class DropConnect(Wrapper):
                                                          self.prob),
                                                self.layer.bias)
         return self.layer.call(x)
+
+    def get_config(self):
+        return self.layer.get_config(self)
