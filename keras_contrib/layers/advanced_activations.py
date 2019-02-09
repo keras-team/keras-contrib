@@ -92,7 +92,8 @@ class PTReLU(Layer):
         pos = K.relu(x)
         if K.backend() == 'theano':
             neg = (K.pattern_broadcast(self.alpha, self.param_broadcast) *
-                   K.tanh((K.pattern_broadcast(self.beta, self.param_broadcast) * (x - K.abs(x)) * 0.5)))
+                   K.tanh((K.pattern_broadcast(self.beta, self.param_broadcast) *
+                           (x - K.abs(x)) * 0.5)))
         else:
             neg = self.alpha * K.tanh(self.beta * (-K.relu(-x)))
         return neg + pos
