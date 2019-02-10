@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from keras import initializers
 from keras import regularizers
 from keras import constraints
@@ -72,9 +73,9 @@ class PSEU(Layer):
         self.build = True
 
     def call(self, x, mask=None):
-        if K.eval(self.alphas) < 0:
+        if K.eval(self.alphas).all() < 0:
             return - K.log(1 - self.alphas * (x + self.alphas)) / self.alphas
-        elif K.eval(self.alphas) > 0:
+        elif K.eval(self.alphas).all() > 0:
             return self.alphas + (K.exp(self.alphas * x) - 1.) / self.alphas
         else:
             return x
