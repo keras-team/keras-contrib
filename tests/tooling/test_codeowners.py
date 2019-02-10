@@ -15,7 +15,8 @@ try:
     github_client = Github(os.environ['GITHUB_TOKEN'])
 except KeyError:
     try:
-        github_client = Github(os.environ['GITHUB_USER'], os.environ['GITHUB_PASSWORD'])
+        github_client = Github(os.environ['GITHUB_USER'],
+                               os.environ['GITHUB_PASSWORD'])
     except KeyError:
         authenticated = False
 
