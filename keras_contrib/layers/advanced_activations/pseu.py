@@ -72,9 +72,9 @@ class PSEU(Layer):
         self.build = True
 
     def call(self, x, mask=None):
-        if K.eval(self.alphas).all() < 0:
+        if self.alpha_init is not None and self.alpha_init < 0:
             return - K.log(1 - self.alphas * (x + self.alphas)) / self.alphas
-        elif K.eval(self.alphas).all() > 0:
+        elif self.alpha_init is not None and self.alpha_init > 0:
             return self.alphas + (K.exp(self.alphas * x) - 1.) / self.alphas
         else:
             return x
