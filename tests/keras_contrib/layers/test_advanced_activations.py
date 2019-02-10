@@ -27,9 +27,11 @@ def test_swish(trainable):
                input_shape=(2, 3, 4))
 
 
-@pytest.mark.parametrize('kwargs', [{}, {'shared_axes': 1}])
+@pytest.mark.parametrize('trainable', [False, True])
 def test_pseu(kwargs):
-    layer_test(advanced_activations.PSEU, kwargs=kwargs,
+    layer_test(advanced_activations.PSEU,
+               kwargs={'alpha_init': 0.1,
+                       'trainable': trainable},
                input_shape=(2, 3, 4))
 
 
