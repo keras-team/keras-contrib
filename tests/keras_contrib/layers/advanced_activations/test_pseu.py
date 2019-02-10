@@ -5,8 +5,7 @@ from keras_contrib.layers import PSEU
 
 
 @pytest.mark.parametrize('trainable', [True, False])
-def test_pseu(trainable,
-              alpha_init):
+def test_pseu(trainable):
     layer_test(PSEU,
                kwargs={'trainable': trainable},
                input_shape=(2, 3, 4))
