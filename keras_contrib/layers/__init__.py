@@ -4,6 +4,7 @@ from .advanced_activations import PELU
 from .advanced_activations import SReLU
 from .advanced_activations import Swish
 from .advanced_activations import SineReLU
+from .advanced_activations import PSEU
 
 from .convolutional import CosineConv2D
 from .convolutional import SubPixelUpscaling
