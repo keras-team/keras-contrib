@@ -84,12 +84,12 @@ class PSEU(Layer):
 
     def get_config(self):
         if self.alpha_init is None:
-            config = {'alpha_initializer': initializers.serialize(self.initializer),
+            config = {'alpha_init': initializers.serialize(self.initializer),
                       'regularizer': regularizers.serialize(self.regularizer),
                       'constraint': constraints.serialize(self.constraint),
                       'trainable': self.trainable}
         else:
-            config = {'alpha_initial': float(self.alpha_init),
+            config = {'alpha_init': float(self.alpha_init),
                       'regularizer': regularizers.serialize(self.regularizer),
                       'constraint': constraints.serialize(self.constraint),
                       'trainable': self.trainable}
