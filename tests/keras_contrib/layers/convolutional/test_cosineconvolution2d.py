@@ -61,8 +61,8 @@ def test_cosineconvolution_2d_correctness():
 
     model = Sequential()
     model.add(CosineConvolution2D(1, (5, 5), use_bias=True,
-                                             input_shape=input_dim,
-                                             data_format=data_format))
+                                  input_shape=input_dim,
+                                  data_format=data_format))
     model.compile(loss='mse', optimizer='rmsprop')
     W = model.get_weights()
     W[0] = W0
@@ -72,9 +72,10 @@ def test_cosineconvolution_2d_correctness():
     assert_allclose(out, np.ones((1, 1, 1, 1), dtype=K.floatx()), atol=1e-5)
 
     model = Sequential()
-    model.add(CosineConvolution2D(1, (5, 5), use_bias=False,
-                                             input_shape=input_dim,
-                                             data_format=data_format))
+    model.add(CosineConvolution2D(1, (5, 5),
+                                  use_bias=False,
+                                  input_shape=input_dim,
+                                  data_format=data_format))
     model.compile(loss='mse', optimizer='rmsprop')
     W = model.get_weights()
     W[0] = -2 * W0
