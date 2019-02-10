@@ -9,7 +9,6 @@ except ImportError:
 path_to_keras_contrib = pathlib.Path(__file__).resolve().parents[2]
 path_to_codeowners = path_to_keras_contrib / 'CODEOWNERS'
 
-
 authenticated = True
 try:
     github_client = Github(os.environ['GITHUB_TOKEN'])
