@@ -26,6 +26,11 @@ def test_swish(trainable):
     layer_test(advanced_activations.Swish, kwargs={'beta': 1.0, 'trainable': trainable},
                input_shape=(2, 3, 4))
 
+@pytest.mark.parametrize('kwargs', [{}, {'shared_axes': 1}])
+def test_pseu(kwargs):
+    layer_test(advanced_activations.PSEU, kwargs=kwargs,
+               input_shape=(2, 3, 4))
+
 
 if __name__ == '__main__':
     pytest.main([__file__])
