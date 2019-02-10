@@ -128,11 +128,11 @@ def test_groupnorm_mode_twice():
     # batch normalization functions in the Theano backend.
     model = Sequential()
     model.add(GroupNormalization(input_shape=(10, 5, 5),
-                                               axis=1,
-                                               groups=2))
+                                 axis=1,
+                                 groups=2))
     model.add(GroupNormalization(input_shape=(10, 5, 5),
-                                               axis=1,
-                                               groups=2))
+                                 axis=1,
+                                 groups=2))
     model.compile(loss='mse', optimizer='sgd')
 
     x = np.random.normal(loc=5.0, scale=10.0, size=(20, 10, 5, 5))
@@ -143,8 +143,8 @@ def test_groupnorm_mode_twice():
 def test_groupnorm_convnet():
     model = Sequential()
     norm = GroupNormalization(axis=1,
-                                            input_shape=(3, 4, 4),
-                                            groups=3)
+                              input_shape=(3, 4, 4),
+                              groups=3)
     model.add(norm)
     model.compile(loss='mse', optimizer='sgd')
 
@@ -164,7 +164,7 @@ def test_groupnorm_convnet():
 def test_groupnorm_convnet_no_center_no_scale():
     model = Sequential()
     norm = GroupNormalization(axis=-1, center=False, scale=False,
-                                            input_shape=(3, 4, 4), groups=2)
+                              input_shape=(3, 4, 4), groups=2)
     model.add(norm)
     model.compile(loss='mse', optimizer='sgd')
 
