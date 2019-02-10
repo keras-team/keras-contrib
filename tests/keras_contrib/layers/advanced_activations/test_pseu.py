@@ -12,5 +12,6 @@ def test_pseu(trainable,
                        'trainable': trainable},
                input_shape=(2, 3, 4))
 
+
 if __name__ == '__main__':
     pytest.main([__file__])
