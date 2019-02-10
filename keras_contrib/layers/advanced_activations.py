@@ -419,7 +419,7 @@ class PSEU(Layer):
     """Parametric Soft Exponential Unit with trainable alpha
 
     See: https://arxiv.org/pdf/1602.01321.pdf by Godfrey and Gashler
-    Reference: https://github.com/keras-team/keras/issues/3842
+    Reference: https://github.com/keras-team/keras/issues/3842 (@hobson)
 
     # Input shape
         Arbitrary. Use the keyword argument `input_shape`
