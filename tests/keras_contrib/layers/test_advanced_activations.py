@@ -4,6 +4,12 @@ from keras_contrib.layers import advanced_activations
 
 
 @pytest.mark.parametrize('kwargs', [{}, {'shared_axes': 1}])
+def test_ptrelu(kwargs):
+    layer_test(advanced_activations.PTReLU, kwargs=kwargs,
+               input_shape=(2, 3, 4))
+
+
+@pytest.mark.parametrize('kwargs', [{}, {'shared_axes': 1}])
 def test_pelu(kwargs):
     layer_test(advanced_activations.PELU, kwargs=kwargs,
                input_shape=(2, 3, 4))
