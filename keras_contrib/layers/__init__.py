@@ -6,8 +6,9 @@ from .advanced_activations.swish import Swish
 from .advanced_activations.sinerelu import SineReLU
 from .advanced_activations.pseu import PSEU
 
-from .convolutional import CosineConv2D
-from .convolutional import SubPixelUpscaling
+from .convolutional.cosineconvolution2d import CosineConv2D
+from .convolutional.cosineconvolution2d import CosineConvolution2D
+from .convolutional.subpixelupscaling import SubPixelUpscaling
 
 from .core import CosineDense
 

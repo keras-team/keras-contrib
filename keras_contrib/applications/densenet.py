@@ -72,7 +72,7 @@ from keras_applications.imagenet_utils import _obtain_input_shape
 from keras.applications.imagenet_utils import preprocess_input as _preprocess_input
 import keras.backend as K
 
-from keras_contrib.layers.convolutional import SubPixelUpscaling
+from keras_contrib.layers import SubPixelUpscaling
 
 DENSENET_121_WEIGHTS_PATH = (r'https://github.com/titu1994/DenseNet/releases/download'
                              r'/v3.0/DenseNet-BC-121-32.h5')
