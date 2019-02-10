@@ -95,7 +95,6 @@ exclude = [
     'keras_contrib/optimizers/padam.py',
     'keras_contrib/optimizers/yogi.py',
     'keras_contrib/metrics/crf_accuracies.py',
-
 ]
 exclude = [path_to_keras_contrib / x for x in exclude]
 
@@ -103,13 +102,11 @@ exclude = [path_to_keras_contrib / x for x in exclude]
 @pytest.mark.parametrize('directory', directories_to_test)
 def test_all_files_have_owners(directory):
     files_with_owners = [x[0] for x in parse_codeowners()]
-    for children in directory.iterdir():
-        if children.is_file():
-            if children.name in pattern_exclude:
+    for child in directory.iterdir():
+        if child.is_file():
+            if child.name in pattern_exclude or child in exclude:
                 continue
-            if children in exclude:
-                continue
-            assert children in files_with_owners
+            assert child in files_with_owners
 
 
 if __name__ == '__main__':
