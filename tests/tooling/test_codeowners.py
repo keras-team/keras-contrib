@@ -1,3 +1,4 @@
+import os
 import pytest
 from github import Github
 try:
@@ -7,6 +8,17 @@ except ImportError:
 
 path_to_keras_contrib = pathlib.Path(__file__).resolve().parents[2]
 path_to_codeowners = path_to_keras_contrib / 'CODEOWNERS'
+
+
+def get_github_client():
+    """Uses environment variables to authenticate if they are present."""
+    try:
+        return Github(os.environ['GITHUB_TOKEN'])
+    except KeyError:
+        try:
+            return Github(os.environ['GITHUB_USER'], os.environ['GITHUB_PASSWORD'])
+        except KeyError:
+            return Github()
 
 
 def parse_codeowners():
@@ -28,7 +40,7 @@ def test_codeowners_file_exist():
 
 
 def test_codeowners_user_exist():
-    client = Github()
+    client = get_github_client()
     for _, user in parse_codeowners():
         assert user[0] == '@'
         assert client.get_user(user[1:])
