@@ -66,7 +66,7 @@ class PSEU(Layer):
             self.trainable_weights = [self.alphas]
 
         if self.alpha_init is not None:
-            self.set_weights([self.alpha_init*np.ones(new_input_shape)])
+            self.set_weights([self.alpha_init * np.ones(new_input_shape)])
 
         self.build = True
 
