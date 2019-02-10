@@ -23,6 +23,7 @@ keras_contrib/callbacks/tensorboard.py @gabrieldemarmiesse
 
 
 # layers
+keras_contrib/layers/advanced_activations/sinerelu.py @wilderrodrigues
 keras_contrib/layers/advanced_activations/swish.py @gabrieldemarmiesse
 keras_contrib/layers/capsule.py @SriRangaTarun
 
@@ -33,7 +34,8 @@ keras_contrib/layers/capsule.py @SriRangaTarun
 
 
 # optimizers
-
+keras_contrib/optimizers/yogi.py @MarcoAndreaBuchmann
+keras_contrib/optimizers/padam.py @MFreidank
 
 # preprocessing
 
