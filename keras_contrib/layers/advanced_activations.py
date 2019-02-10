@@ -414,8 +414,9 @@ class SineReLU(Layer):
     def compute_output_shape(self, input_shape):
         return input_shape
 
-class PSELU(Layer):
-    """Soft Exponential activation function with trainable alpha
+
+class PSEU(Layer):
+    """Parametric Soft Exponential Unit with trainable alpha
 
     See: https://arxiv.org/pdf/1602.01321.pdf by Godfrey and Gashler
 
@@ -430,7 +431,13 @@ class PSELU(Layer):
     # Arguments
         alpha_init: float. Initial value of the alpha weights.
         weights: initial alpha weights, as a list of 1 numpy array.
-                 if both weights & alpha_init are provided, weights overrides alpha_init
+                 if both weights & alpha_init are provided, weights
+                 overrides alpha_init
+
+    # Example
+        model = Sequential()
+        model.add(Dense(10))
+        model.add(PSEU())
 
     Soft Exponential f(α, x):
         α == 0:  x
@@ -442,7 +449,7 @@ class PSELU(Layer):
         self.supports_masking = True
         self.alpha_init = K.cast_to_floatx(alpha_init)
         self.initial_weights = weights
-        super(PSELU, self).__init__(**kwargs)
+        super(PSEU, self).__init__(**kwargs)
 
     def build(self, input_shape):
         input_shape = input_shape[1:]
@@ -452,7 +459,9 @@ class PSELU(Layer):
 
         if self.initial_weights is not None:
             self.set_weights(self.initial_weights)
-            del self.initial_weights  # should this be set to None rather than deleted?
+            del self.initial_weights
+
+        self.build = True
 
     def call_alpha_gt0(self, x, alpha):
         return alpha + (K.exp(alpha * x) - 1.) / alpha
