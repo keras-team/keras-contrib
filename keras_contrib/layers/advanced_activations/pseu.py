@@ -47,14 +47,13 @@ class PSEU(Layer):
                  trainable=True,
                  **kwargs):
 
+        super(PSEU, self).__init__(**kwargs)
         self.supports_masking = True
         self.alpha_init = alpha_init
         self.initializer = initializers.get(initializer)
         self.regularizer = regularizers.get(regularizer)
         self.constraint = constraints.get(constraint)
         self.trainable = trainable
-
-        super(PSEU, self).__init__(**kwargs)
 
     def build(self, input_shape):
         new_input_shape = input_shape[1:]
