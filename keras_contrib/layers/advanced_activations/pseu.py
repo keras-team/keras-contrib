@@ -3,6 +3,7 @@ from keras import regularizers
 from keras import constraints
 from keras.layers import Layer
 from keras import backend as K
+import numpy as np
 
 
 class PSEU(Layer):
