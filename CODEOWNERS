@@ -5,13 +5,16 @@
 keras_contrib/activations/squash.py @SriRangaTarun
 
 # applications
-
+keras_contrib/applications/densenet.py @titu1994
+keras_contrib/applications/nasnet.py @titu1994
+keras_contrib/applications/wide_resnet.py @titu1994
 
 # backend
 
 
 # callbacks
 keras_contrib/callbacks/tensorboard.py @gabrieldemarmiesse
+keras_contrib/callbacks/snapshot.py @titu1994
 
 # constraints
 
@@ -25,6 +28,8 @@ keras_contrib/callbacks/tensorboard.py @gabrieldemarmiesse
 # layers
 keras_contrib/layers/advanced_activations/sinerelu.py @wilderrodrigues
 keras_contrib/layers/advanced_activations/swish.py @gabrieldemarmiesse
+keras_contrib/layers/convolutional/subpixelupscaling.py @titu1994
+keras_contrib/layers/normalization/groupnormalization.py @titu1994
 keras_contrib/layers/capsule.py @SriRangaTarun
 
 # losses
