@@ -2,7 +2,7 @@
 
 
 # activations
-
+keras_contrib/activations/squash.py @SriRangaTarun
 
 # applications
 
@@ -23,7 +23,7 @@ keras_contrib/callbacks/tensorboard.py @gabrieldemarmiesse
 
 
 # layers
-
+keras_contrib/layers/capsule.py @SriRangaTarun
 
 # losses
 
