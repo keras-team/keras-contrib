@@ -14,5 +14,5 @@ from .crf import CRF
 
 from .capsule import Capsule
 
-from .normalization import InstanceNormalization
-from .normalization import GroupNormalization
+from .normalization.instancenormalization import InstanceNormalization
+from .normalization.groupnormalization import GroupNormalization
