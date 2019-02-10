@@ -56,7 +56,12 @@ PAGES = [
     },
     {
         'page': 'layers/advanced-activations.md',
-        'all_module_classes': [advanced_activations],
+        'classes': [
+            layers.SineReLU,
+            layers.SReLU,
+            layers.Swish,
+            layers.PELU
+        ],
     },
     {
         'page': 'layers/crf.md',
