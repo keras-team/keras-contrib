@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-from keras import initializers
 from keras import regularizers
 from keras import constraints
 from keras.layers import Layer
@@ -18,11 +17,7 @@ class PSEU(Layer):
     # Output shape
         Same shape as the input.
     # Arguments
-        initializer: Initializer for alpha weights.
         alpha_init: Initial value of the alpha weights (float)
-                    This value overrides any specified initializer
-                    by default, but, one can use their initializer
-                    of choice by specifying alpha_init=None.
         regularizer: Regularizer for alpha weights.
         constraint: Constraint for alpha weights.
         trainable: Whether the alpha weights are trainable or not
@@ -41,7 +36,6 @@ class PSEU(Layer):
     """
     def __init__(self,
                  alpha_init=0.1,
-                 initializer='glorot_uniform',
                  regularizer=None,
                  constraint=None,
                  trainable=True,
@@ -50,22 +44,22 @@ class PSEU(Layer):
         super(PSEU, self).__init__(**kwargs)
         self.supports_masking = True
         self.alpha_init = alpha_init
-        self.initializer = initializers.get(initializer)
+        self.initializer = initializers.get('glorot_uniform')
+        # Add random initializer
         self.regularizer = regularizers.get(regularizer)
         self.constraint = constraints.get(constraint)
         self.trainable = trainable
 
     def build(self, input_shape):
         new_input_shape = input_shape[1:]
+
         self.alphas = self.add_weight(shape=new_input_shape,
                                       name='{}_alphas'.format(self.name),
                                       initializer=self.initializer,
                                       regularizer=self.regularizer,
                                       constraint=self.constraint)
-
         if self.trainable:
             self.trainable_weights = [self.alphas]
-
         if self.alpha_init is not None:
             self.set_weights([self.alpha_init * np.ones(new_input_shape)])
 
@@ -83,16 +77,10 @@ class PSEU(Layer):
         return input_shape
 
     def get_config(self):
-        if self.alpha_init is None:
-            config = {'alpha_init': initializers.serialize(self.initializer),
-                      'regularizer': regularizers.serialize(self.regularizer),
-                      'constraint': constraints.serialize(self.constraint),
-                      'trainable': self.trainable}
-        else:
-            config = {'alpha_init': float(self.alpha_init),
-                      'regularizer': regularizers.serialize(self.regularizer),
-                      'constraint': constraints.serialize(self.constraint),
-                      'trainable': self.trainable}
+        config = {'alpha_init': float(self.alpha_init),
+                  'regularizer': regularizers.serialize(self.regularizer),
+                  'constraint': constraints.serialize(self.constraint),
+                  'trainable': self.trainable}
 
         base_config = super(PSEU, self).get_config()
         return dict(list(base_config.items()) + list(config.items()))
