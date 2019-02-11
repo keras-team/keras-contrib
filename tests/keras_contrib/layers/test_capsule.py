@@ -4,7 +4,6 @@ from numpy.testing import assert_allclose
 
 from keras_contrib.utils.test_utils import layer_test
 from keras import backend as K
-from keras_contrib import backend as KC
 from keras_contrib.layers import capsule
 from keras.models import Sequential
 
