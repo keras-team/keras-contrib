@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 import numpy as np
-from keras import initializers
-from keras import regularizers
-from keras import constraints
-from keras.layers import Layer
 from keras import backend as K
+from keras import constraints
+from keras import initializers
+from keras.layers import Layer
+from keras import regularizers
 
 
 class PSEU(Layer):
