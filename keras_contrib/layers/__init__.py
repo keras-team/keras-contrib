@@ -1,10 +1,10 @@
 from __future__ import absolute_import
 
 from .advanced_activations.pelu import PELU
+from .advanced_activations.pseu import PSEU
 from .advanced_activations.srelu import SReLU
 from .advanced_activations.swish import Swish
 from .advanced_activations.sinerelu import SineReLU
-from .advanced_activations.pseu import PSEU
 
 from .convolutional.cosineconvolution2d import CosineConv2D
 from .convolutional.cosineconvolution2d import CosineConvolution2D
