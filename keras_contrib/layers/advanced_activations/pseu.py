@@ -15,20 +15,33 @@ class PSEU(Layer):
         Arbitrary. Use the keyword argument `input_shape`
         (tuple of integers, does not include the samples axis)
         when using this layer as the first layer in a model.
+
     # Output shape
         Same shape as the input.
+
     # Arguments
-        alpha_init: Initial value of the alpha weights (float)
-                    (0.1 by default)
+        alpha_init: Initial values of the alpha weights (float)
+                    (0.1 by default).
         initializer: The initializer for the alpha weights.
                      Any initializer specified here overrides
-                     the value of alpha_init.
-                     (None by default)
+                     the value of alpha_init. 
+                     Note that even if the initializer is specified,
+                     the alpha_init value controls the sign
+                     of the weights (α > 0, α < 0 or α = 0). It
+                     is glorot_uniform by default.
+        alpha_sign: The sign (negative, positive or 0) that
+                    is taken into consideration when deciding which
+                    formula to use (the formula is differet for
+                    α > 0, α < 0 and α = 0). It is set to positive
+                    by default, when the initializer is not None.
+                    The sign of alpha_init overrides alpha_sign when
+                    provided.
         regularizer: Regularizer for alpha weights.
         constraint: Constraint for alpha weights.
         trainable: Whether the alpha weights are trainable or not
 
     NOTE : Do not set both alpha_init and initializer to None.
+           Use 
 
     # Example
         model = Sequential()
@@ -41,8 +54,9 @@ class PSEU(Layer):
         α  < 0:  -ln(1-α(x + α)) / α
     """
     def __init__(self,
-                 alpha_init=0.1,
-                 initializer=None,
+                 alpha_init=None,
+                 alpha_sign=None,
+                 initializer='glorot_uniform',
                  regularizer=None,
                  constraint=None,
                  trainable=True,
@@ -50,11 +64,19 @@ class PSEU(Layer):
 
         super(PSEU, self).__init__(**kwargs)
         self.alpha_init = alpha_init
+
+        self.alpha_sign = 'positive' # positive by default
+        if self.alpha_init is not None:
+            self.alpha_sign = 'positive' if self.alpha_init > 0 else 'negative'
+            if self.alpha_init == 0: self.alpha_sign = None
+
         if initializer is None:
             self.initializer = initializer
+            self.alpha_init = 0.1 # default α when initializer is None
         else:
             self.initializer = initializers.get(initializer)
             self.alpha_init = None
+
         self.regularizer = regularizers.get(regularizer)
         self.constraint = constraints.get(constraint)
         self.trainable = trainable
@@ -78,19 +100,20 @@ class PSEU(Layer):
         self.build = True
 
     def call(self, x):
-        if self.alpha_init < 0:
+        if self.alpha_sign is 'negative':
             return - K.log(1 - self.alphas * (x + self.alphas)) / self.alphas
-        elif self.alpha_init > 0:
+        if self.alpha_sign is 'positive':
             return self.alphas + (K.exp(self.alphas * x) - 1.) / self.alphas
-        else:
+        if self.alpha_sign is None:
             return x
 
     def compute_output_shape(self, input_shape):
         return input_shape
 
     def get_config(self):
-
+        alpha_init = self.alpha_init if self.initializer is None else None
         config = {'alpha_init': self.alpha_init,
+                  'alpha_sign': self.alpha_sign,
                   'initializer': initializers.serialize(self.initializer),
                   'regularizer': regularizers.serialize(self.regularizer),
                   'constraint': constraints.serialize(self.constraint),
