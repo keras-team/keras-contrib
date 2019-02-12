@@ -24,7 +24,7 @@ class PSEU(Layer):
                     (0.1 by default).
         initializer: The initializer for the alpha weights.
                      Any initializer specified here overrides
-                     the value of alpha_init. 
+                     the value of alpha_init.
                      Note that even if the initializer is specified,
                      the alpha_init value controls the sign
                      of the weights (α > 0, α < 0 or α = 0). It
@@ -32,16 +32,16 @@ class PSEU(Layer):
         alpha_sign: The sign (negative, positive or 0) that
                     is taken into consideration when deciding which
                     formula to use (the formula is differet for
-                    α > 0, α < 0 and α = 0). It is set to positive
+                    α > 0, α < 0 and α = 0). It is set to 'positive'
                     by default, when the initializer is not None.
                     The sign of alpha_init overrides alpha_sign when
                     provided.
+                    ('positive', 'negative' or None)
         regularizer: Regularizer for alpha weights.
         constraint: Constraint for alpha weights.
         trainable: Whether the alpha weights are trainable or not
 
     NOTE : Do not set both alpha_init and initializer to None.
-           Use 
 
     # Example
         model = Sequential()
@@ -65,14 +65,15 @@ class PSEU(Layer):
         super(PSEU, self).__init__(**kwargs)
         self.alpha_init = alpha_init
 
-        self.alpha_sign = 'positive' # positive by default
+        self.alpha_sign = 'positive'  # positive by default
         if self.alpha_init is not None:
             self.alpha_sign = 'positive' if self.alpha_init > 0 else 'negative'
-            if self.alpha_init == 0: self.alpha_sign = None
+            if self.alpha_init == 0:
+                self.alpha_sign = None
 
         if initializer is None:
             self.initializer = initializer
-            self.alpha_init = 0.1 # default α when initializer is None
+            self.alpha_init = 0.1  # default α when initializer is None
         else:
             self.initializer = initializers.get(initializer)
             self.alpha_init = None
