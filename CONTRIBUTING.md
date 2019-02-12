@@ -66,3 +66,7 @@ We love pull requests. Here's a quick guide:
 Both Keras-Contrib and Keras operate under the [MIT License](LICENSE). At the discretion of the maintainers of both repositories, code may be moved from Keras-Contrib to Keras and vice versa.
 
 The maintainers will ensure that the proper chain of commits will flow in both directions, with proper attribution of code. Maintainers will also do their best to notify contributors when their work is moved between repositories.
+
+## About the `CODEOWNERS` file
+
+If you add a new feature to keras-contrib, you should add yourself and your file in the `CODEOWNERS` file. Doing so will, in the future, tag you whenever an issue or a pull request about your feature is opened. Be aware that it represents some work, and in addition of being tagged, we would appreciate that you review new pull requests related to your feature.
