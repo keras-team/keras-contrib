@@ -65,10 +65,9 @@ We love pull requests. Here's a quick guide:
 
 This repo supports both keras-team/keras and tensorflow.keras. The way this is done is by changing all the imports in the code by parsing it. This is checked with travis.ci every time you push a commit in a pull request. 
 
-There are a number of reasons why your code would work with keras-team/keras but not with tf.keras. The most common is that you use keras' private API. Since both keras are only similar in behavior with respect to their public API, you should only use this. Otherwise it's likely that the function you are using is not in the same place in tf.keras.
+There are a number of reasons why your code would work with keras-team/keras but not with tf.keras. The most common is that you use keras' private API. Since both keras are only similar in behavior with respect to their public API, you should only use this. Otherwise it's likely that the function you are using is not in the same place in tf.keras (or does not even exist at all).
 
-Another gotcha is that when creating custome layers and implementing the `build` function, keras-team/keras expects as `input_shape` a tuple of ints. With tf.keras, `input_shape` is a tuple with `Dimensions` objects. This is likely to make the code incompatible. To solve this
-problem, you should do:
+Another gotcha is that when creating custom layers and implementing the `build` function, keras-team/keras expects as `input_shape` a tuple of ints. With tf.keras, `input_shape` is a tuple with `Dimensions` objects. This is likely to make the code incompatible. To solve this problem, you should do:
 
 ```python
 from keras.layers import Layer
@@ -94,9 +93,12 @@ To convert your codebase back to keras-team/keras, do:
 python convert_to_tf_keras.py --revert
 ```
 
-Not that you are strongly encouraged to commit your code before in case the parsing would go wrong. To discard all the changes you made since the previous commit:
+Note that you are strongly encouraged to commit your code before in case the parsing would go wrong. To discard all the changes you made since the previous commit:
 ```
-git reset --hard
+# saves a copy of your current codebase in the git stash and comes back to the previous commit
+git reset && git stash
+
+git stash pop # get your copy back from the git stash if you need to.
 ```
 
 ## A Note for Contributors
