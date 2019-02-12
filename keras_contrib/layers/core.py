@@ -9,7 +9,6 @@ from keras import regularizers
 from keras import constraints
 from keras.layers import InputSpec
 from keras.layers import Layer
-from keras.utils import get_custom_objects
 from keras_contrib.utils.test_utils import to_tuple
 
 
@@ -179,6 +178,3 @@ class CosineDense(Layer):
         }
         base_config = super(CosineDense, self).get_config()
         return dict(list(base_config.items()) + list(config.items()))
-
-
-get_custom_objects().update({'CosineDense': CosineDense})

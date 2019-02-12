@@ -24,10 +24,14 @@ from keras.engine.topology import get_source_inputs
 from keras_applications.imagenet_utils import _obtain_input_shape
 import keras.backend as K
 
-TH_WEIGHTS_PATH = 'https://github.com/titu1994/Wide-Residual-Networks/releases/download/v1.2/wrn_28_8_th_kernels_th_dim_ordering.h5'
-TF_WEIGHTS_PATH = 'https://github.com/titu1994/Wide-Residual-Networks/releases/download/v1.2/wrn_28_8_tf_kernels_tf_dim_ordering.h5'
-TH_WEIGHTS_PATH_NO_TOP = 'https://github.com/titu1994/Wide-Residual-Networks/releases/download/v1.2/wrn_28_8_th_kernels_th_dim_ordering_no_top.h5'
-TF_WEIGHTS_PATH_NO_TOP = 'https://github.com/titu1994/Wide-Residual-Networks/releases/download/v1.2/wrn_28_8_tf_kernels_tf_dim_ordering_no_top.h5'
+TH_WEIGHTS_PATH = ('https://github.com/titu1994/Wide-Residual-Networks/'
+                   'releases/download/v1.2/wrn_28_8_th_kernels_th_dim_ordering.h5')
+TF_WEIGHTS_PATH = ('https://github.com/titu1994/Wide-Residual-Networks/'
+                   'releases/download/v1.2/wrn_28_8_tf_kernels_tf_dim_ordering.h5')
+TH_WEIGHTS_PATH_NO_TOP = ('https://github.com/titu1994/Wide-Residual-Networks/releases/'
+                          'download/v1.2/wrn_28_8_th_kernels_th_dim_ordering_no_top.h5')
+TF_WEIGHTS_PATH_NO_TOP = ('https://github.com/titu1994/Wide-Residual-Networks/releases/'
+                          'download/v1.2/wrn_28_8_tf_kernels_tf_dim_ordering_no_top.h5')
 
 
 def WideResidualNetwork(depth=28, width=8, dropout_rate=0.0,
@@ -118,11 +122,13 @@ def WideResidualNetwork(depth=28, width=8, dropout_rate=0.0,
 
             if K.image_dim_ordering() == 'th':
                 if include_top:
-                    weights_path = get_file('wide_resnet_28_8_th_dim_ordering_th_kernels.h5',
+                    h5_file = 'wide_resnet_28_8_th_dim_ordering_th_kernels.h5'
+                    weights_path = get_file(h5_file,
                                             TH_WEIGHTS_PATH,
                                             cache_subdir='models')
                 else:
-                    weights_path = get_file('wide_resnet_28_8_th_dim_ordering_th_kernels_no_top.h5',
+                    h5_file = 'wide_resnet_28_8_th_dim_ordering_th_kernels_no_top.h5'
+                    weights_path = get_file(h5_file,
                                             TH_WEIGHTS_PATH_NO_TOP,
                                             cache_subdir='models')
 
@@ -140,11 +146,13 @@ def WideResidualNetwork(depth=28, width=8, dropout_rate=0.0,
                     convert_all_kernels_in_model(model)
             else:
                 if include_top:
-                    weights_path = get_file('wide_resnet_28_8_tf_dim_ordering_tf_kernels.h5',
+                    h5_file = 'wide_resnet_28_8_tf_dim_ordering_tf_kernels.h5'
+                    weights_path = get_file(h5_file,
                                             TF_WEIGHTS_PATH,
                                             cache_subdir='models')
                 else:
-                    weights_path = get_file('wide_resnet_28_8_tf_dim_ordering_tf_kernels_no_top.h5',
+                    h5_file = 'wide_resnet_28_8_tf_dim_ordering_tf_kernels_no_top.h5'
+                    weights_path = get_file(h5_file,
                                             TF_WEIGHTS_PATH_NO_TOP,
                                             cache_subdir='models')
 
@@ -171,7 +179,8 @@ def __conv2_block(input, k=1, dropout=0.0):
 
     channel_axis = 1 if K.image_data_format() == 'channels_first' else -1
 
-    # Check if input number of filters is same as 16 * k, else create convolution2d for this input
+    # Check if input number of filters is same as 16 * k, else create
+    # convolution2d for this input
     if K.image_data_format() == 'channels_first':
         if init._keras_shape[1] != 16 * k:
             init = Conv2D(16 * k, (1, 1), activation='linear', padding='same')(init)
@@ -199,7 +208,8 @@ def __conv3_block(input, k=1, dropout=0.0):
 
     channel_axis = 1 if K.image_data_format() == 'channels_first' else -1
 
-    # Check if input number of filters is same as 32 * k, else create convolution2d for this input
+    # Check if input number of filters is same as 32 * k, else
+    # create convolution2d for this input
     if K.image_data_format() == 'channels_first':
         if init._keras_shape[1] != 32 * k:
             init = Conv2D(32 * k, (1, 1), activation='linear', padding='same')(init)
@@ -227,7 +237,8 @@ def ___conv4_block(input, k=1, dropout=0.0):
 
     channel_axis = 1 if K.image_dim_ordering() == 'th' else -1
 
-    # Check if input number of filters is same as 64 * k, else create convolution2d for this input
+    # Check if input number of filters is same as 64 * k, else
+    # create convolution2d for this input
     if K.image_dim_ordering() == 'th':
         if init._keras_shape[1] != 64 * k:
             init = Conv2D(64 * k, (1, 1), activation='linear', padding='same')(init)

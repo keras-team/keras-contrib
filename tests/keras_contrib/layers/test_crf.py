@@ -5,7 +5,6 @@ from numpy.testing import assert_allclose
 
 from keras.layers import Embedding
 from keras.models import Sequential
-from keras.models import model_from_json
 from keras.models import load_model
 from keras_contrib.losses import crf_loss
 from keras_contrib.metrics import crf_accuracy

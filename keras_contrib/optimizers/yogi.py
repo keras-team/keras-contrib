@@ -1,6 +1,5 @@
 from keras import backend as K
 from keras.optimizers import Optimizer
-from keras.utils import get_custom_objects
 
 
 class Yogi(Optimizer):
@@ -87,6 +86,3 @@ class Yogi(Optimizer):
                   'epsilon': self.epsilon}
         base_config = super(Yogi, self).get_config()
         return dict(list(base_config.items()) + list(config.items()))
-
-
-get_custom_objects().update({'Yogi': Yogi})
