@@ -28,8 +28,6 @@ class PSEU(Layer):
         model.add(Dense(10))
         model.add(PSEU())
 
-    Note : Specify alpha_init=None to use other intializers
-
     Soft Exponential f(α, x):
         α == 0:  x
         α  > 0:  (exp(αx)-1) / α + α
