@@ -87,6 +87,7 @@ class PSEU(Layer):
 
         self.alphas = self.add_weight(shape=new_input_shape,
                                       name='{}_alphas'.format(self.name),
+                                      initializer='glorot_uniform',
                                       regularizer=self.regularizer,
                                       constraint=self.constraint)
 
