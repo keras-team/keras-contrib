@@ -72,7 +72,7 @@ class PSEU(Layer):
                 self.alpha_sign = None
 
         if initializer is None:
-            self.initializer = initializer
+            self.initializer = None
             self.alpha_init = 0.1  # default α when initializer is None
         else:
             self.initializer = initializers.get(initializer)
@@ -84,20 +84,20 @@ class PSEU(Layer):
 
     def build(self, input_shape):
         new_input_shape = input_shape[1:]
-
-        self.alphas = self.add_weight(shape=new_input_shape,
-                                      name='{}_alphas'.format(self.name),
-                                      initializer='glorot_uniform',
-                                      regularizer=self.regularizer,
-                                      constraint=self.constraint)
-
-        if self.trainable:
-            self.trainable_weights = [self.alphas]
-
         if self.initializer is None:
+            self.alphas = self.add_weight(shape=new_input_shape,
+                                          name='{}_alphas'.format(self.name),
+                                          regularizer=self.regularizer,
+                                          constraint=self.constraint)
             self.set_weights([self.alpha_init * np.ones(new_input_shape)])
         else:
-            self.alphas.initializer = self.initializer
+            self.alphas = self.add_weight(shape=new_input_shape,
+                                          name='{}_alphas'.format(self.name),
+                                          initializer=self.initializer,
+                                          regularizer=self.regularizer,
+                                          constraint=self.constraint)
+        if self.trainable:
+            self.trainable_weights = [self.alphas]
 
         self.build = True
 
