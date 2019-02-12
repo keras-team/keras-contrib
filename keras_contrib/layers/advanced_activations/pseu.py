@@ -19,9 +19,16 @@ class PSEU(Layer):
         Same shape as the input.
     # Arguments
         alpha_init: Initial value of the alpha weights (float)
+                    (0.1 by default)
+        initializer: The initializer for the alpha weights.
+                     Any initializer specified here overrides
+                     the value of alpha_init.
+                     (None by default)
         regularizer: Regularizer for alpha weights.
         constraint: Constraint for alpha weights.
         trainable: Whether the alpha weights are trainable or not
+
+    NOTE : Do not set both alpha_init and initializer to None.
 
     # Example
         model = Sequential()
@@ -35,6 +42,7 @@ class PSEU(Layer):
     """
     def __init__(self,
                  alpha_init=0.1,
+                 initializer=None,
                  regularizer=None,
                  constraint=None,
                  trainable=True,
@@ -43,8 +51,13 @@ class PSEU(Layer):
         super(PSEU, self).__init__(**kwargs)
         self.supports_masking = True
         self.alpha_init = alpha_init
-        self.initializer = initializers.get('glorot_uniform')
-        # Add random initializer
+
+        if initializer is None:
+            self.initializer = initializer
+        else:
+            self.initializer = initializers.get(initializer)
+            self.alpha_init = None
+
         self.regularizer = regularizers.get(regularizer)
         self.constraint = constraints.get(constraint)
         self.trainable = trainable
@@ -54,12 +67,17 @@ class PSEU(Layer):
 
         self.alphas = self.add_weight(shape=new_input_shape,
                                       name='{}_alphas'.format(self.name),
-                                      initializer=self.initializer,
                                       regularizer=self.regularizer,
                                       constraint=self.constraint)
+
         if self.trainable:
             self.trainable_weights = [self.alphas]
-        self.set_weights([self.alpha_init * np.ones(new_input_shape)])
+
+        if self.initializer is None:
+            self.set_weights([self.alpha_init * np.ones(new_input_shape)])
+        else:
+            self.initializer = initializers.get(initializer)
+            self.alphas.initializer = self.initializer
 
         self.build = True
 
@@ -75,7 +93,9 @@ class PSEU(Layer):
         return input_shape
 
     def get_config(self):
-        config = {'alpha_init': float(self.alpha_init),
+
+        config = {'alpha_init': self.alpha_init,
+                  'initializer': initializers.serialize(self.initializer),
                   'regularizer': regularizers.serialize(self.regularizer),
                   'constraint': constraints.serialize(self.constraint),
                   'trainable': self.trainable}
