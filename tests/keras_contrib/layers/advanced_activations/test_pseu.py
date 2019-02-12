@@ -6,14 +6,12 @@ from keras_contrib.layers import PSEU
 
 @pytest.mark.parametrize('trainable', [True, False])
 @pytest.mark.parametrize('alpha_init', [-0.1, 0., 0.1])
-@pytest.mark.parametrize('initializer', [None, 'glorot_uniform', 'ones'])
 def test_pseu(trainable,
               alpha_init,
               initializer):
     layer_test(PSEU,
                kwargs={'trainable': trainable,
-                       'alpha_init': alpha_init,
-                       'initializer': initializer},
+                       'alpha_init': alpha_init},
                input_shape=(2, 3, 4))
 
 
