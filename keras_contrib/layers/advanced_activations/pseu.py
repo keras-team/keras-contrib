@@ -39,9 +39,7 @@ class PSEU(Layer):
                  **kwargs):
 
         super(PSEU, self).__init__(**kwargs)
-        self.supports_masking = True
         self.alpha_init = alpha_init
-        self.initializer = initializers.get('glorot_uniform')
         # Add random initializer
         self.regularizer = regularizers.get(regularizer)
         self.constraint = constraints.get(constraint)
@@ -49,10 +47,13 @@ class PSEU(Layer):
 
     def build(self, input_shape):
         new_input_shape = input_shape[1:]
+        
+        def alpha_init(input_shape):
+            return self.alpha_init * K.ones(input_shape)
 
         self.alphas = self.add_weight(shape=new_input_shape,
                                       name='{}_alphas'.format(self.name),
-                                      initializer=self.initializer,
+                                      initializer=alpha_init,
                                       regularizer=self.regularizer,
                                       constraint=self.constraint)
         if self.trainable:
