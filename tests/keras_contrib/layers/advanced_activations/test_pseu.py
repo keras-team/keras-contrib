@@ -4,10 +4,10 @@ from keras_contrib.utils.test_utils import layer_test
 from keras_contrib.layers import PSEU
 
 
-@pytest.mark.parametrize('alpha_init', [-0.1, 0., 0.1])
-def test_pseu(alpha_init):
+@pytest.mark.parametrize('alpha_initial', [-0.1, 0., 0.1])
+def test_pseu(alpha_initial):
     layer_test(PSEU,
-               kwargs={'alpha_init': alpha_init},
+               kwargs={'alpha_initial': alpha_initial},
                input_shape=(2, 3, 4))
 
 
