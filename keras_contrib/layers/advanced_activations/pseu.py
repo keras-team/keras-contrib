@@ -76,7 +76,6 @@ class PSEU(Layer):
         if self.initializer is None:
             self.set_weights([self.alpha_init * np.ones(new_input_shape)])
         else:
-            self.initializer = initializers.get(initializer)
             self.alphas.initializer = self.initializer
 
         self.build = True
