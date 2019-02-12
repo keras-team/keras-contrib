@@ -6,8 +6,7 @@ from keras_contrib.layers import PSEU
 
 @pytest.mark.parametrize('trainable', [True, False])
 @pytest.mark.parametrize('alpha_init', [-0.1, 0., 0.1])
-def test_pseu(trainable,
-              alpha_init,
+def test_pseu(alpha_init,
               initializer):
     layer_test(PSEU,
                kwargs={'trainable': trainable,
