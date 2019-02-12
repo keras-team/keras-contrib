@@ -15,108 +15,65 @@ class PSEU(Layer):
         Arbitrary. Use the keyword argument `input_shape`
         (tuple of integers, does not include the samples axis)
         when using this layer as the first layer in a model.
-
     # Output shape
         Same shape as the input.
-
     # Arguments
-        alpha_init: Initial values of the alpha weights (float)
-                    (0.1 by default).
-        initializer: The initializer for the alpha weights.
-                     Any initializer specified here overrides
-                     the value of alpha_init.
-                     Note that even if the initializer is specified,
-                     the alpha_init value controls the sign
-                     of the weights (α > 0, α < 0 or α = 0). It
-                     is glorot_uniform by default.
-        alpha_sign: The sign (negative, positive or 0) that
-                    is taken into consideration when deciding which
-                    formula to use (the formula is differet for
-                    α > 0, α < 0 and α = 0). It is set to 'positive'
-                    by default, when the initializer is not None.
-                    The sign of alpha_init overrides alpha_sign when
-                    provided.
-                    ('positive', 'negative' or None)
+        alpha_init: Initial value of the alpha weights (float)
         regularizer: Regularizer for alpha weights.
         constraint: Constraint for alpha weights.
         trainable: Whether the alpha weights are trainable or not
-
-    NOTE : Do not set both alpha_init and initializer to None.
-
     # Example
         model = Sequential()
         model.add(Dense(10))
         model.add(PSEU())
-
     Soft Exponential f(α, x):
         α == 0:  x
         α  > 0:  (exp(αx)-1) / α + α
         α  < 0:  -ln(1-α(x + α)) / α
     """
     def __init__(self,
-                 alpha_init=None,
-                 alpha_sign=None,
-                 initializer='glorot_uniform',
+                 alpha_init=0.1,
                  regularizer=None,
                  constraint=None,
                  trainable=True,
                  **kwargs):
 
         super(PSEU, self).__init__(**kwargs)
+        self.supports_masking = True
         self.alpha_init = alpha_init
-
-        self.alpha_sign = 'positive'  # positive by default
-        if self.alpha_init is not None:
-            self.alpha_sign = 'positive' if self.alpha_init > 0 else 'negative'
-            if self.alpha_init == 0:
-                self.alpha_sign = None
-
-        if initializer is None:
-            self.initializer = None
-            self.alpha_init = 0.1  # default α when initializer is None
-        else:
-            self.initializer = initializers.get(initializer)
-            self.alpha_init = None
-
+        self.initializer = initializers.get('glorot_uniform')
+        # Add random initializer
         self.regularizer = regularizers.get(regularizer)
         self.constraint = constraints.get(constraint)
         self.trainable = trainable
 
     def build(self, input_shape):
         new_input_shape = input_shape[1:]
-        if self.initializer is None:
-            self.alphas = self.add_weight(shape=new_input_shape,
-                                          name='{}_alphas'.format(self.name),
-                                          regularizer=self.regularizer,
-                                          constraint=self.constraint)
-            self.set_weights([self.alpha_init * np.ones(new_input_shape)])
-        else:
-            self.alphas = self.add_weight(shape=new_input_shape,
-                                          name='{}_alphas'.format(self.name),
-                                          initializer=self.initializer,
-                                          regularizer=self.regularizer,
-                                          constraint=self.constraint)
+
+        self.alphas = self.add_weight(shape=new_input_shape,
+                                      name='{}_alphas'.format(self.name),
+                                      initializer=self.initializer,
+                                      regularizer=self.regularizer,
+                                      constraint=self.constraint)
         if self.trainable:
             self.trainable_weights = [self.alphas]
+        self.set_weights([self.alpha_init * np.ones(new_input_shape)])
 
         self.build = True
 
     def call(self, x):
-        if self.alpha_sign is 'negative':
+        if self.alpha_init < 0:
             return - K.log(1 - self.alphas * (x + self.alphas)) / self.alphas
-        if self.alpha_sign is 'positive':
+        elif self.alpha_init > 0:
             return self.alphas + (K.exp(self.alphas * x) - 1.) / self.alphas
-        if self.alpha_sign is None:
+        else:
             return x
 
     def compute_output_shape(self, input_shape):
         return input_shape
 
     def get_config(self):
-        alpha_init = self.alpha_init if self.initializer is None else None
-        config = {'alpha_init': self.alpha_init,
-                  'alpha_sign': self.alpha_sign,
-                  'initializer': initializers.serialize(self.initializer),
+        config = {'alpha_init': float(self.alpha_init),
                   'regularizer': regularizers.serialize(self.regularizer),
                   'constraint': constraints.serialize(self.constraint),
                   'trainable': self.trainable}
