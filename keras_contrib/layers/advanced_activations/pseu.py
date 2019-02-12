@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-import numpy as np
 from keras import backend as K
 from keras import constraints
 from keras import initializers
@@ -8,7 +7,7 @@ from keras import regularizers
 
 
 class PSEU(Layer):
-    """Parametric Soft Exponential Unit with trainable alpha
+    """Parametric Soft Exponential Unit
     See: https://arxiv.org/pdf/1602.01321.pdf by Godfrey and Gashler
     Reference: https://github.com/keras-team/keras/issues/3842 (@hobson)
     # Input shape
@@ -23,7 +22,6 @@ class PSEU(Layer):
         alpha_init: Initial value of the alpha weights (float)
         regularizer: Regularizer for alpha weights.
         constraint: Constraint for alpha weights.
-        trainable: Whether the alpha weights are trainable or not
 
     # Example
         model = Sequential()
@@ -39,7 +37,6 @@ class PSEU(Layer):
                  alpha_init=0.1,
                  regularizer=None,
                  constraint=None,
-                 trainable=True,
                  **kwargs):
 
         super(PSEU, self).__init__(**kwargs)
@@ -47,7 +44,6 @@ class PSEU(Layer):
         # Add random initializer
         self.regularizer = regularizers.get(regularizer)
         self.constraint = constraints.get(constraint)
-        self.trainable = trainable
 
     def build(self, input_shape):
         new_input_shape = input_shape[1:]
@@ -60,10 +56,6 @@ class PSEU(Layer):
                                       initializer=alpha_init,
                                       regularizer=self.regularizer,
                                       constraint=self.constraint)
-        if self.trainable:
-            self.trainable_weights = [self.alphas]
-        self.set_weights([self.alpha_init * np.ones(new_input_shape)])
-
         self.build = True
 
     def call(self, x):
@@ -80,8 +72,7 @@ class PSEU(Layer):
     def get_config(self):
         config = {'alpha_init': float(self.alpha_init),
                   'regularizer': regularizers.serialize(self.regularizer),
-                  'constraint': constraints.serialize(self.constraint),
-                  'trainable': self.trainable}
+                  'constraint': constraints.serialize(self.constraint)}
 
         base_config = super(PSEU, self).get_config()
         return dict(list(base_config.items()) + list(config.items()))
