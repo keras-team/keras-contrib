@@ -1,9 +1,6 @@
 # -*- coding: utf-8 -*-
 from keras import backend as K
-from keras import constraints
-from keras import initializers
 from keras.layers import Layer
-from keras import regularizers
 
 
 class PSEU(Layer):
@@ -19,14 +16,12 @@ class PSEU(Layer):
         Same shape as the input.
 
     # Arguments
-        alpha_init: Initial value of the alpha weights (float)
-        regularizer: Regularizer for alpha weights.
-        constraint: Constraint for alpha weights.
+        alpha_initial: Initial value of the alpha weights (float)
 
     # Example
         model = Sequential()
         model.add(Dense(10))
-        model.add(PSEU())
+        model.add(PSEU(alpha_initial=0.2))
 
     Soft Exponential f(α, x):
         α == 0:  x
@@ -34,33 +29,26 @@ class PSEU(Layer):
         α  < 0:  -ln(1-α(x + α)) / α
     """
     def __init__(self,
-                 alpha_init=0.1,
-                 regularizer=None,
-                 constraint=None,
+                 alpha_initial=0.1,
                  **kwargs):
 
         super(PSEU, self).__init__(**kwargs)
-        self.alpha_init = alpha_init
-        # Add random initializer
-        self.regularizer = regularizers.get(regularizer)
-        self.constraint = constraints.get(constraint)
+        self.alpha_initial = alpha_initial
 
     def alpha_initializer(self, input_shape):
-        return self.alpha_init * K.ones(input_shape)
+        return self.alpha_initial * K.ones(input_shape)
 
     def build(self, input_shape):
         new_input_shape = input_shape[1:]
         self.alphas = self.add_weight(shape=new_input_shape,
                                       name='{}_alphas'.format(self.name),
-                                      initializer=self.alpha_initializer,
-                                      regularizer=self.regularizer,
-                                      constraint=self.constraint)
+                                      initializer=self.alpha_initializer)
         self.build = True
 
     def call(self, x):
-        if self.alpha_init < 0:
+        if self.alpha_initial < 0:
             return - K.log(1 - self.alphas * (x + self.alphas)) / self.alphas
-        elif self.alpha_init > 0:
+        elif self.alpha_initial > 0:
             return self.alphas + (K.exp(self.alphas * x) - 1.) / self.alphas
         else:
             return x
@@ -69,9 +57,6 @@ class PSEU(Layer):
         return input_shape
 
     def get_config(self):
-        config = {'alpha_init': float(self.alpha_init),
-                  'regularizer': regularizers.serialize(self.regularizer),
-                  'constraint': constraints.serialize(self.constraint)}
-
+        config = {'alpha_initial': self.alpha_initial}
         base_config = super(PSEU, self).get_config()
         return dict(list(base_config.items()) + list(config.items()))
