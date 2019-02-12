@@ -49,15 +49,12 @@ class PSEU(Layer):
                  **kwargs):
 
         super(PSEU, self).__init__(**kwargs)
-        self.supports_masking = True
         self.alpha_init = alpha_init
-
         if initializer is None:
             self.initializer = initializer
         else:
             self.initializer = initializers.get(initializer)
             self.alpha_init = None
-
         self.regularizer = regularizers.get(regularizer)
         self.constraint = constraints.get(constraint)
         self.trainable = trainable
