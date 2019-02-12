@@ -15,17 +15,21 @@ class PSEU(Layer):
         Arbitrary. Use the keyword argument `input_shape`
         (tuple of integers, does not include the samples axis)
         when using this layer as the first layer in a model.
+
     # Output shape
         Same shape as the input.
+
     # Arguments
         alpha_init: Initial value of the alpha weights (float)
         regularizer: Regularizer for alpha weights.
         constraint: Constraint for alpha weights.
         trainable: Whether the alpha weights are trainable or not
+
     # Example
         model = Sequential()
         model.add(Dense(10))
         model.add(PSEU())
+
     Soft Exponential f(α, x):
         α == 0:  x
         α  > 0:  (exp(αx)-1) / α + α
@@ -47,7 +51,7 @@ class PSEU(Layer):
 
     def build(self, input_shape):
         new_input_shape = input_shape[1:]
-        
+
         def alpha_init(input_shape):
             return self.alpha_init * K.ones(input_shape)
 
