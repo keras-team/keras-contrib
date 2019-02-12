@@ -45,15 +45,14 @@ class PSEU(Layer):
         self.regularizer = regularizers.get(regularizer)
         self.constraint = constraints.get(constraint)
 
+    def alpha_initializer(self, input_shape):
+        return self.alpha_init * K.ones(input_shape)
+
     def build(self, input_shape):
         new_input_shape = input_shape[1:]
-
-        def alpha_init(input_shape):
-            return self.alpha_init * K.ones(input_shape)
-
         self.alphas = self.add_weight(shape=new_input_shape,
                                       name='{}_alphas'.format(self.name),
-                                      initializer=alpha_init,
+                                      initializer=self.alpha_initializer,
                                       regularizer=self.regularizer,
                                       constraint=self.constraint)
         self.build = True
