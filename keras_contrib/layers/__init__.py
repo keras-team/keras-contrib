@@ -1,5 +1,6 @@
 from __future__ import absolute_import
 
+from .advanced_activations.isrlu import ISRLU
 from .advanced_activations.pelu import PELU
 from .advanced_activations.srelu import SReLU
 from .advanced_activations.swish import Swish
