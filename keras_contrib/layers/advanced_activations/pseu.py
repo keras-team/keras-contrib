@@ -23,6 +23,15 @@ class PSEU(Layer):
 
     # Arguments
         alpha: Value of the alpha weights (float)
+        NOTE : This function can become unstable for
+               very negative values of α (like -2. or
+               -3). If the functions starts returning
+               NaNs for α < 0, try decreasing the magnitude
+               of α. Alternatively, you can normalize the data
+               into fixed ranges before passing it to PSEU. Note
+               that PSEU returns NaNs for α < 0 only when large
+               negative values are passed to the layer. Adjust α
+               based on your specific dataset and use-case.
 
     # Example
         model = Sequential()
