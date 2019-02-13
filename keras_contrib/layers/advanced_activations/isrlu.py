@@ -22,8 +22,15 @@ class ISRLU(Layer):
     # Arguments
         alpha: Value of the alpha weights (float)
         NOTE : This function can become unstable for
-               negative values of α. Positive values of
-               α are recommended.
+               negative values of α (it may return
+               NaNs).
+               If this happens, try limiting the magnitude
+               of α below a certain threshold, such that
+               1 + α * x^2 is always positive.
+               Alternatively, you can normalize the inputs
+               into fixed ranges before passing them to ISRLU.
+               Adjust the value of α based on your specific
+               dataset and use-case.
 
     # Example
         model = Sequential()
