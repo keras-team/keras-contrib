@@ -26,7 +26,7 @@ class PSEU(Layer):
 
         NOTE : This function can become unstable for
                negative values of α. In particular, the
-               function returns NaNs when α < 0 and x < 1/α
+               function returns NaNs when α < 0 and x <= 1/α
                (where x is the input).
                If the function starts returning NaNs for α < 0,
                try decreasing the magnitude of α.
