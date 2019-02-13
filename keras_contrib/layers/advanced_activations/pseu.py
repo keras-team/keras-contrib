@@ -28,8 +28,9 @@ class PSEU(Layer):
                starts returning NaNs for α < 0, try decreasing
                the magnitude of α. Alternatively, you can
                normalize the data into fixed ranges before
-               passing it to PSEU. Adjust α based on your
-               specific dataset and use-case.
+               passing it to PSEU. Note that numerical instability
+               may occur only and only for large negative inputs when α < 0
+               Adjust α based on your specific dataset and use-case.
 
     # Example
         model = Sequential()
