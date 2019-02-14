@@ -1,6 +1,7 @@
 from keras.layers import Layer, InputSpec
 from keras import initializers
 import keras.backend as K
+from keras_contrib.utils.test_utils import to_tuple
 
 
 class SReLU(Layer):
@@ -58,6 +59,7 @@ class SReLU(Layer):
             self.shared_axes = list(shared_axes)
 
     def build(self, input_shape):
+        input_shape = to_tuple(input_shape)
         param_shape = list(input_shape[1:])
         self.param_broadcast = [False] * len(param_shape)
         if self.shared_axes is not None:
