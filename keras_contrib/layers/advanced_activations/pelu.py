@@ -3,6 +3,7 @@ from keras import initializers, regularizers, constraints
 import keras.backend as K
 from keras_contrib.utils.test_utils import to_tuple
 
+
 class PELU(Layer):
     """Parametric Exponential Linear Unit.
 
