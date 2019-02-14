@@ -21,7 +21,7 @@ class ISRLU(Layer):
          NOTE : This function can become unstable for
                 negative values of α (it may return
                 NaNs). In particular, this happens when
-                α < 0 and x < -1/sqrt(α) or x > 1/sqrt(α).
+                α < 0 and x < -1/sqrt(α).
                 If this happens, try limiting the magnitude
                 of α below a certain threshold, such that
                 1 + α * x^2 is always positive.
