@@ -41,7 +41,7 @@ def convert_codebase(revert):
     keras_dir = os.path.dirname(os.path.abspath(__file__))
     for root, dirs, files in os.walk(keras_dir):
         for name in files:
-            if replace_imports(os.path.join(root, name), revert):
+            if replace_imports_in_file(os.path.join(root, name), revert):
                 nb_of_files_changed += 1
     print('Changed imports in ' + str(nb_of_files_changed) + ' files.')
     print('Those files were found in the directory ' + keras_dir)
