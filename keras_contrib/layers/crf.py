@@ -14,6 +14,7 @@ from keras.layers import InputSpec
 from keras_contrib.losses import crf_loss
 from keras_contrib.metrics import crf_marginal_accuracy
 from keras_contrib.metrics import crf_viterbi_accuracy
+from keras_contrib.utils.test_utils import to_tuple
 
 
 class CRF(Layer):
@@ -247,6 +248,7 @@ class CRF(Layer):
         self.unroll = unroll
 
     def build(self, input_shape):
+        input_shape = to_tuple(input_shape)
         self.input_spec = [InputSpec(shape=input_shape)]
         self.input_dim = input_shape[-1]
 
