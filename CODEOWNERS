@@ -26,7 +26,7 @@ keras_contrib/callbacks/snapshot.py @titu1994
 
 
 # layers
-keras_contrib/layers/advanced_activations/isrlu.py @SriRangaTarun
+keras_contrib/layers/advanced_activations/pseu.py @SriRangaTarun
 keras_contrib/layers/advanced_activations/sinerelu.py @wilderrodrigues
 keras_contrib/layers/advanced_activations/swish.py @gabrieldemarmiesse
 keras_contrib/layers/convolutional/subpixelupscaling.py @titu1994
