@@ -67,6 +67,10 @@ class ISRLU(Layer):
         def inverse_quadratic_square_root(x):
             return x / K.sqrt(1 + self.alphas * K.square(x))
 
+        if is_tf_keras:
+            K.set_session(tf.InteractiveSession())
+            tf.global_variables_initializer().run()
+
         return K.switch(K.less(x, K.zeros_like(x)), inverse_quadratic_square_root(x), x)
 
     def compute_output_shape(self, input_shape):
