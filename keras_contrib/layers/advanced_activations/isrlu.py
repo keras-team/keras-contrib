@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from keras import backend as K
 from keras.layers import Layer
+from keras_contrib.utils.test_utils import to_tuple
 
 
 class ISRLU(Layer):
@@ -46,6 +47,7 @@ class ISRLU(Layer):
         return self.alpha * K.ones(input_shape, dtype=dtype)
 
     def build(self, input_shape):
+        input_shape = to_tuple(input_shape)
         new_input_shape = input_shape[1:]
         self.alphas = self.add_weight(shape=new_input_shape,
                                       name='{}_alphas'.format(self.name),
