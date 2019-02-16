@@ -42,8 +42,8 @@ class PSEU(Layer):
         super(PSEU, self).__init__(**kwargs)
         self.alpha = alpha
 
-    def alpha_initializer(self, input_shape):
-        return self.alpha * K.ones(input_shape)
+    def alpha_initializer(self, input_shape, dtype='float32'):
+        return self.alpha * K.ones(input_shape, dtype=dtype)
 
     def build(self, input_shape):
         input_shape = to_tuple(input_shape)
