@@ -41,6 +41,7 @@ class PSEU(Layer):
 
         super(PSEU, self).__init__(**kwargs)
         self.alpha = alpha
+        self.trainable=False
 
     def alpha_initializer(self, input_shape, dtype='float32'):
         return self.alpha * K.ones(input_shape, dtype=dtype)
@@ -66,6 +67,7 @@ class PSEU(Layer):
         return input_shape
 
     def get_config(self):
-        config = {'alpha': self.alpha}
+        config = {'alpha': self.alpha,
+                  'trainable': self.trainable}
         base_config = super(PSEU, self).get_config()
         return dict(list(base_config.items()) + list(config.items()))
