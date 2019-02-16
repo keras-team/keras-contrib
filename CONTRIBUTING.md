@@ -61,6 +61,46 @@ We love pull requests. Here's a quick guide:
 
 11. Submit your PR. If your changes have been approved in a previous discussion, and if you have complete (and passing) unit tests, your PR is likely to be merged promptly. Otherwise, well...
 
+## About keras-team/keras and tensorflow.keras
+
+This repo supports both keras-team/keras and tensorflow.keras. The way this is done is by changing all the imports in the code by parsing it. This is checked with travis.ci every time you push a commit in a pull request. 
+
+There are a number of reasons why your code would work with keras-team/keras but not with tf.keras. The most common is that you use keras' private API. Since both keras are only similar in behavior with respect to their public API, you should only use this. Otherwise it's likely that the function you are using is not in the same place in tf.keras (or does not even exist at all).
+
+Another gotcha is that when creating custom layers and implementing the `build` function, keras-team/keras expects as `input_shape` a tuple of ints. With tf.keras, `input_shape` is a tuple with `Dimensions` objects. This is likely to make the code incompatible. To solve this problem, you should do:
+
+```python
+from keras.layers import Layer
+from keras_contrib.utils.test_utils import to_tuple
+
+
+class MyLayer(Layer):
+    ...
+    
+    def build(self, input_shape):
+        input_shape = to_tuple(input_shape)
+        # now `input_shape` is a tuple of ints or None like in keras-team/keras
+        ...
+```
+
+To change all the imports in your code to tf.keras to test compatibility, you can do:
+```
+python convert_to_tf_keras.py
+```
+
+To convert your codebase back to keras-team/keras, do:
+```
+python convert_to_tf_keras.py --revert
+```
+
+Note that you are strongly encouraged to commit your code before in case the parsing would go wrong. To discard all the changes you made since the previous commit:
+```
+# saves a copy of your current codebase in the git stash and comes back to the previous commit
+git stash
+
+git stash pop # get your copy back from the git stash if you need to.
+```
+
 ## A Note for Contributors
 
 Both Keras-Contrib and Keras operate under the [MIT License](LICENSE). At the discretion of the maintainers of both repositories, code may be moved from Keras-Contrib to Keras and vice versa.

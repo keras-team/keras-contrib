@@ -9,6 +9,7 @@ from keras import regularizers
 from keras import constraints
 from keras.layers import InputSpec
 from keras.layers import Layer
+from keras_contrib.utils.test_utils import to_tuple
 
 
 class CosineDense(Layer):
@@ -107,6 +108,7 @@ class CosineDense(Layer):
         super(CosineDense, self).__init__(**kwargs)
 
     def build(self, input_shape):
+        input_shape = to_tuple(input_shape)
         ndim = len(input_shape)
         assert ndim >= 2
         input_dim = input_shape[-1]

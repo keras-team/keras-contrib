@@ -1,15 +1,23 @@
 from setuptools import setup
 from setuptools import find_packages
+import os
 
 
-setup(name='keras_contrib',
+if os.environ.get('USE_TF_KERAS', None) == '1':
+    name = 'tf_keras_contrib'
+    install_requires = []
+else:
+    name = 'keras_contrib'
+    install_requires = ['keras']
+
+setup(name=name,
       version='2.0.8',
       description='Keras Deep Learning for Python, Community Contributions',
       author='Fariz Rahman',
       author_email='farizrahman4u@gmail.com',
       url='https://github.com/farizrahman4u/keras-contrib',
       license='MIT',
-      install_requires=['keras'],
+      install_requires=install_requires,
       extras_require={
           'h5py': ['h5py'],
           'visualize': ['pydot>=1.2.0'],

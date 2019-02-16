@@ -13,6 +13,8 @@ matrix:
         - python: 3.6
           env: KERAS_BACKEND=tensorflow
         - python: 3.6
+          env: KERAS_BACKEND=tensorflow USE_TF_KERAS=1 PYTEST_IGNORE='--ignore=tests/test_doc_auto_generation.py --ignore=tests/keras_contrib/backend --ignore=tests/keras_contrib/utils/save_load_utils_test.py'
+        - python: 3.6
           env: KERAS_BACKEND=theano THEANO_FLAGS=optimizer=fast_compile
         # - python: 3.6
         #   env: KERAS_BACKEND=cntk PYTHONWARNINGS=ignore
@@ -37,7 +39,9 @@ install:
   - source activate test-environment
 
   - travis_retry pip install --only-binary=numpy,scipy,pandas numpy nose scipy h5py theano mkdocs pytest pytest-pep8 pandas pygithub --progress-bar off
-  - pip install git+https://github.com/keras-team/keras.git --progress-bar off
+  - if [[ "$USE_TF_KERAS" == "" ]]; then
+      pip install git+https://github.com/keras-team/keras.git --progress-bar off;
+    fi
 
   # set library path
   - export LD_LIBRARY_PATH=$HOME/miniconda/envs/test-environment/lib/:$LD_LIBRARY_PATH
@@ -46,6 +50,9 @@ install:
       travis_retry conda install -q mkl mkl-service;
     fi
 
+  - if [[ "$USE_TF_KERAS" == "1" ]]; then
+      python convert_to_tf_keras.py;
+    fi
   - pip install -e .[tests] --progress-bar off
 
   # install TensorFlow (CPU version).
@@ -61,15 +68,15 @@ install:
 script:
   - export MKL_THREADING_LAYER="GNU"
   # run keras backend init to initialize backend config
-  - python -c "import keras.backend"
+  - python -c "import keras_contrib.backend"
   # create dataset directory to avoid concurrent directory creation at runtime
   - mkdir ~/.keras/datasets
   # set up keras backend
   - sed -i -e 's/"backend":[[:space:]]*"[^"]*/"backend":\ "'$KERAS_BACKEND'/g' ~/.keras/keras.json;
   - echo -e "Running tests with the following config:\n$(cat ~/.keras/keras.json)"
   - if [[ "$TEST_MODE" == "PEP8_DOC" ]]; then
-      PYTHONPATH=$PWD:$PYTHONPATH py.test --pep8 -m pep8 -n0 && py.test tests/tooling/ && cd contrib_docs && python autogen.py && mkdocs build;
+      PYTHONPATH=$PWD:$PYTHONPATH py.test --pep8 -m pep8 -n0 && py.test tests/tooling/ convert_to_tf_keras.py && cd contrib_docs && python autogen.py && mkdocs build;
     else
-      PYTHONPATH=$PWD:$PYTHONPATH py.test tests/ --ignore=tests/tooling/
+      PYTHONPATH=$PWD:$PYTHONPATH py.test tests/ $PYTEST_IGNORE --ignore=tests/tooling/
     --cov-config .coveragerc --cov=keras_contrib tests/;
     fi
