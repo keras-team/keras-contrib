@@ -60,7 +60,7 @@ class PSEU(Layer):
         self.alphas = self.add_weight(shape=new_input_shape,
                                       name='{}_alphas'.format(self.name),
                                       initializer=self.alpha_initializer,
-                                      trainable=False)
+                                      trainable=self.trainable)
         self.build = True
 
     def call(self, x):
