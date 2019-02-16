@@ -68,6 +68,7 @@ class ISRLU(Layer):
             return x / K.sqrt(1 + self.alphas * K.square(x))
 
         if is_tf_keras:
+            import tensorflow as tf
             K.set_session(tf.InteractiveSession())
             tf.global_variables_initializer().run()
 
