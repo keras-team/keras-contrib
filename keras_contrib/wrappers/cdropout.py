@@ -1,11 +1,12 @@
 # -*- coding: utf-8 -*-
+from __future__ import absolute_import
 
 import numpy as np
 
 from keras import backend as K
 from keras.engine import InputSpec
 from keras.initializers import RandomUniform
-from keras.layers import Wrapper
+from keras.layers.wrappers import Wrapper
 
 
 class ConcreteDropout(Wrapper):
