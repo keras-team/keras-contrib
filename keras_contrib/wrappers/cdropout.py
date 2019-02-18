@@ -2,10 +2,9 @@
 from __future__ import absolute_import
 
 import numpy as np
-
 from keras import backend as K
-from keras.engine import InputSpec
 from keras.initializers import RandomUniform
+from keras.layers import InputSpec
 from keras.layers.wrappers import Wrapper
 
 
@@ -34,7 +33,7 @@ class ConcreteDropout(Wrapper):
         model_precision: float. Model precision parameter is `1` for classification.
                          Also known as inverse observation noise.
         prob_init: Tuple[float, float].
-                   Probability  lower / upper bounds of dropout rate initialization.
+                   Probability lower / upper bounds of dropout rate initialization.
         temp: float. Temperature. Not used to be optimized.
         seed: Seed for random probability  sampling.
 
@@ -156,7 +155,7 @@ class ConcreteDropout(Wrapper):
     def get_config(self):
         config = {'weight_regularizer': self.weight_regularizer,
                   'dropout_regularizer': self.dropout_regularizer,
-                  'prob_init': self.prob_init,
+                  'prob_init': tuple(np.round(self.prob_init, 8)),
                   'temp': self.temp,
                   'seed': self.seed}
         base_config = super(ConcreteDropout, self).get_config()
