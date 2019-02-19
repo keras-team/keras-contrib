@@ -103,18 +103,33 @@ def test_cdropout_dense_loss_value(dense_model):
     assert_approx_equal(eval_loss, loss)
 
 
-@pytest.fixture(scope='module')
-def conv2d_model():
-    """Initialize to be tested conv model. Executed once.
+@pytest.fixture(scope='module', params=['channels_first', 'channels_last'])
+def conv2d_model(request):
+    """Initialize to be tested conv model. Executed once per param:
+       The whole tests are repeated for respectively
+       `channels_first` and `channels_last`.
     """
+    assert request.param in {'channels_last', 'channels_first'}
+    K.set_image_data_format(request.param)
+
     #  DATA
     in_dim = 20
     init_prop = .1
     np.random.seed(1)
-    X = np.random.randn(1, in_dim, in_dim, 1)
+    if K.image_data_format() == 'channels_last':
+        X = np.random.randn(1, in_dim, in_dim, 1)
+    elif K.image_data_format() == 'channels_first':
+        X = np.random.randn(1, 1, in_dim, in_dim)
+    else:
+        raise ValueError('Unknown data_format:', K.image_data_format())
 
     #  MODEL
-    inputs = Input(shape=(in_dim, in_dim, 1,))
+    if K.image_data_format() == 'channels_last':
+        inputs = Input(shape=(in_dim, in_dim, 1,))
+    elif K.image_data_format() == 'channels_first':
+        inputs = Input(shape=(1, in_dim, in_dim,))
+    else:
+        raise ValueError('Unknown data_format:', K.image_data_format())
     conv2d = Conv2D(1, (3, 3))
     #  Model, normal
     cd = ConcreteDropout(conv2d, in_dim, prob_init=(init_prop, init_prop))
