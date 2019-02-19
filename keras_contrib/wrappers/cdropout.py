@@ -36,7 +36,7 @@ class ConcreteDropout(Wrapper):
         prob_init: Tuple[float, float].
                    Probability lower / upper bounds of dropout rate initialization.
         temp: float. Temperature.
-              Determines the speed of probability adjustments.
+              Determines the speed of probability (i.e. dropout rate) adjustments.
         seed: Seed for random probability sampling.
 
     # References
@@ -74,6 +74,7 @@ class ConcreteDropout(Wrapper):
         # Returns
             A tensor with the same shape as inputs and dropout applied.
         """
+        assert layer_type in {'dense', 'conv2d'}
         eps = K.cast_to_floatx(K.epsilon())
 
         noise_shape = K.shape(inputs)
@@ -93,6 +94,7 @@ class ConcreteDropout(Wrapper):
         )
         drop_prob = K.sigmoid(drop_prob / self.temp)
 
+        # apply dropout
         random_tensor = 1. - drop_prob
         retain_prob = 1. - self.p
         inputs *= random_tensor
@@ -104,7 +106,7 @@ class ConcreteDropout(Wrapper):
         input_shape = to_tuple(input_shape)
         if len(input_shape) == 2:  # Dense_layer
             input_dim = np.prod(input_shape[-1])  # we drop only last dim
-        elif len(input_shape) == 4:  # Conv_layer
+        elif len(input_shape) == 4:  # Conv2D_layer
             input_dim = (input_shape[1]
                          if K.image_data_format() == 'channels_first'
                          else input_shape[3])  # we drop only channels
@@ -129,7 +131,7 @@ class ConcreteDropout(Wrapper):
 
         super(ConcreteDropout, self).build(input_shape)
 
-        # initialize regularizer / prior KL term
+        # initialize regularizer / prior KL term and add to layer-loss
         weight = self.layer.kernel
         kernel_regularizer = (
             self.weight_regularizer
@@ -146,9 +148,7 @@ class ConcreteDropout(Wrapper):
     def call(self, inputs, training=None):
         def relaxed_dropped_inputs():
             return self.layer.call(self._concrete_dropout(inputs, (
-                'dense'
-                if len(K.int_shape(inputs)) == 2
-                else 'conv2d'
+                'dense' if len(K.int_shape(inputs)) == 2 else 'conv2d'
             )))
 
         return K.in_train_phase(relaxed_dropped_inputs,
