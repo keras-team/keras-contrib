@@ -6,6 +6,7 @@ from keras import backend as K
 from keras.initializers import RandomUniform
 from keras.layers import InputSpec
 from keras.layers.wrappers import Wrapper
+from keras_contrib.utils.test_utils import to_tuple
 
 
 class ConcreteDropout(Wrapper):
@@ -34,8 +35,9 @@ class ConcreteDropout(Wrapper):
                          Also known as inverse observation noise.
         prob_init: Tuple[float, float].
                    Probability lower / upper bounds of dropout rate initialization.
-        temp: float. Temperature. Not used to be optimized.
-        seed: Seed for random probability  sampling.
+        temp: float. Temperature.
+              Determines the speed of probability adjustments.
+        seed: Seed for random probability sampling.
 
     # References
         - [Concrete Dropout](https://arxiv.org/pdf/1705.07832.pdf)
@@ -44,10 +46,10 @@ class ConcreteDropout(Wrapper):
     def __init__(self,
                  layer,
                  n_data,
-                 length_scale=2e-2,
+                 length_scale=5e-2,
                  model_precision=1,
                  prob_init=(0.1, 0.5),
-                 temp=0.1,
+                 temp=0.4,
                  seed=None,
                  **kwargs):
         assert 'kernel_regularizer' not in kwargs
@@ -64,7 +66,7 @@ class ConcreteDropout(Wrapper):
 
     def _concrete_dropout(self, inputs, layer_type):
         """Applies concrete dropout.
-           Used at training time (gradients can be propagated)
+           Used at training time (gradients can be propagated).
 
         # Arguments
             inputs: Input.
@@ -99,6 +101,7 @@ class ConcreteDropout(Wrapper):
         return inputs
 
     def build(self, input_shape=None):
+        input_shape = to_tuple(input_shape)
         if len(input_shape) == 2:  # Dense_layer
             input_dim = np.prod(input_shape[-1])  # we drop only last dim
         elif len(input_shape) == 4:  # Conv_layer
@@ -126,7 +129,7 @@ class ConcreteDropout(Wrapper):
 
         super(ConcreteDropout, self).build(input_shape)
 
-        # initialise regularizer / prior KL term
+        # initialize regularizer / prior KL term
         weight = self.layer.kernel
         kernel_regularizer = (
             self.weight_regularizer
