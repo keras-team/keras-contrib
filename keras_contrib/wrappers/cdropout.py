@@ -29,13 +29,16 @@ class ConcreteDropout(Wrapper):
 
     # Arguments
         layer: The to be wrapped layer.
-        n_data: int. Length of the dataset.
-        length_scale: float. Prior lengthscale.
-        model_precision: float. Model precision parameter is `1` for classification.
+        n_data: int. `n_data > 0`.
+                Length of the dataset.
+        length_scale: float. `length_scale > 0`.
+                      Prior lengthscale.
+        model_precision: float. `model_precision > 0`.
+                         Model precision parameter is `1` for classification.
                          Also known as inverse observation noise.
-        prob_init: Tuple[float, float].
+        prob_init: Tuple[float, float]. `prob_init > 0`
                    Probability lower / upper bounds of dropout rate initialization.
-        temp: float. Temperature.
+        temp: float. Temperature. `temp > 0`.
               Determines the speed of probability (i.e. dropout rate) adjustments.
         seed: Seed for random probability sampling.
 
@@ -53,13 +56,23 @@ class ConcreteDropout(Wrapper):
                  seed=None,
                  **kwargs):
         assert 'kernel_regularizer' not in kwargs
+        assert n_data > 0 and isinstance(n_data, int)
+        assert length_scale > 0.
+        assert prob_init[0] <= prob_init[1] and prob_init[0] > 0.
+        assert temp > 0.
+        assert model_precision > 0.
         super(ConcreteDropout, self).__init__(layer, **kwargs)
-        self.weight_regularizer = length_scale**2 / (model_precision * n_data)
-        self.dropout_regularizer = 2 / (model_precision * n_data)
-        self.prob_init = tuple(np.log(prob_init))
-        self.temp = temp
-        self.seed = seed
 
+        self._n_data = n_data
+        self._length_scale = length_scale
+        self._model_precision = model_precision
+        self._prob_init = prob_init
+        self._temp = temp
+        self._seed = seed
+
+        eps = K.epsilon()
+        self.weight_regularizer = length_scale**2 / (model_precision * n_data + eps)
+        self.dropout_regularizer = 2 / (model_precision * n_data + eps)
         self.supports_masking = True
         self.p_logit = None
         self.p = None
@@ -84,7 +97,7 @@ class ConcreteDropout(Wrapper):
             else:
                 noise_shape = (noise_shape[0], 1, 1, noise_shape[3])
         unif_noise = K.random_uniform(shape=noise_shape,
-                                      seed=self.seed,
+                                      seed=self._seed,
                                       dtype=inputs.dtype)
         drop_prob = (
             K.log(self.p + eps)
@@ -92,7 +105,7 @@ class ConcreteDropout(Wrapper):
             + K.log(unif_noise + eps)
             - K.log(1. - unif_noise + eps)
         )
-        drop_prob = K.sigmoid(drop_prob / self.temp)
+        drop_prob = K.sigmoid(drop_prob / self._temp)
 
         # apply dropout
         random_tensor = 1. - drop_prob
@@ -123,8 +136,8 @@ class ConcreteDropout(Wrapper):
         self.p_logit = self.layer.add_weight(name='p_logit',
                                              shape=(1,),
                                              initializer=RandomUniform(
-                                                 *self.prob_init,
-                                                 seed=self.seed
+                                                 *np.log(self._prob_init),
+                                                 seed=self._seed
                                              ),
                                              trainable=True)
         self.p = K.squeeze(K.sigmoid(self.p_logit), axis=0)
@@ -156,11 +169,12 @@ class ConcreteDropout(Wrapper):
                                 training=training)
 
     def get_config(self):
-        config = {'weight_regularizer': self.weight_regularizer,
-                  'dropout_regularizer': self.dropout_regularizer,
-                  'prob_init': tuple(np.round(self.prob_init, 8)),
-                  'temp': self.temp,
-                  'seed': self.seed}
+        config = {'n_data': self._n_data,
+                  'length_scale': self._length_scale,
+                  'model_precision': self._model_precision,
+                  'prob_init': self._prob_init,
+                  'temp': self._temp,
+                  'seed': self._seed}
         base_config = super(ConcreteDropout, self).get_config()
         return dict(list(base_config.items()) + list(config.items()))
 

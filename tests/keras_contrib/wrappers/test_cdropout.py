@@ -8,6 +8,7 @@ from numpy.testing import assert_equal
 from keras import backend as K
 from keras.layers import Input, Dense, Conv1D, Conv2D, Conv3D
 from keras.models import Model
+from keras_contrib.utils.test_utils import layer_test
 from keras_contrib.wrappers import ConcreteDropout
 
 
@@ -202,30 +203,29 @@ def test_cdropout_conv2d_loss_value(conv2d_model):
     assert_approx_equal(eval_loss, loss)
 
 
-def test_cdropout_1d_layer():
+@pytest.mark.parametrize('n_data', [1, 60])
+@pytest.mark.parametrize('layer, shape', [(Conv1D(8, 3), (None, 20, 1)),
+                                          (Conv3D(16, 7), (1, 20, 20, 20, 1))])
+def test_cdropout_invalid_layer(layer, shape, n_data):
     """To be replaced with a real function test, if implemented.
     """
-    in_dim = 20
-    init_prop = .1
-
     with pytest.raises(ValueError):
-        inputs = Input(shape=(in_dim, 1,))
-        ConcreteDropout(Conv1D(1, 3),
-                        in_dim,
-                        prob_init=(init_prop, init_prop))(inputs)
+        layer_test(ConcreteDropout,
+                   kwargs={'layer': layer,
+                           'n_data': n_data},
+                   input_shape=shape)
 
 
-def test_cdropout_3d_layer():
-    """To be replaced with a real function test, if implemented.
+@pytest.mark.parametrize('n_data', [1, 60])
+@pytest.mark.parametrize('layer, shape', [(Conv2D(8, 3), (None, 12, 12, 3)),
+                                          (Conv2D(16, 7), (1, 12, 12, 3))])
+def test_cdropout_valid_layer(layer, shape, n_data):
+    """Original layer test with valid parameters.
     """
-    in_dim = 20
-    init_prop = .1
-
-    with pytest.raises(ValueError):
-        inputs = Input(shape=(in_dim, in_dim, in_dim, 1,))
-        ConcreteDropout(Conv3D(1, 3),
-                        in_dim,
-                        prob_init=(init_prop, init_prop))(inputs)
+    layer_test(ConcreteDropout,
+               kwargs={'layer': layer,
+                       'n_data': n_data},
+               input_shape=shape)
 
 
 if __name__ == '__main__':
