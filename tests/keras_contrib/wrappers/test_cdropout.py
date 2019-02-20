@@ -6,7 +6,7 @@ from numpy.testing import assert_array_almost_equal
 from numpy.testing import assert_approx_equal
 from numpy.testing import assert_equal
 from keras import backend as K
-from keras.layers import Input, Dense, Conv1D, Conv2D, Conv3D
+from keras.layers import Conv1D, Conv2D, Conv3D, Dense, Input
 from keras.models import Model
 from keras_contrib.utils.test_utils import layer_test
 from keras_contrib.wrappers import ConcreteDropout
@@ -204,28 +204,20 @@ def test_cdropout_conv2d_loss_value(conv2d_model):
 
 
 @pytest.mark.parametrize('n_data', [1, 60])
-@pytest.mark.parametrize('layer, shape', [(Conv1D(8, 3), (None, 20, 1)),
-                                          (Conv3D(16, 7), (1, 20, 20, 20, 1))])
-def test_cdropout_invalid_layer(layer, shape, n_data):
-    """To be replaced with a real function test, if implemented.
-    """
-    with pytest.raises(ValueError):
-        layer_test(ConcreteDropout,
-                   kwargs={'layer': layer,
-                           'n_data': n_data},
-                   input_shape=shape)
-
-
-@pytest.mark.parametrize('n_data', [1, 60])
-@pytest.mark.parametrize('layer, shape', [(Conv2D(8, 3), (None, 12, 12, 3)),
-                                          (Conv2D(16, 7), (1, 12, 12, 3))])
-def test_cdropout_valid_layer(layer, shape, n_data):
-    """Original layer test with valid parameters.
+@pytest.mark.parametrize('layer, args, shape', [(Dense, (2,), (None, 6)),
+                                                (Conv1D, (4, 3), (None, 6, 1)),
+                                                (Conv2D, (8, 7), (None, 12, 12, 3)),
+                                                (Conv3D, (16, 3), (1, 6, 6, 6, 1))])
+def test_cdropout_valid_layer(layer, args, shape, n_data):
+    """Original layer test with a variety of different valid parameters.
     """
     layer_test(ConcreteDropout,
-               kwargs={'layer': layer,
+               kwargs={'layer': layer(*args),
                        'n_data': n_data},
                input_shape=shape)
+
+    if K.backend() == 'tensorflow' or K.backend() == 'cntk':
+        K.clear_session()
 
 
 if __name__ == '__main__':

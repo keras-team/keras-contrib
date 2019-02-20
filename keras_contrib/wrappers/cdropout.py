@@ -13,6 +13,11 @@ class ConcreteDropout(Wrapper):
     """A wrapper automating the dropout rate choice
        through the 'Concrete Dropout' technique.
 
+       Note that currently only Dense layers with weights
+       and Conv layers (Conv1D, Conv2D, Conv3D) are supported.
+       In the case of Dense Layers, dropout is applied to its complete input,
+       whereas in the Conv case just the input-channels are dropped.
+
     # Example
 
     ```python
@@ -24,7 +29,7 @@ class ConcreteDropout(Wrapper):
         model.add(ConcreteDropout(Dense(32), n_data=500))
         # now model.output_shape == (None, 32)
 
-        # Note that the current implementation supports Conv2D Layer as well.
+        # Note that the current implementation supports Conv layers as well.
     ```
 
     # Arguments
@@ -83,19 +88,21 @@ class ConcreteDropout(Wrapper):
 
         # Arguments
             inputs: Input.
-            layer_type: str. Either 'dense' or 'conv2d'.
+            layer_type: str. Either 'dense' or 'conv'.
         # Returns
             A tensor with the same shape as inputs and dropout applied.
         """
-        assert layer_type in {'dense', 'conv2d'}
+        assert layer_type in {'dense', 'conv'}
         eps = K.cast_to_floatx(K.epsilon())
 
         noise_shape = K.shape(inputs)
-        if layer_type == 'conv2d':
+        if layer_type == 'conv':
+            nodrops = np.ones(len(K.int_shape(inputs)) - 2, int)
+            _ = lambda *x: x  # don't ask... py2 can't unpack directly into a tuple
             if K.image_data_format() == 'channels_first':
-                noise_shape = (noise_shape[0], noise_shape[1], 1, 1)
+                noise_shape = _(noise_shape[0], noise_shape[1], *nodrops)
             else:
-                noise_shape = (noise_shape[0], 1, 1, noise_shape[3])
+                noise_shape = _(noise_shape[0], *(_(*nodrops) + (noise_shape[-1],)))
         unif_noise = K.random_uniform(shape=noise_shape,
                                       seed=self._seed,
                                       dtype=inputs.dtype)
@@ -119,13 +126,15 @@ class ConcreteDropout(Wrapper):
         input_shape = to_tuple(input_shape)
         if len(input_shape) == 2:  # Dense_layer
             input_dim = np.prod(input_shape[-1])  # we drop only last dim
-        elif len(input_shape) == 4:  # Conv2D_layer
-            input_dim = (input_shape[1]
-                         if K.image_data_format() == 'channels_first'
-                         else input_shape[3])  # we drop only channels
+        elif 3 <= len(input_shape) <= 5:  # Conv_layers
+            input_dim = (
+                input_shape[1]
+                if K.image_data_format() == 'channels_first'
+                else input_shape[-1]  # we drop only channels
+            )
         else:
             raise ValueError(
-                'concrete_dropout currenty supports only Dense/Conv2D layers')
+                'concrete_dropout currenty supports only Dense/Conv layers')
 
         self.input_spec = InputSpec(shape=input_shape)
         if not self.layer.built:
@@ -161,7 +170,7 @@ class ConcreteDropout(Wrapper):
     def call(self, inputs, training=None):
         def relaxed_dropped_inputs():
             return self.layer.call(self._concrete_dropout(inputs, (
-                'dense' if len(K.int_shape(inputs)) == 2 else 'conv2d'
+                'dense' if len(K.int_shape(inputs)) == 2 else 'conv'
             )))
 
         return K.in_train_phase(relaxed_dropped_inputs,
