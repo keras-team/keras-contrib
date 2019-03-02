@@ -1,0 +1,43 @@
+site_name: "Keras-contrib Documentation"
+
+
+generate:
+- layers/core.md:
+    - keras_contrib.layers.CosineDense
+- layers/convolutional.md:
+    - keras_contrib.layers.CosineConv2D
+    - keras_contrib.layers.SubPixelUpscaling
+- layers/normalization.md:
+    - keras_contrib.layers.InstanceNormalization
+    - keras_contrib.layers.GroupNormalization
+- layers/advanced-activations.md:
+    - keras_contrib.layers.SineReLU
+    - keras_contrib.layers.SReLU
+    - keras_contrib.layers.Swish
+    - keras_contrib.layers.PELU
+- layers/crf.md:
+    - keras_contrib.layers.CRF
+- losses.md:
+    - keras_contrib.losses++
+- callbacks.md:
+    - keras_contrib.callbacks.TensorBoardGrouped
+    - keras_contrib.callbacks.CyclicLR
+    - keras_contrib.callbacks.SnapshotCallbackBuilder
+    - keras_contrib.callbacks.SnapshotModelCheckpoint
+    - keras_contrib.callbacks.DeadReluDetector
+
+
+pages:
+- Home: index.md << ../README.md
+- layers:
+    - Core layers: layers/core.md
+    - Convolutional layers: layers/convolutional.md
+    - normalization layers: layers/normalization.md
+    - Advanced activations layers: layers/advanced-activations.md
+    - CRF layers: layers/crf.md
+- Losses: losses.md
+- Callbacks: callbacks.md
+
+
+
+headers: html
