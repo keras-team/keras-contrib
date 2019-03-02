@@ -5,8 +5,7 @@ Our documentation uses extended Markdown, as implemented by [MkDocs](http://mkdo
 
 ## Building the documentation
 
-- install MkDocs: `pip install mkdocs`
-- `cd` to the `docs/` folder and run:
-    - `python autogen.py`
-    - `mkdocs serve`    # Starts a local webserver:  [localhost:8000](localhost:8000)
-    - `mkdocs build`    # Builds a static site in "site" directory
+- install pydoc-markdown: `pip install pydoc-markdown`
+- `cd` to the `contrib_docs/` folder and run:
+    - `pydocmd serve`    # Starts a local webserver:  [localhost:8000](localhost:8000)
+    - `pydocmd build`    # Builds a static site in "site" directory

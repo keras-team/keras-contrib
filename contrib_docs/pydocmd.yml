@@ -18,13 +18,24 @@ generate:
 - layers/crf.md:
     - keras_contrib.layers.CRF
 - losses.md:
-    - keras_contrib.losses++
+    - keras_contrib.losses:
+        - keras_contrib.losses.DSSIMObjective
+        - keras_contrib.losses.jaccard_distance
+        - keras_contrib.losses.crf_loss
+        - keras_contrib.losses.crf_nll
+- optimizers.md:
+    - keras_contrib.optimizers:
+        - keras_contrib.optimizers.FTML
+        - keras_contrib.optimizers.Padam
+        - keras_contrib.optimizers.Yogi
+        - keras_contrib.optimizers.LARS
 - callbacks.md:
-    - keras_contrib.callbacks.TensorBoardGrouped
-    - keras_contrib.callbacks.CyclicLR
-    - keras_contrib.callbacks.SnapshotCallbackBuilder
-    - keras_contrib.callbacks.SnapshotModelCheckpoint
-    - keras_contrib.callbacks.DeadReluDetector
+    - keras_contrib.callbacks:
+        - keras_contrib.callbacks.TensorBoardGrouped
+        - keras_contrib.callbacks.CyclicLR
+        - keras_contrib.callbacks.SnapshotCallbackBuilder
+        - keras_contrib.callbacks.SnapshotModelCheckpoint
+        - keras_contrib.callbacks.DeadReluDetector
 
 
 pages:
@@ -36,6 +47,7 @@ pages:
     - Advanced activations layers: layers/advanced-activations.md
     - CRF layers: layers/crf.md
 - Losses: losses.md
+- Optimizers: optimizers.md
 - Callbacks: callbacks.md
 
 
