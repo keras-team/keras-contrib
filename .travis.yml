@@ -82,6 +82,8 @@ script:
   - echo -e "Running tests with the following config:\n$(cat ~/.keras/keras.json)"
   - if [[ "$TEST_MODE" == "PEP8_DOC" ]]; then
       PYTHONPATH=$PWD:$PYTHONPATH py.test --pep8 -m pep8 -n0 && py.test tests/tooling/ convert_to_tf_keras.py && cd contrib_docs && pydocmd build;
+    elif [[ "$RUN_ONLY_BACKEND_TESTS" == "1" ]]; then
+      PYTHONPATH=$PWD:$PYTHONPATH py.test  tests/keras_contrib/backend/;
     else
       PYTHONPATH=$PWD:$PYTHONPATH py.test tests/ $PYTEST_IGNORE --ignore=tests/tooling/
     --cov-config .coveragerc --cov=keras_contrib tests/;
