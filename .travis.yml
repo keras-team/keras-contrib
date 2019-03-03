@@ -63,7 +63,9 @@ install:
   - pip install tensorflow==1.12 --progress-bar off
 
   # install cntk
-  - ./.travis/install_cntk.sh
+  - if [[ "$KERAS_BACKEND" == "cntk" ]]; then
+    ./.travis/install_cntk.sh;
+  fi
 
   # Remove the current backend from the coverage exclusion.
   - sed -i "\/keras\/backend\/${KERAS_BACKEND}_backend.py/d" .coveragerc
