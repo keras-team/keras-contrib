@@ -16,12 +16,8 @@ matrix:
           env: KERAS_BACKEND=tensorflow USE_TF_KERAS=1 PYTEST_IGNORE='--ignore=tests/test_doc_auto_generation.py --ignore=tests/keras_contrib/backend --ignore=tests/keras_contrib/utils/save_load_utils_test.py'
         - python: 3.6
           env: KERAS_BACKEND=theano THEANO_FLAGS=optimizer=fast_compile
-        - python: 2.7
-          env: KERAS_BACKEND=cntk PYTHONWARNINGS=ignore RUN_ONLY_BACKEND_TESTS=1
         - python: 3.6
           env: KERAS_BACKEND=cntk PYTHONWARNINGS=ignore
-        # - python: 3.6
-        #   env: KERAS_BACKEND=cntk PYTHONWARNINGS=ignore
 install:
   # code below is taken from http://conda.pydata.org/docs/travis.html
   # We do this conditionally because it saves us some downloading if the
