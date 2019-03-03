@@ -65,7 +65,7 @@ def test_TensorBoard(tmpdir):
         def reset_states(self):
             pass
 
-        def __call__(self, y_true, y_pred):
+        def __call__(self, y_true, y_pred, sample_weight=None, mask=None):
             return self.state
 
     inp = Input((input_dim,))
