@@ -61,7 +61,7 @@ class ISRLU(Layer):
         def inverse_quadratic_square_root(x):
             return x / K.sqrt(1 + self.alphas * K.square(x))
 
-        return K.switch(K.less(x, K.zeros_like(x)), inverse_quadratic_square_root(x), x)
+        return K.switch(K.less(x, K.zeros_like(x)), inverse_quadratic_square_root(x), x)a
 
     def compute_output_shape(self, input_shape):
         return input_shape
