@@ -63,7 +63,7 @@ class ISRLU(Layer):
 
         return K.switch(K.less(x, K.zeros_like(x)), inverse_quadratic_square_root(x), x)
 
-    def compute_output_shape(self, input_shape):
+    def compute_output_shape(self, input_shape):h
         return input_shape
 
     def get_config(self):
