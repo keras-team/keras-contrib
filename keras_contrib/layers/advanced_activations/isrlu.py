@@ -44,13 +44,7 @@ class ISRLU(Layer):
         self.alpha = alpha
         self.trainable = False
 
-    if is_tf_keras:
-        def alpha_initializer(self, input_shape, dtype='float32', partition_info=None):
-            return self.alpha * K.ones(input_shape,
-                                       dtype=dtype)
-
-    else:
-        def alpha_initializer(self, input_shape, dtype='float32'):
+    def alpha_initializer(self, input_shape, dtype='float32', **kwargs):
             return self.alpha * K.ones(input_shape,
                                        dtype=dtype)
 
