@@ -44,15 +44,9 @@ class PSEU(Layer):
         self.alpha = alpha
         self.trainable = False
 
-    if is_tf_keras:
-        def alpha_initializer(self, input_shape, dtype='float32', partition_info=None):
-            return self.alpha * K.ones(input_shape,
-                                       dtype=dtype)
-
-    else:
-        def alpha_initializer(self, input_shape, dtype='float32'):
-            return self.alpha * K.ones(input_shape,
-                                       dtype=dtype)
+    def alpha_initializer(self, input_shape, dtype='float32', **kwargs):
+        return self.alpha * K.ones(input_shape,
+                                   dtype=dtype)
 
     def build(self, input_shape):
         input_shape = to_tuple(input_shape)
