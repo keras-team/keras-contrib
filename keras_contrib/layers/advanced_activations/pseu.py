@@ -61,7 +61,7 @@ class PSEU(Layer):
         if self.alpha < 0:
             return - K.log(1 - self.alphas * (x + self.alphas)) / self.alphas
         elif self.alpha > 0:
-            return self.alphas + (K.exp(self.alphas * x) - 1.) / self.alphasa
+            return self.alphas + (K.exp(self.alphas * x) - 1.) / self.alphas
         else:
             return x
 
