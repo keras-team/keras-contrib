@@ -45,8 +45,8 @@ class ISRLU(Layer):
         self.trainable = False
 
     def alpha_initializer(self, input_shape, dtype='float32', **kwargs):
-            return self.alpha * K.ones(input_shape,
-                                       dtype=dtype)
+        return self.alpha * K.ones(input_shape,
+                                   dtype=dtype)
 
     def build(self, input_shape):
         input_shape = to_tuple(input_shape)
