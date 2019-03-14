@@ -1,6 +1,7 @@
 from keras import backend as K
 from keras.optimizers import Optimizer
 
+
 class Adam(Optimizer):
     """Adam optimizer.
 
@@ -18,7 +19,8 @@ class Adam(Optimizer):
         tf_cpu_mode: only for tensorflow backend
                       0 - default, no changes.
                       1 - allows to train x2 bigger network on same VRAM consuming RAM
-                      2 - allows to train x3 bigger network on same VRAM consuming RAM*2 and CPU power.
+                      2 - allows to train x3 bigger network on same VRAM consuming RAM*2
+                          and CPU power.
 
     # References
         - [Adam - A Method for Stochastic Optimization]
@@ -57,27 +59,31 @@ class Adam(Optimizer):
                            (1. - K.pow(self.beta_1, t)))
 
         e = K.tf.device("/cpu:0") if self.tf_cpu_mode > 0 else None
-        if e: e.__enter__()
+        if e:
+            e.__enter__()
         ms = [K.zeros(K.int_shape(p), dtype=K.dtype(p)) for p in params]
         vs = [K.zeros(K.int_shape(p), dtype=K.dtype(p)) for p in params]
         if self.amsgrad:
             vhats = [K.zeros(K.int_shape(p), dtype=K.dtype(p)) for p in params]
         else:
             vhats = [K.zeros(1) for _ in params]
-        if e: e.__exit__(None, None, None)
+        if e:
+            e.__exit__(None, None, None)
         
         self.weights = [self.iterations] + ms + vs + vhats
 
-        for p, g, m, v, vhat in zip(params, grads, ms, vs, vhats):            
+        for p, g, m, v, vhat in zip(params, grads, ms, vs, vhats):
             e = K.tf.device("/cpu:0") if self.tf_cpu_mode == 2 else None
-            if e: e.__enter__()            
+            if e:
+                e.__enter__()            
             m_t = (self.beta_1 * m) + (1. - self.beta_1) * g
             v_t = (self.beta_2 * v) + (1. - self.beta_2) * K.square(g)
             
             if self.amsgrad:
                 vhat_t = K.maximum(vhat, v_t)
                 self.updates.append(K.update(vhat, vhat_t))
-            if e: e.__exit__(None, None, None)
+            if e:
+                e.__exit__(None, None, None)
             
             if self.amsgrad:
                 p_t = p - lr_t * m_t / (K.sqrt(vhat_t) + self.epsilon)
