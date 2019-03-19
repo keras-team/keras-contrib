@@ -6,7 +6,7 @@ import inspect
 
 import keras
 from keras.layers import Input
-from keras import Model
+from keras.models import Model
 from keras import backend as K
 
 
