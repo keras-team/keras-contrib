@@ -7,6 +7,7 @@ from keras.callbacks import Callback
 
 import neptune
 
+
 class NeptuneLogger(Callback):
     """
     Neptune integration with keras callbacks.
@@ -60,4 +61,4 @@ class NeptuneLogger(Callback):
             try:
                 self.experiment.send_metric(key, epoch, float(value))
             except ValueError:
-                pass # Ignore non numeric values
+                pass  # Ignore non numeric values

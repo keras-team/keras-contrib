@@ -7,14 +7,17 @@ from keras.models import Sequential
 from keras.layers import Dense
 
 
-# Replace with your own credentials
+# Replace below with your own credentials
+# If NEPTUNE_API_TOKEN is None, read from environment variable
+#  otherwise you should provide it as a str
 PROJECT_QUALIFIED_NAME = "your_username/your_project"
 EXPERIMENT_NAME = "test-neptunelogger"
-NEPTUNE_API_TOKEN = None # If None, read from environment variable, else provide as string
+NEPTUNE_API_TOKEN = None
+
 
 def build_model():
     """Build a dummy binary classification model model.
-    
+
     Returns:
         Keras.models.Model: The dummy model.
     """
@@ -44,11 +47,11 @@ def test_NeptuneLogger():
         verbose=0,
         callbacks=[
             callbacks.NeptuneLogger(
-	            project_qualified_name=PROJECT_QUALIFIED_NAME,
-	            experiment_name=EXPERIMENT_NAME,
-	            api_token=NEPTUNE_API_TOKEN
+                project_qualified_name=PROJECT_QUALIFIED_NAME,
+                experiment_name=EXPERIMENT_NAME,
+                api_token=NEPTUNE_API_TOKEN
             )
         ])
 
 if __name__ == '__main__':
-	test_NeptuneLogger()
+    test_NeptuneLogger()
