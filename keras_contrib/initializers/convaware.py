@@ -22,13 +22,14 @@ class ConvolutionAware(Initializer):
         self.seed = seed
         self.orthogonal = Orthogonal()
 
-    def __call__(self, shape):
+    def __call__(self, shape, dtype=None):
+        dtype = K.floatx() if dtype is None else dtype
         rank = len(shape)
 
         if self.seed is not None:
             np.random.seed(self.seed)
 
-        fan_in, fan_out = _compute_fans(shape, K.image_data_format())
+        fan_in, _ = _compute_fans(shape, K.image_data_format())
         variance = 2 / fan_in
 
         if rank == 3:
@@ -42,7 +43,7 @@ class ConvolutionAware(Initializer):
         elif rank == 4:
             row, column, stack_size, filters_size = shape
 
-            transpose_dimensions = (2, 3, 0, 1)
+            transpose_dimensions = (2, 3, 1, 0)
             kernel_shape = (row, column)
             correct_ifft = np.fft.irfft2
             correct_fft = np.fft.rfft2
@@ -55,14 +56,14 @@ class ConvolutionAware(Initializer):
             correct_fft = np.fft.rfftn
             correct_ifft = np.fft.irfftn
         else:
-            return K.variable(self.orthogonal(shape), dtype=K.floatx())
+            return K.variable(self.orthogonal(shape), dtype=dtype)
 
         kernel_fourier_shape = correct_fft(np.zeros(kernel_shape)).shape
 
         init = []
         for i in range(filters_size):
             basis = self._create_basis(
-                stack_size, np.prod(kernel_fourier_shape))
+                stack_size, np.prod(kernel_fourier_shape), dtype)
             basis = basis.reshape((stack_size,) + kernel_fourier_shape)
 
             filters = [correct_ifft(x, kernel_shape) +
@@ -74,9 +75,9 @@ class ConvolutionAware(Initializer):
         # Format of array is now: filters, stack, row, column
         init = np.array(init)
         init = self._scale_filters(init, variance)
-        return init.transpose(transpose_dimensions)
+        return K.variable(init.transpose(transpose_dimensions), dtype=dtype)
 
-    def _create_basis(self, filters, size):
+    def _create_basis(self, filters, size, dtype):
         if size == 1:
             return np.random.normal(0.0, self.eps_std, (filters, size))
 
@@ -87,7 +88,7 @@ class ConvolutionAware(Initializer):
             a = self._symmetrize(a)
             u, _, v = np.linalg.svd(a)
             li.extend(u.T.tolist())
-        p = np.array(li[:filters], dtype=K.floatx())
+        p = np.array(li[:filters], dtype=dtype)
         return p
 
     def _symmetrize(self, a):
