@@ -33,7 +33,7 @@ keras_contrib/layers/normalization/groupnormalization.py @titu1994
 keras_contrib/layers/capsule.py @SriRangaTarun
 
 # losses
-keras-contrib\keras_contrib\losses\euclidean_distance_loss.py @RoadToML
+keras-contrib/keras_contrib/losses/euclidean_distance_loss.py @RoadToML
 
 # metrics
 
