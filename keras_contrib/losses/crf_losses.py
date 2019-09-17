@@ -29,8 +29,8 @@ def crf_nll(y_true, y_pred):
         raise TypeError('When learn_model="join", CRF must be the last layer.')
     if crf.sparse_target:
         y_true = K.one_hot(K.cast(y_true[:, :, 0], 'int32'), crf.units)
-    X = crf._inbound_nodes[idx].input_tensors[0]
-    mask = crf._inbound_nodes[idx].input_masks[0]
+    X = crf.get_input_at(idx)
+    mask = crf.get_input_mask_at(idx)
     nloglik = crf.get_negative_log_likelihood(y_true, X, mask)
     return nloglik
 

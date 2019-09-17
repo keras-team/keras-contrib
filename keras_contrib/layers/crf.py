@@ -14,7 +14,7 @@ from keras.layers import InputSpec
 from keras_contrib.losses import crf_loss
 from keras_contrib.metrics import crf_marginal_accuracy
 from keras_contrib.metrics import crf_viterbi_accuracy
-from keras_contrib.utils.test_utils import to_tuple
+from keras_contrib.utils.test_utils import to_tuple, is_tf_keras
 
 
 class CRF(Layer):
@@ -460,7 +460,10 @@ class CRF(Layer):
             if K.backend() == 'theano':
                 m = states[3][:, t:(t + 2)]
             else:
-                m = K.slice(states[3], [0, t], [-1, 2])
+                if is_tf_keras:
+                    m = tf.slice(states[3], [0, t], [-1, 2])
+                else:
+                    m = K.slice(states[3], [0, t], [-1, 2])
             input_energy_t = input_energy_t * K.expand_dims(m[:, 0])
             # (1, F, F)*(B, 1, 1) -> (B, F, F)
             chain_energy = chain_energy * K.expand_dims(
@@ -468,7 +471,11 @@ class CRF(Layer):
         if return_logZ:
             # shapes: (1, B, F) + (B, F, 1) -> (B, F, F)
             energy = chain_energy + K.expand_dims(input_energy_t - prev_target_val, 2)
-            new_target_val = K.logsumexp(-energy, 1)  # shapes: (B, F)
+            if is_tf_keras:
+                import tensorflow as tf
+                new_target_val = tf.reduce_logsumexp(-energy, 1)  # shapes: (B, F)
+            else:
+                new_target_val = K.logsumexp(-energy, 1)  # shapes: (B, F)
             return new_target_val, [new_target_val, i + 1]
         else:
             energy = chain_energy + K.expand_dims(input_energy_t + prev_target_val, 2)
