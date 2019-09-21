@@ -6,6 +6,11 @@ This library is the official extension repository for the python deep learning l
 
 As the community contributions in Keras-Contrib are tested, used, validated, and their utility proven, they may be integrated into the Keras core repository. In the interest of keeping Keras succinct, clean, and powerfully simple, only the most useful contributions make it into Keras. This contribution repository is both the proving ground for new functionality, and the archive for functionality that (while useful) may not fit well into the Keras paradigm.
 
+
+## The future of Keras-contrib:
+
+We're migrating to tensorflow/addons. See the announcement [here] (https://github.com/keras-team/keras-contrib/issues/519). 
+
 ---
 ## Installation
 
