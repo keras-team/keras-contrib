@@ -9,7 +9,7 @@ As the community contributions in Keras-Contrib are tested, used, validated, and
 
 ## The future of Keras-contrib:
 
-We're migrating to tensorflow/addons. See the announcement [here] (https://github.com/keras-team/keras-contrib/issues/519). 
+We're migrating to tensorflow/addons. See the announcement [here](https://github.com/keras-team/keras-contrib/issues/519). 
 
 ---
 ## Installation
