@@ -110,3 +110,8 @@ The maintainers will ensure that the proper chain of commits will flow in both d
 ## About the `CODEOWNERS` file
 
 If you add a new feature to keras-contrib, you should add yourself and your file in the `CODEOWNERS` file. Doing so will, in the future, tag you whenever an issue or a pull request about your feature is opened. Be aware that it represents some work, and in addition of being tagged, we would appreciate that you review new pull requests related to your feature.
+
+
+## Contibuted
+
+[Ayesha]
