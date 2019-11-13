@@ -144,11 +144,10 @@ __Returns__
 
 __References__
 
-    - [V-Net: Fully Convolutional Neural Networks for Volumetric Medical Image Segmentation](
-       https://arxiv.org/pdf/1606.04797.pdf)
+    - [V-Net: Fully Convolutional Neural Networks for Volumetric Medical Image
+       Segmentation](https://arxiv.org/pdf/1606.04797.pdf)
 
 __About GitHub__
 
-    If you open an issue or a pull request about CRF, please
+    If you open an issue or a pull request about Dice loss, please
     add `cc @alexbmp` to notify Seongmin Choi.
-
