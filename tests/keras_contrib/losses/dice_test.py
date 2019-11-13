@@ -36,4 +36,3 @@ def test_dice_loss_for_zero_array():
         K.variable(y_true),
         K.variable(y_pred), )
     assert K.eval(L) == 0.5, 'loss should equal 0.5'
-
