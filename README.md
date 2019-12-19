@@ -1,5 +1,11 @@
 # keras-contrib : Keras community contributions
 
+Keras-contrib is deprecated. Use tf.addons.
+
+## The future of Keras-contrib:
+
+We're migrating to tensorflow/addons. See the announcement [here](https://github.com/keras-team/keras-contrib/issues/519). 
+
 [![Build Status](https://travis-ci.org/keras-team/keras-contrib.svg?branch=master)](https://travis-ci.org/keras-team/keras-contrib)
 
 This library is the official extension repository for the python deep learning library [Keras](http://www.keras.io). It contains additional layers, activations, loss functions, optimizers, etc. which are not yet available within Keras itself. All of these additional modules can be used in conjunction with core Keras models and modules.
@@ -7,9 +13,8 @@ This library is the official extension repository for the python deep learning l
 As the community contributions in Keras-Contrib are tested, used, validated, and their utility proven, they may be integrated into the Keras core repository. In the interest of keeping Keras succinct, clean, and powerfully simple, only the most useful contributions make it into Keras. This contribution repository is both the proving ground for new functionality, and the archive for functionality that (while useful) may not fit well into the Keras paradigm.
 
 
-## The future of Keras-contrib:
 
-We're migrating to tensorflow/addons. See the announcement [here](https://github.com/keras-team/keras-contrib/issues/519). 
+
 
 ---
 ## Installation
