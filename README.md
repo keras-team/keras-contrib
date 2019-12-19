@@ -1,10 +1,10 @@
 # keras-contrib : Keras community contributions
 
-Keras-contrib is deprecated. Use tf.addons.
+Keras-contrib is deprecated. Use [TensorFlow Addons](https://github.com/tensorflow/addons).
 
 ## The future of Keras-contrib:
 
-We're migrating to tensorflow/addons. See the announcement [here](https://github.com/keras-team/keras-contrib/issues/519). 
+We're migrating to [tensorflow/addons](https://github.com/tensorflow/addons). See the announcement [here](https://github.com/keras-team/keras-contrib/issues/519). 
 
 [![Build Status](https://travis-ci.org/keras-team/keras-contrib.svg?branch=master)](https://travis-ci.org/keras-team/keras-contrib)
 
