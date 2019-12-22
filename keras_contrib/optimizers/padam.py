@@ -56,7 +56,7 @@ class Padam(Optimizer):
                                                       K.dtype(self.decay))))
 
         t = K.cast(self.iterations, K.floatx()) + 1
-        lr_t = lr * (K.sqrt(1. - K.pow(self.beta_2, t)) /
+        lr_t = lr * (K.pow(1. - K.pow(self.beta_2, t), self.partial) /
                      (1. - K.pow(self.beta_1, t)))
 
         ms = [K.zeros(K.int_shape(p), dtype=K.dtype(p)) for p in params]
