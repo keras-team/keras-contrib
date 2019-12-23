@@ -52,3 +52,4 @@ keras_contrib/optimizers/padam.py @MFreidank
 
 
 # wrappers
+keras_contrib/wrappers/cdropout.py @moritzmoritz98
