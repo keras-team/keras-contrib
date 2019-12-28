@@ -23,6 +23,7 @@ generate:
         - keras_contrib.losses.jaccard_distance
         - keras_contrib.losses.crf_loss
         - keras_contrib.losses.crf_nll
+        - keras_contrib.losses.dice_loss
 - optimizers.md:
     - keras_contrib.optimizers:
         - keras_contrib.optimizers.FTML
