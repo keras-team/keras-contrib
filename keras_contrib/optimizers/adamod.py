@@ -32,8 +32,6 @@ class Adamod(Optimizer):
             self.beta_3 = K.variable(beta_3, name='beta_3')
             self.decay = K.variable(self.initial_decay, name='decay')
 
-    @interfaces.legacy_get_updates_support
-    @K.symbolic
     def get_updates(self, loss, params):
         grads = self.get_gradients(loss, params)
         self.updates = [K.update_add(self.iterations, 1)]
@@ -67,7 +65,7 @@ class Adamod(Optimizer):
             v_t = (self.beta_2 * v) + (1. - self.beta_2) * K.square(g)
             n_t = lr_t / (K.sqrt(v_t) + self.epsilon)
             s_t = (self.beta_3 * s) + (1. - self.beta_3) * n_t
-            nhat_t = K.min(n_t, s_t)
+            nhat_t = K.minimum(n_t, s_t)
             p_t = p - nhat_t * m_t * m_bias_correction
 
             self.updates.append(K.update(m, m_t))
