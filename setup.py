@@ -11,7 +11,7 @@ else:
     install_requires = ['keras']
 
 setup(name=name,
-      version='2.0.8',
+      version='2.0.8.1',
       description='Keras Deep Learning for Python, Community Contributions',
       author='Fariz Rahman',
       author_email='farizrahman4u@gmail.com',
