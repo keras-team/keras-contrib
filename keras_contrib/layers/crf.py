@@ -16,6 +16,8 @@ from keras_contrib.metrics import crf_marginal_accuracy
 from keras_contrib.metrics import crf_viterbi_accuracy
 from keras_contrib.utils.test_utils import to_tuple
 
+import tensorflow as tf
+
 
 class CRF(Layer):
     """An implementation of linear chain conditional random field (CRF).
@@ -460,7 +462,7 @@ class CRF(Layer):
             if K.backend() == 'theano':
                 m = states[3][:, t:(t + 2)]
             else:
-                m = K.slice(states[3], [0, t], [-1, 2])
+                m = tf.slice(states[3], [0, t], [-1, 2])
             input_energy_t = input_energy_t * K.expand_dims(m[:, 0])
             # (1, F, F)*(B, 1, 1) -> (B, F, F)
             chain_energy = chain_energy * K.expand_dims(
