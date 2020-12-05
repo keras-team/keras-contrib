@@ -22,7 +22,7 @@ class SnapshotModelCheckpoint(Callback):
     Should be used with the cosine annealing learning rate schedule to save
     the weight just before learning rate is sharply increased.
 
-    # Arguments:
+    # Args:
         nb_epochs: total number of epochs that the model will be trained for.
         nb_snapshots: number of times the weights of the model will be saved.
         fn_prefix: prefix for the filename of the weights.
@@ -55,7 +55,7 @@ class SnapshotCallbackBuilder:
         """
         Initialize a snapshot callback builder.
 
-        # Arguments:
+        # Args:
             nb_epochs: total number of epochs that the model will be trained for.
             nb_snapshots: number of times the weights of the model will be saved.
             init_lr: initial learning rate

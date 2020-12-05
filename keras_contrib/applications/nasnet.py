@@ -590,7 +590,7 @@ def _separable_conv_block(ip, filters, kernel_size=(3, 3), strides=(1, 1),
                           weight_decay=5e-5, id=None):
     '''Adds 2 blocks of [relu-separable conv-batchnorm]
 
-    # Arguments:
+    # Args:
         ip: input tensor
         filters: number of output filters per layer
         kernel_size: kernel size of separable convolutions
@@ -629,7 +629,7 @@ def _adjust_block(p, ip, filters, weight_decay=5e-5, id=None):
     or situations where the output number of filters needs to
     be changed
 
-    # Arguments:
+    # Args:
         p: input tensor which needs to be modified
         ip: input tensor whose shape needs to be matched
         filters: number of output filters to be matched
@@ -687,7 +687,7 @@ def _adjust_block(p, ip, filters, weight_decay=5e-5, id=None):
 def _normal_A(ip, p, filters, weight_decay=5e-5, id=None):
     '''Adds a Normal cell for NASNet-A (Fig. 4 in the paper)
 
-    # Arguments:
+    # Args:
         ip: input tensor `x`
         p: input tensor `p`
         filters: number of output filters
@@ -750,7 +750,7 @@ def _normal_A(ip, p, filters, weight_decay=5e-5, id=None):
 def _reduction_A(ip, p, filters, weight_decay=5e-5, id=None):
     '''Adds a Reduction cell for NASNet-A (Fig. 4 in the paper)
 
-    # Arguments:
+    # Args:
         ip: input tensor `x`
         p: input tensor `p`
         filters: number of output filters
