@@ -82,7 +82,27 @@ model.fit(x=np.random.random((100, 10)), y=np.random.random((100, 100)), epochs=
 # Save our model
 model.save('example.h5')
 ```
+Modules from Keras-Contrib library in subclass method
 
+```python
+from tensorflow import keras
+from tensorflow.keras import layers
+from keras_contrib.layers.advanced_activations.sinerelu import SineReLU
+from tensorflow.keras.layers import Conv2D, Dense, Flatten, MaxPool2D, Input, Dropout
+from keras.utils.generic_utils import get_custom_objects
+from tensorflow.keras import Model
+from keras.layers import Activation
+
+#calling custom activation functions and adding them to arguments list
+get_custom_objects().update({'SineReLU': Activation(SineReLU)})
+
+class ExampleNet(tf.keras.Model):
+  def __init__(self):
+    super(ExampleNet, self).__init__()
+    self.conv1 = Conv2D(98, (3,3), activation='SineReLU', strides=(4,4))
+    self.norm1 = BatchNormalization()
+```
+    
 
 ### A Common "Gotcha"
 
