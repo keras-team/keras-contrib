@@ -68,7 +68,7 @@ import numpy as np
 
 # I wish Keras had the Parametric Exponential Linear activation..
 # Oh, wait..!
-from keras_contrib.layers.advanced_activations import PELU
+from keras_contrib.layers.advanced_activations.pelu import PELU
 
 # Create the Keras model, including the PELU advanced activation
 model = Sequential()
@@ -83,6 +83,23 @@ model.fit(x=np.random.random((100, 10)), y=np.random.random((100, 100)), epochs=
 model.save('example.h5')
 ```
 
+### Adding keras-contrib library functions using string alias
+
+```python
+from tensorflow import keras
+from tensorflow.keras import layers
+from keras_contrib.layers.advanced_activations.sinerelu import SineReLU
+from tensorflow.keras.layers import Conv2D
+from keras.utils.generic_utils import get_custom_objects
+from keras.layers import Activation
+
+#calling custom activation functions and adding them to arguments list
+get_custom_objects().update({'SineReLU': Activation(SineReLU)})
+
+model.add(Conv2D(256, (3,3), activation='SineReLU'))
+
+```
+    
 
 ### A Common "Gotcha"
 
