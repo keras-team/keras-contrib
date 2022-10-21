@@ -91,7 +91,6 @@ from tensorflow.keras import layers
 from keras_contrib.layers.advanced_activations.sinerelu import SineReLU
 from tensorflow.keras.layers import Conv2D
 from keras.utils.generic_utils import get_custom_objects
-from tensorflow.keras import Model
 from keras.layers import Activation
 
 #calling custom activation functions and adding them to arguments list
