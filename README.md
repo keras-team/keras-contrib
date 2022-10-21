@@ -68,7 +68,7 @@ import numpy as np
 
 # I wish Keras had the Parametric Exponential Linear activation..
 # Oh, wait..!
-from keras_contrib.layers.advanced_activations import PELU
+from keras_contrib.layers.advanced_activations.pelu import PELU
 
 # Create the Keras model, including the PELU advanced activation
 model = Sequential()
